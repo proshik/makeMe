@@ -1,0 +1,19 @@
+# Binaries
+bin/
+/makeme
+
+# Environment
+.env
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+
+# Go
+vendor/
+
+# sqlc generated (optional: uncomment if you prefer to regenerate on build)
+# internal/storage/sqlc/
