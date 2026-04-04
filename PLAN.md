@@ -288,22 +288,23 @@ type Config struct {
 
 **Цель:** новый пользователь проходит тест и получает уровень A1–C2.
 
-Что делаем:
-- `migrations/00006_create_assessment.sql` — таблицы `assessment_sessions`, `assessment_answers`
-- `internal/domain/assessment/entity.go` — Session, Answer, SessionStatus
-- `internal/domain/assessment/repository.go` — интерфейс
-- `internal/domain/assessment/service.go` — логика:
-  - Начинает с вопросов уровня B1 (середина)
-  - При правильном ответе повышает уровень следующего вопроса
-  - При неправильном — понижает
-  - После 10-15 вопросов определяет уровень по статистике ответов
-- `internal/storage/postgres/assessment.go` — реализация
-- `queries/assessment.sql` — SQL-запросы
-- `internal/telegram/handler_assessment.go` — диалоговый хендлер:
-  - Показывает вопрос с inline-клавиатурой (варианты ответа)
-  - Принимает callback, записывает ответ, показывает следующий вопрос
-  - По завершении: устанавливает `user.level`, `user.onboarded = true`
-- Нужен начальный набор вопросов для оценки (seed data или захардкоженный)
+Что сделано:
+- [x] `migrations/00003_create_assessment.sql` — таблицы `assessment_sessions`, `assessment_answers`
+- [x] `internal/domain/assessment/entity.go` — Session, Answer, Question, SessionStatus
+- [x] `internal/domain/assessment/repository.go` — интерфейс: `CreateSession`, `GetActiveSession`, `UpdateSession`, `AddAnswer`, `CountAnswers`, `CountCorrectByLevel`
+- [x] `internal/domain/assessment/questions.go` — банк вопросов: 30 вопросов (5 на каждый уровень A1–C2)
+- [x] `internal/domain/assessment/service.go` — адаптивная логика:
+  - Начинает с B1, при правильном ответе повышает уровень, при неправильном — понижает
+  - После 10 вопросов определяет уровень (наивысший с ≥50% правильных)
+  - Возобновляет прерванную сессию
+- [x] `internal/storage/postgres/assessment.go` — реализация через sqlc
+- [x] `queries/assessment.sql` — SQL-запросы
+- [x] `internal/telegram/handler_assessment.go` — `/assess` + inline-клавиатура для ответов
+- [x] `internal/telegram/bot.go` — добавлен assessSvc, регистрация `/assess` и callback `assess:`
+- [x] `cmd/makeme/main.go` — подключён assessSvc
+- [x] `internal/domain/assessment/service_test.go` — unit-тесты: `adjustLevel`, `determineLevel`
+- [x] `internal/telegram/handler_assessment_test.go` — integration-тесты: старт, онбордженный, полный flow, возобновление
+- [x] `go build` и `go vet` без ошибок
 
 **Проверка:** `/start` → бот предлагает пройти оценку → 10-15 вопросов → бот сообщает определённый уровень → в БД обновлён `level` и `onboarded = true`.
 
