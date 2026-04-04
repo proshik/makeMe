@@ -11,8 +11,11 @@ import (
 	"time"
 
 	"makeMe/internal/config"
+	"makeMe/internal/domain/user"
 	"makeMe/internal/server"
 	"makeMe/internal/storage/postgres"
+	"makeMe/internal/storage/sqlc"
+	"makeMe/internal/telegram"
 )
 
 func main() {
@@ -40,9 +43,22 @@ func run(ctx context.Context) error {
 	defer pool.Close()
 	slog.Info("connected to database")
 
-	_ = pool // will be used for repositories in later phases
+	queries := sqlc.New(pool)
 
-	r := server.New()
+	userRepo := postgres.NewUserRepository(queries)
+	userSvc := user.NewService(userRepo)
+
+	tgBot, err := telegram.New(cfg.TelegramToken, userSvc)
+	if err != nil {
+		return err
+	}
+
+	if err := tgBot.SetWebhook(ctx, cfg.WebhookURL); err != nil {
+		return err
+	}
+	tgBot.StartWebhook(ctx)
+
+	r := server.New(tgBot)
 
 	srv := &http.Server{
 		Addr:         ":" + cfg.Port,

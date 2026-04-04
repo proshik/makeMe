@@ -5,9 +5,11 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	chimw "github.com/go-chi/chi/v5/middleware"
+
+	"makeMe/internal/telegram"
 )
 
-func New() *chi.Mux {
+func New(tgBot *telegram.Bot) *chi.Mux {
 	r := chi.NewRouter()
 
 	r.Use(chimw.Logger)
@@ -19,6 +21,8 @@ func New() *chi.Mux {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"status":"ok"}`))
 	})
+
+	r.Post("/webhook", tgBot.WebhookHandler())
 
 	return r
 }

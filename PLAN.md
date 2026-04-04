@@ -241,20 +241,23 @@ type Config struct {
 
 ---
 
-### Фаза 2 — Telegram-бот + регистрация пользователей
+### Фаза 2 — Telegram-бот + регистрация пользователей [DONE]
 
 **Цель:** бот отвечает на `/start` и создаёт пользователя в БД.
 
-Что делаем:
-- `internal/domain/user/entity.go` — сущность User, тип Level
-- `internal/domain/user/repository.go` — интерфейс: `Create`, `GetByTelegramID`
-- `internal/domain/user/service.go` — `Register(ctx, telegramID, username, firstName)` (идемпотентная)
-- `internal/storage/postgres/user.go` — реализация репозитория через sqlc
-- `queries/users.sql` — SQL-запросы: insert, select by telegram_id
-- `internal/telegram/bot.go` — инициализация `go-telegram/bot`, webhook, регистрация хендлеров
-- `internal/telegram/handler_start.go` — обработчик `/start`: вызывает `userService.Register`, отвечает приветствием
-- `internal/telegram/middleware.go` — middleware: по `telegram_id` достаёт/создаёт пользователя и кладёт в контекст
-- Подключение webhook-хендлера к chi-роутеру
+Что сделано:
+- [x] `internal/domain/user/entity.go` — сущность User, тип Level (A1-C2)
+- [x] `internal/domain/user/repository.go` — интерфейс: `Create`, `GetByTelegramID`, `GetByID`, `UpdateLevel`
+- [x] `internal/domain/user/service.go` — `Register` (идемпотентная), `GetByTelegramID`, `UpdateLevel`
+- [x] `internal/storage/postgres/user.go` — реализация репозитория через sqlc, маппинг sqlc→domain
+- [x] `internal/storage/sqlc/` — сгенерированный код sqlc
+- [x] `internal/telegram/bot.go` — инициализация `go-telegram/bot`, webhook handler, SetWebhook, StartWebhook
+- [x] `internal/telegram/handler_start.go` — обработчик `/start`: регистрирует пользователя, приветствие зависит от onboarded
+- [x] `internal/server/server.go` — добавлен маршрут `POST /webhook`
+- [x] `cmd/makeme/main.go` — подключены: sqlc queries → userRepo → userSvc → tgBot → server
+- [x] Зависимость `github.com/go-telegram/bot` установлена
+- [x] `go build` и `go vet` проходят без ошибок
+- [ ] `internal/telegram/middleware.go` — отложен (будет нужен когда появятся другие команды)
 
 **Проверка:** отправить `/start` боту → бот отвечает приветствием, в таблице `users` появилась строка.
 

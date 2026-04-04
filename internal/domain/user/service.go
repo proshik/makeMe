@@ -1,0 +1,41 @@
+package user
+
+import (
+	"context"
+	"errors"
+	"fmt"
+)
+
+var ErrNotFound = errors.New("user not found")
+
+type Service struct {
+	repo Repository
+}
+
+func NewService(repo Repository) *Service {
+	return &Service{repo: repo}
+}
+
+// Register creates a new user or updates an existing one (idempotent by telegram_id).
+func (s *Service) Register(ctx context.Context, telegramID int64, username, firstName string) (*User, error) {
+	u, err := s.repo.Create(ctx, telegramID, username, firstName)
+	if err != nil {
+		return nil, fmt.Errorf("register user: %w", err)
+	}
+	return u, nil
+}
+
+func (s *Service) GetByTelegramID(ctx context.Context, telegramID int64) (*User, error) {
+	u, err := s.repo.GetByTelegramID(ctx, telegramID)
+	if err != nil {
+		return nil, fmt.Errorf("get user by telegram id: %w", err)
+	}
+	return u, nil
+}
+
+func (s *Service) UpdateLevel(ctx context.Context, userID int64, level Level) error {
+	if err := s.repo.UpdateLevel(ctx, userID, level); err != nil {
+		return fmt.Errorf("update user level: %w", err)
+	}
+	return nil
+}
