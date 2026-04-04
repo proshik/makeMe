@@ -9,21 +9,25 @@ import (
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
 
+	"makeMe/internal/domain/group"
 	"makeMe/internal/domain/user"
 )
 
 type Bot struct {
-	bot     *bot.Bot
-	userSvc *user.Service
+	bot      *bot.Bot
+	userSvc  *user.Service
+	groupSvc *group.Service
 }
 
-func New(token string, userSvc *user.Service) (*Bot, error) {
+func New(token string, userSvc *user.Service, groupSvc *group.Service) (*Bot, error) {
 	b := &Bot{
-		userSvc: userSvc,
+		userSvc:  userSvc,
+		groupSvc: groupSvc,
 	}
 
 	opts := []bot.Option{
 		bot.WithDefaultHandler(b.defaultHandler),
+		bot.WithMiddlewares(b.userResolveMiddleware),
 	}
 
 	tgBot, err := bot.New(token, opts...)
@@ -32,6 +36,9 @@ func New(token string, userSvc *user.Service) (*Bot, error) {
 	}
 
 	tgBot.RegisterHandler(bot.HandlerTypeMessageText, "/start", bot.MatchTypeExact, b.handleStart)
+	tgBot.RegisterHandler(bot.HandlerTypeMessageText, "/newgroup ", bot.MatchTypePrefix, b.handleNewGroup)
+	tgBot.RegisterHandler(bot.HandlerTypeMessageText, "/join ", bot.MatchTypePrefix, b.handleJoin)
+	tgBot.RegisterHandler(bot.HandlerTypeMessageText, "/mygroups", bot.MatchTypeExact, b.handleMyGroups)
 
 	b.bot = tgBot
 	return b, nil

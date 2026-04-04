@@ -263,21 +263,22 @@ type Config struct {
 
 ---
 
-### Фаза 3 — Группы
+### Фаза 3 — Группы [DONE]
 
 **Цель:** пользователи могут создавать группы и вступать в них по инвайт-коду.
 
-Что делаем:
-- `migrations/00002_create_groups.sql` — таблицы `groups` и `memberships`
-- `internal/domain/group/entity.go` — Group, Membership, MemberRole
-- `internal/domain/group/repository.go` — интерфейс: `Create`, `AddMember`, `GetByInviteCode`, `ListByUser`
-- `internal/domain/group/service.go` — создание группы (генерация invite_code), вступление, список групп
-- `internal/storage/postgres/group.go` — реализация
-- `queries/groups.sql` — SQL-запросы
-- `internal/telegram/handler_group.go` — команды:
-  - `/newgroup Название` → создать группу, показать инвайт-код
-  - `/join ABCDEF` → вступить по коду
-  - `/mygroups` → список групп пользователя
+Что сделано:
+- [x] `migrations/00002_create_groups.sql` — таблицы `groups` и `memberships`
+- [x] `internal/domain/group/entity.go` — Group, Membership, MemberRole
+- [x] `internal/domain/group/repository.go` — интерфейс: `Create`, `AddMember`, `GetByInviteCode`, `ListByUser`, `IsMember`
+- [x] `internal/domain/group/service.go` — создание группы (генерация invite_code), вступление (с проверкой дублей), список групп
+- [x] `internal/storage/postgres/group.go` — реализация через sqlc
+- [x] `queries/groups.sql` — SQL-запросы
+- [x] `internal/telegram/handler_group.go` — `/newgroup`, `/join`, `/mygroups`
+- [x] `internal/telegram/middleware.go` — user-resolve middleware (Register + context)
+- [x] `internal/telegram/bot.go` — добавлен groupSvc, middleware, регистрация команд
+- [x] `cmd/makeme/main.go` — подключён groupSvc
+- [x] `go build` и `go vet` без ошибок
 
 **Проверка:** создать группу → получить инвайт-код → другой пользователь вступает по коду → оба видят группу в `/mygroups`.
 

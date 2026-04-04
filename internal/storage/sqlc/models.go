@@ -8,6 +8,22 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type Group struct {
+	ID         int64              `json:"id"`
+	Name       string             `json:"name"`
+	InviteCode string             `json:"invite_code"`
+	CreatedBy  int64              `json:"created_by"`
+	CreatedAt  pgtype.Timestamptz `json:"created_at"`
+}
+
+type Membership struct {
+	ID       int64              `json:"id"`
+	GroupID  int64              `json:"group_id"`
+	UserID   int64              `json:"user_id"`
+	Role     string             `json:"role"`
+	JoinedAt pgtype.Timestamptz `json:"joined_at"`
+}
+
 type User struct {
 	ID         int64              `json:"id"`
 	TelegramID int64              `json:"telegram_id"`

@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"makeMe/internal/config"
+	"makeMe/internal/domain/group"
 	"makeMe/internal/domain/user"
 	"makeMe/internal/server"
 	"makeMe/internal/storage/postgres"
@@ -48,7 +49,10 @@ func run(ctx context.Context) error {
 	userRepo := postgres.NewUserRepository(queries)
 	userSvc := user.NewService(userRepo)
 
-	tgBot, err := telegram.New(cfg.TelegramToken, userSvc)
+	groupRepo := postgres.NewGroupRepository(queries)
+	groupSvc := group.NewService(groupRepo)
+
+	tgBot, err := telegram.New(cfg.TelegramToken, userSvc, groupSvc)
 	if err != nil {
 		return err
 	}
