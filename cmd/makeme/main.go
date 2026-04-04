@@ -60,7 +60,7 @@ func run(ctx context.Context) error {
 	if err := tgBot.SetWebhook(ctx, cfg.WebhookURL); err != nil {
 		return err
 	}
-	tgBot.StartWebhook(ctx)
+	go tgBot.StartWebhook(ctx)
 
 	r := server.New(tgBot)
 

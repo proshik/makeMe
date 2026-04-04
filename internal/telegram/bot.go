@@ -19,7 +19,7 @@ type Bot struct {
 	groupSvc *group.Service
 }
 
-func New(token string, userSvc *user.Service, groupSvc *group.Service) (*Bot, error) {
+func New(token string, userSvc *user.Service, groupSvc *group.Service, extraOpts ...bot.Option) (*Bot, error) {
 	b := &Bot{
 		userSvc:  userSvc,
 		groupSvc: groupSvc,
@@ -29,6 +29,7 @@ func New(token string, userSvc *user.Service, groupSvc *group.Service) (*Bot, er
 		bot.WithDefaultHandler(b.defaultHandler),
 		bot.WithMiddlewares(b.userResolveMiddleware),
 	}
+	opts = append(opts, extraOpts...)
 
 	tgBot, err := bot.New(token, opts...)
 	if err != nil {
