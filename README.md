@@ -43,6 +43,60 @@ User A                              User B
   │  "1. English Club (код: a1b2c3d4)"│  "1. English Club (код: a1b2c3d4)"
 ```
 
+## Database Schema
+
+```
+users
+├── id              BIGSERIAL PK
+├── telegram_id     BIGINT UNIQUE NOT NULL
+├── username        TEXT
+├── first_name      TEXT NOT NULL
+├── level           TEXT NOT NULL  (A1/A2/B1/B2/C1/C2)
+├── onboarded       BOOLEAN NOT NULL
+├── created_at      TIMESTAMPTZ
+└── updated_at      TIMESTAMPTZ
+
+groups
+├── id              BIGSERIAL PK
+├── name            TEXT NOT NULL
+├── invite_code     TEXT UNIQUE NOT NULL
+├── created_by      BIGINT FK → users(id)
+└── created_at      TIMESTAMPTZ
+
+memberships
+├── id              BIGSERIAL PK
+├── group_id        BIGINT FK → groups(id) ON DELETE CASCADE
+├── user_id         BIGINT FK → users(id) ON DELETE CASCADE
+├── role            TEXT NOT NULL  (owner/member)
+├── joined_at       TIMESTAMPTZ
+└── UNIQUE(group_id, user_id)
+
+assessment_sessions
+├── id              BIGSERIAL PK
+├── user_id         BIGINT FK → users(id)
+├── status          TEXT NOT NULL  (in_progress/completed)
+├── current_level   TEXT NOT NULL  (A1–C2)
+├── determined_level TEXT          (A1–C2, NULL until completed)
+├── created_at      TIMESTAMPTZ
+└── completed_at    TIMESTAMPTZ
+
+assessment_answers
+├── id              BIGSERIAL PK
+├── session_id      BIGINT FK → assessment_sessions(id) ON DELETE CASCADE
+├── question_level  TEXT NOT NULL  (A1–C2)
+├── question_text   TEXT NOT NULL
+├── options         JSONB NOT NULL
+├── correct_option  INT NOT NULL
+├── user_option     INT NOT NULL
+├── correct         BOOLEAN NOT NULL
+└── created_at      TIMESTAMPTZ
+```
+
+Relations:
+- `users` 1 ←→ N `memberships` N ←→ 1 `groups`
+- `users` 1 ←→ N `assessment_sessions` 1 ←→ N `assessment_answers`
+- `groups.created_by` → `users.id`
+
 ## Environment Variables
 
 Copy `.env.example` to `.env` and fill in the values:

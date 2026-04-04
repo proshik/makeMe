@@ -62,7 +62,8 @@ Tasks are generated daily and differ each day.
 ## Workflow Rules
 
 ### Progress Tracking
-- After completing any work, always update `PLAN.md` — mark completed items with `[x]` and phase with `[DONE]`
+- After completing any work, always update `PLAN.md` — mark each completed item with `[x]` and phase header with `[DONE]`
+- After completing any work, always update `README.md` — add new commands, update the database schema, update the typical flow diagram
 - If there is no plan file, mention this to the user and suggest creating one
 
 ### Git & Commits
