@@ -9,20 +9,23 @@ import (
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
 
+	"makeMe/internal/domain/assessment"
 	"makeMe/internal/domain/group"
 	"makeMe/internal/domain/user"
 )
 
 type Bot struct {
-	bot      *bot.Bot
-	userSvc  *user.Service
-	groupSvc *group.Service
+	bot       *bot.Bot
+	userSvc   *user.Service
+	groupSvc  *group.Service
+	assessSvc *assessment.Service
 }
 
-func New(token string, userSvc *user.Service, groupSvc *group.Service, extraOpts ...bot.Option) (*Bot, error) {
+func New(token string, userSvc *user.Service, groupSvc *group.Service, assessSvc *assessment.Service, extraOpts ...bot.Option) (*Bot, error) {
 	b := &Bot{
-		userSvc:  userSvc,
-		groupSvc: groupSvc,
+		userSvc:   userSvc,
+		groupSvc:  groupSvc,
+		assessSvc: assessSvc,
 	}
 
 	opts := []bot.Option{
@@ -37,9 +40,11 @@ func New(token string, userSvc *user.Service, groupSvc *group.Service, extraOpts
 	}
 
 	tgBot.RegisterHandler(bot.HandlerTypeMessageText, "/start", bot.MatchTypeExact, b.handleStart)
+	tgBot.RegisterHandler(bot.HandlerTypeMessageText, "/assess", bot.MatchTypeExact, b.handleAssess)
 	tgBot.RegisterHandler(bot.HandlerTypeMessageText, "/newgroup ", bot.MatchTypePrefix, b.handleNewGroup)
 	tgBot.RegisterHandler(bot.HandlerTypeMessageText, "/join ", bot.MatchTypePrefix, b.handleJoin)
 	tgBot.RegisterHandler(bot.HandlerTypeMessageText, "/mygroups", bot.MatchTypeExact, b.handleMyGroups)
+	tgBot.RegisterHandler(bot.HandlerTypeCallbackQueryData, "assess:", bot.MatchTypePrefix, b.handleAssessCallback)
 
 	b.bot = tgBot
 	return b, nil

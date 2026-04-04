@@ -25,6 +25,7 @@ import (
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 
+	"makeMe/internal/domain/assessment"
 	"makeMe/internal/domain/group"
 	"makeMe/internal/domain/user"
 	"makeMe/internal/storage/postgres"
@@ -37,6 +38,7 @@ type testEnv struct {
 	queries     *sqlc.Queries
 	userSvc     *user.Service
 	groupSvc    *group.Service
+	assessSvc   *assessment.Service
 	tgBot       *telegram.Bot
 	webhookURL  string
 	wiremockURL string
@@ -83,6 +85,8 @@ func setupTestEnv(t *testing.T) *testEnv {
 	stubGetMe(t, wiremockURL)
 	// Stub sendMessage (called by all handlers)
 	stubSendMessage(t, wiremockURL)
+	// Stub answerCallbackQuery (called by callback handlers)
+	stubAnswerCallbackQuery(t, wiremockURL)
 
 	// Create services
 	queries := sqlc.New(pool)
@@ -93,8 +97,11 @@ func setupTestEnv(t *testing.T) *testEnv {
 	groupRepo := postgres.NewGroupRepository(queries)
 	groupSvc := group.NewService(groupRepo)
 
+	assessRepo := postgres.NewAssessmentRepository(queries)
+	assessSvc := assessment.NewService(assessRepo, userSvc)
+
 	// Create bot with WireMock as Telegram API
-	tgBot, err := telegram.New("test-token", userSvc, groupSvc,
+	tgBot, err := telegram.New("test-token", userSvc, groupSvc, assessSvc,
 		bot.WithServerURL(wiremockURL),
 	)
 	require.NoError(t, err)
@@ -112,6 +119,7 @@ func setupTestEnv(t *testing.T) *testEnv {
 		queries:     queries,
 		userSvc:     userSvc,
 		groupSvc:    groupSvc,
+		assessSvc:   assessSvc,
 		tgBot:       tgBot,
 		webhookURL:  srv.URL + "/webhook",
 		wiremockURL: wiremockURL,
@@ -151,6 +159,12 @@ func stubSendMessage(t *testing.T, wiremockURL string) {
 	t.Helper()
 	body := `{"ok":true,"result":{"message_id":1,"date":0,"chat":{"id":0,"type":"private"}}}`
 	stubAny(t, wiremockURL, "/bottest-token/sendMessage", body)
+}
+
+func stubAnswerCallbackQuery(t *testing.T, wiremockURL string) {
+	t.Helper()
+	body := `{"ok":true,"result":true}`
+	stubAny(t, wiremockURL, "/bottest-token/answerCallbackQuery", body)
 }
 
 func stubJSON(t *testing.T, wiremockURL, urlPath, responseBody string) {
@@ -242,6 +256,30 @@ func (e *testEnv) resetWireMock(t *testing.T) {
 
 type wiremockRequest struct {
 	Body string `json:"body"`
+}
+
+// makeCallbackUpdate creates a models.Update simulating an inline keyboard callback.
+func makeCallbackUpdate(updateID int64, userID int64, chatID int64, username, firstName, callbackData string) models.Update {
+	return models.Update{
+		ID: updateID,
+		CallbackQuery: &models.CallbackQuery{
+			ID: fmt.Sprintf("cb_%d", updateID),
+			From: models.User{
+				ID:        userID,
+				Username:  username,
+				FirstName: firstName,
+				IsBot:     false,
+			},
+			Message: models.MaybeInaccessibleMessage{
+				Message: &models.Message{
+					ID:   1,
+					Date: int(time.Now().Unix()),
+					Chat: models.Chat{ID: chatID, Type: "private"},
+				},
+			},
+			Data: callbackData,
+		},
+	}
 }
 
 // makeTextUpdate creates a models.Update simulating a text message from a user.

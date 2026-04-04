@@ -8,6 +8,28 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type AssessmentAnswer struct {
+	ID            int64              `json:"id"`
+	SessionID     int64              `json:"session_id"`
+	QuestionLevel string             `json:"question_level"`
+	QuestionText  string             `json:"question_text"`
+	Options       []byte             `json:"options"`
+	CorrectOption int32              `json:"correct_option"`
+	UserOption    int32              `json:"user_option"`
+	Correct       bool               `json:"correct"`
+	CreatedAt     pgtype.Timestamptz `json:"created_at"`
+}
+
+type AssessmentSession struct {
+	ID              int64              `json:"id"`
+	UserID          int64              `json:"user_id"`
+	Status          string             `json:"status"`
+	CurrentLevel    string             `json:"current_level"`
+	DeterminedLevel pgtype.Text        `json:"determined_level"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+	CompletedAt     pgtype.Timestamptz `json:"completed_at"`
+}
+
 type Group struct {
 	ID         int64              `json:"id"`
 	Name       string             `json:"name"`

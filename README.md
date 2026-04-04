@@ -11,6 +11,7 @@ Go, PostgreSQL (pgx/sqlc/goose), chi, [go-telegram/bot](https://github.com/go-te
 | Command | Description |
 |---|---|
 | `/start` | Register and see available commands. Returning users see their current level. |
+| `/assess` | Take the level assessment test (10 questions, adaptive difficulty A1–C2). |
 | `/newgroup Название` | Create a new group. Returns an invite code to share with friends. |
 | `/join КОД` | Join a group by invite code. |
 | `/mygroups` | List all groups you belong to. |
@@ -22,6 +23,12 @@ User A                              User B
   │                                   │
   ├─ /start                           ├─ /start
   │  "Привет, Alice! ..."             │  "Привет, Bob! ..."
+  │                                   │
+  ├─ /assess                          ├─ /assess
+  │  "Вопрос 1/10: She ___ a student" │  (10 adaptive questions)
+  │  [is] [are] [am] [be]             │  ...
+  │  ...10 questions...               │  "Тест завершён! Уровень: B1"
+  │  "Тест завершён! Уровень: B2"     │
   │                                   │
   ├─ /newgroup English Club           │
   │  "Группа «English Club» создана!" │
