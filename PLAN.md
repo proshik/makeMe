@@ -343,6 +343,29 @@ type Config struct {
 
 ---
 
+### Фаза 5.5 — Банк слов + транскрипция + аудио [DONE]
+
+**Цель:** пополненный банк слов (~900) с поддержкой транскрипции и произношения.
+
+Что сделано:
+- [x] `data/words.json` — ~900 слов (~150 на каждый уровень A1–C2) на базе Oxford 3000
+- [x] `cmd/seed/main.go` — CLI-утилита для загрузки слов из JSON с upsert-поддержкой
+- [x] `Makefile` — цель `seed-words`
+- [x] `migrations/00007_words_unique_english_level.sql` — UNIQUE индекс (english, level) для upsert
+- [x] `migrations/00008_add_word_transcription.sql` — колонки `transcription` и `audio_url` в `words`
+- [x] `queries/srs.sql` — запрос `UpdateWordAudio`, обновлены SELECT (включают transcription, audio_url)
+- [x] `internal/storage/sqlc/models.go` — поля `Transcription`, `AudioURL` в `Word`
+- [x] `internal/storage/sqlc/srs.sql.go` — обновлён + добавлен `UpdateWordAudio`
+- [x] `internal/domain/srs/entity.go` — поля `Transcription`, `AudioURL` в `Word`
+- [x] `internal/domain/srs/repository.go` — метод `UpdateWordAudio`
+- [x] `internal/storage/postgres/srs.go` — реализация `UpdateWordAudio`, маппинг новых полей
+- [x] `internal/dictionary/client.go` — клиент Free Dictionary API (IPA + audio URL, без API-ключа)
+- [x] `internal/domain/task/vocab.go` — транскрипция в промпте слова, audio_url в метаданных
+- [x] `internal/telegram/handler_task.go` — кнопка «🔊 Послушать» + обработчик `word_audio:` callback (ленивая загрузка + кэш)
+- [x] `internal/telegram/bot.go` — добавлены `srsRepo`, `dictClient`, зарегистрирован `word_audio:` callback
+
+---
+
 ### Фаза 6 — Баллы и таблицы лидеров
 
 **Цель:** подсчёт баллов с нормализацией и лидерборды по группам.

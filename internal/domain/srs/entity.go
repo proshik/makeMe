@@ -7,11 +7,13 @@ import (
 )
 
 type Word struct {
-	ID      int64
-	English string
-	Russian string
-	Level   user.Level
-	Example string
+	ID            int64
+	English       string
+	Russian       string
+	Level         user.Level
+	Example       string
+	Transcription string
+	AudioURL      string
 }
 
 type ReviewCard struct {

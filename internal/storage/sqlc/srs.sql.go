@@ -53,7 +53,7 @@ func (q *Queries) GetDueCards(ctx context.Context, arg GetDueCardsParams) ([]Rev
 }
 
 const getNewWordsForUser = `-- name: GetNewWordsForUser :many
-SELECT w.id, w.english, w.russian, w.level, w.example FROM words w
+SELECT w.id, w.english, w.russian, w.level, w.example, w.transcription, w.audio_url FROM words w
 LEFT JOIN review_cards rc ON rc.word_id = w.id AND rc.user_id = $1
 WHERE w.level = $2 AND rc.id IS NULL
 ORDER BY random()
@@ -81,6 +81,8 @@ func (q *Queries) GetNewWordsForUser(ctx context.Context, arg GetNewWordsForUser
 			&i.Russian,
 			&i.Level,
 			&i.Example,
+			&i.Transcription,
+			&i.AudioURL,
 		); err != nil {
 			return nil, err
 		}
@@ -93,7 +95,7 @@ func (q *Queries) GetNewWordsForUser(ctx context.Context, arg GetNewWordsForUser
 }
 
 const getWordByID = `-- name: GetWordByID :one
-SELECT id, english, russian, level, example FROM words WHERE id = $1
+SELECT id, english, russian, level, example, transcription, audio_url FROM words WHERE id = $1
 `
 
 func (q *Queries) GetWordByID(ctx context.Context, id int64) (Word, error) {
@@ -105,12 +107,14 @@ func (q *Queries) GetWordByID(ctx context.Context, id int64) (Word, error) {
 		&i.Russian,
 		&i.Level,
 		&i.Example,
+		&i.Transcription,
+		&i.AudioURL,
 	)
 	return i, err
 }
 
 const getWordsByLevel = `-- name: GetWordsByLevel :many
-SELECT id, english, russian, level, example FROM words WHERE level = $1 ORDER BY random() LIMIT $2
+SELECT id, english, russian, level, example, transcription, audio_url FROM words WHERE level = $1 ORDER BY random() LIMIT $2
 `
 
 type GetWordsByLevelParams struct {
@@ -133,6 +137,8 @@ func (q *Queries) GetWordsByLevel(ctx context.Context, arg GetWordsByLevelParams
 			&i.Russian,
 			&i.Level,
 			&i.Example,
+			&i.Transcription,
+			&i.AudioURL,
 		); err != nil {
 			return nil, err
 		}
@@ -142,6 +148,21 @@ func (q *Queries) GetWordsByLevel(ctx context.Context, arg GetWordsByLevelParams
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateWordAudio = `-- name: UpdateWordAudio :exec
+UPDATE words SET transcription = $2, audio_url = $3 WHERE id = $1
+`
+
+type UpdateWordAudioParams struct {
+	ID            int64  `json:"id"`
+	Transcription string `json:"transcription"`
+	AudioURL      string `json:"audio_url"`
+}
+
+func (q *Queries) UpdateWordAudio(ctx context.Context, arg UpdateWordAudioParams) error {
+	_, err := q.db.Exec(ctx, updateWordAudio, arg.ID, arg.Transcription, arg.AudioURL)
+	return err
 }
 
 const upsertReviewCard = `-- name: UpsertReviewCard :exec
@@ -172,6 +193,34 @@ func (q *Queries) UpsertReviewCard(ctx context.Context, arg UpsertReviewCardPara
 		arg.IntervalDays,
 		arg.Repetitions,
 		arg.NextReviewDate,
+	)
+	return err
+}
+
+const upsertWord = `-- name: UpsertWord :exec
+INSERT INTO words (english, russian, level, example, transcription)
+VALUES ($1, $2, $3, $4, $5)
+ON CONFLICT (english, level) DO UPDATE
+    SET russian = EXCLUDED.russian,
+        example = EXCLUDED.example,
+        transcription = EXCLUDED.transcription
+`
+
+type UpsertWordParams struct {
+	English       string `json:"english"`
+	Russian       string `json:"russian"`
+	Level         string `json:"level"`
+	Example       string `json:"example"`
+	Transcription string `json:"transcription"`
+}
+
+func (q *Queries) UpsertWord(ctx context.Context, arg UpsertWordParams) error {
+	_, err := q.db.Exec(ctx, upsertWord,
+		arg.English,
+		arg.Russian,
+		arg.Level,
+		arg.Example,
+		arg.Transcription,
 	)
 	return err
 }

@@ -25,6 +25,7 @@ import (
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 
+	"makeMe/internal/dictionary"
 	"makeMe/internal/domain/assessment"
 	"makeMe/internal/domain/group"
 	"makeMe/internal/domain/task"
@@ -108,8 +109,10 @@ func setupTestEnv(t *testing.T) *testEnv {
 	grammarGen := task.NewGrammarGenerator()
 	taskSvc := task.NewService(taskRepo, srsRepo, vocabGen, grammarGen)
 
+	dictClient := dictionary.NewClient()
+
 	// Create bot with WireMock as Telegram API
-	tgBot, err := telegram.New("test-token", userSvc, groupSvc, assessSvc, taskSvc,
+	tgBot, err := telegram.New("test-token", userSvc, groupSvc, assessSvc, taskSvc, srsRepo, dictClient,
 		bot.WithServerURL(wiremockURL),
 	)
 	require.NoError(t, err)

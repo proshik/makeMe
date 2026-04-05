@@ -88,8 +88,11 @@ func (g *VocabGenerator) wordToTask(ctx context.Context, word *srs.Word, level u
 	})
 
 	prompt := word.English
+	if word.Transcription != "" {
+		prompt = fmt.Sprintf("%s  %s", word.English, word.Transcription)
+	}
 	if word.Example != "" {
-		prompt = fmt.Sprintf("%s\n\n_%s_", word.English, word.Example)
+		prompt = fmt.Sprintf("%s\n\n_%s_", prompt, word.Example)
 	}
 
 	return Task{
@@ -99,7 +102,8 @@ func (g *VocabGenerator) wordToTask(ctx context.Context, word *srs.Word, level u
 		Options: options,
 		Answer:  word.Russian,
 		Metadata: map[string]any{
-			"word_id": word.ID,
+			"word_id":   word.ID,
+			"audio_url": word.AudioURL,
 		},
 	}, nil
 }

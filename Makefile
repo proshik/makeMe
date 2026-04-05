@@ -1,4 +1,4 @@
-.PHONY: run build migrate-up migrate-down migrate-create sqlc
+.PHONY: run build migrate-up migrate-down migrate-create sqlc seed-words
 
 DATABASE_URL ?= postgres://makeme:makeme@localhost:5432/makeme?sslmode=disable
 
@@ -19,3 +19,6 @@ migrate-create:
 
 sqlc:
 	sqlc generate
+
+seed-words:
+	go run ./cmd/seed data/words.json

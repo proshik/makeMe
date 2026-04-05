@@ -1,0 +1,6281 @@
+[
+  {
+    "english": "hello",
+    "russian": "привет",
+    "level": "A1",
+    "example": "Hello, how are you?",
+    "transcription": "/həˈləʊ/"
+  },
+  {
+    "english": "goodbye",
+    "russian": "до свидания",
+    "level": "A1",
+    "example": "Goodbye, see you tomorrow.",
+    "transcription": "/ɡədˈbaɪ/"
+  },
+  {
+    "english": "yes",
+    "russian": "да",
+    "level": "A1",
+    "example": "Yes, I agree.",
+    "transcription": "/jɛs/"
+  },
+  {
+    "english": "no",
+    "russian": "нет",
+    "level": "A1",
+    "example": "No, thank you.",
+    "transcription": "/nəʊ/"
+  },
+  {
+    "english": "please",
+    "russian": "пожалуйста",
+    "level": "A1",
+    "example": "Please sit down.",
+    "transcription": "/pliːz/"
+  },
+  {
+    "english": "thank you",
+    "russian": "спасибо",
+    "level": "A1",
+    "example": "Thank you for your help.",
+    "transcription": "/ˈθæŋk ˌju/"
+  },
+  {
+    "english": "sorry",
+    "russian": "извините",
+    "level": "A1",
+    "example": "Sorry, I'm late.",
+    "transcription": "/ˈsɔɹi/"
+  },
+  {
+    "english": "name",
+    "russian": "имя",
+    "level": "A1",
+    "example": "My name is Anna.",
+    "transcription": "/neɪm/"
+  },
+  {
+    "english": "man",
+    "russian": "мужчина",
+    "level": "A1",
+    "example": "The man is tall.",
+    "transcription": "[mɛn]"
+  },
+  {
+    "english": "woman",
+    "russian": "женщина",
+    "level": "A1",
+    "example": "The woman is reading.",
+    "transcription": "/ˈwʊmɘn/"
+  },
+  {
+    "english": "boy",
+    "russian": "мальчик",
+    "level": "A1",
+    "example": "The boy is playing.",
+    "transcription": "/bɔːə/"
+  },
+  {
+    "english": "girl",
+    "russian": "девочка",
+    "level": "A1",
+    "example": "The girl is singing.",
+    "transcription": "/ɡɵːl/"
+  },
+  {
+    "english": "child",
+    "russian": "ребёнок",
+    "level": "A1",
+    "example": "The child is sleeping.",
+    "transcription": "/t͡ʃaɪld/"
+  },
+  {
+    "english": "friend",
+    "russian": "друг",
+    "level": "A1",
+    "example": "She is my best friend.",
+    "transcription": "/fɹɛnd/"
+  },
+  {
+    "english": "family",
+    "russian": "семья",
+    "level": "A1",
+    "example": "I love my family.",
+    "transcription": "/ˈfɛm(ɘ)li/"
+  },
+  {
+    "english": "mother",
+    "russian": "мать",
+    "level": "A1",
+    "example": "My mother cooks well.",
+    "transcription": "/ˈmʌðə(ɹ)/"
+  },
+  {
+    "english": "father",
+    "russian": "отец",
+    "level": "A1",
+    "example": "My father works in a bank.",
+    "transcription": "/ˈfaːðə/"
+  },
+  {
+    "english": "brother",
+    "russian": "брат",
+    "level": "A1",
+    "example": "I have one brother.",
+    "transcription": "/ˈbɹɐðɘ(ɹ)/"
+  },
+  {
+    "english": "sister",
+    "russian": "сестра",
+    "level": "A1",
+    "example": "My sister is older than me.",
+    "transcription": "/ˈsɪs.tə/"
+  },
+  {
+    "english": "house",
+    "russian": "дом",
+    "level": "A1",
+    "example": "This is my house.",
+    "transcription": "/hʌʊs/"
+  },
+  {
+    "english": "room",
+    "russian": "комната",
+    "level": "A1",
+    "example": "My room is big.",
+    "transcription": "/ɹuːm/"
+  },
+  {
+    "english": "door",
+    "russian": "дверь",
+    "level": "A1",
+    "example": "Please close the door.",
+    "transcription": "/dɔː/"
+  },
+  {
+    "english": "window",
+    "russian": "окно",
+    "level": "A1",
+    "example": "Open the window.",
+    "transcription": "/ˈwɪndəʊ/"
+  },
+  {
+    "english": "table",
+    "russian": "стол",
+    "level": "A1",
+    "example": "The book is on the table.",
+    "transcription": "/ˈteɪbəl/"
+  },
+  {
+    "english": "chair",
+    "russian": "стул",
+    "level": "A1",
+    "example": "Sit on the chair.",
+    "transcription": "/t͡ʃɛə(ɹ)/"
+  },
+  {
+    "english": "bed",
+    "russian": "кровать",
+    "level": "A1",
+    "example": "I go to bed at ten.",
+    "transcription": "/bed/"
+  },
+  {
+    "english": "food",
+    "russian": "еда",
+    "level": "A1",
+    "example": "The food is delicious.",
+    "transcription": "/fuːd/"
+  },
+  {
+    "english": "water",
+    "russian": "вода",
+    "level": "A1",
+    "example": "I drink water every day.",
+    "transcription": "/ˈwoːtə/"
+  },
+  {
+    "english": "bread",
+    "russian": "хлеб",
+    "level": "A1",
+    "example": "I buy bread every morning.",
+    "transcription": "/bɹeːd/"
+  },
+  {
+    "english": "milk",
+    "russian": "молоко",
+    "level": "A1",
+    "example": "Children drink milk.",
+    "transcription": "[mɛlk]"
+  },
+  {
+    "english": "tea",
+    "russian": "чай",
+    "level": "A1",
+    "example": "Would you like some tea?",
+    "transcription": "/tiː/"
+  },
+  {
+    "english": "coffee",
+    "russian": "кофе",
+    "level": "A1",
+    "example": "I drink coffee in the morning.",
+    "transcription": "/ˈkɑ.fi/"
+  },
+  {
+    "english": "apple",
+    "russian": "яблоко",
+    "level": "A1",
+    "example": "I eat an apple every day.",
+    "transcription": "/ˈæp.əl/"
+  },
+  {
+    "english": "cat",
+    "russian": "кот",
+    "level": "A1",
+    "example": "The cat is sleeping.",
+    "transcription": "/kat/"
+  },
+  {
+    "english": "dog",
+    "russian": "собака",
+    "level": "A1",
+    "example": "I have a dog.",
+    "transcription": "/dɑɡ/"
+  },
+  {
+    "english": "bird",
+    "russian": "птица",
+    "level": "A1",
+    "example": "A bird is singing.",
+    "transcription": "/bɜd/"
+  },
+  {
+    "english": "fish",
+    "russian": "рыба",
+    "level": "A1",
+    "example": "I like to eat fish.",
+    "transcription": "/fɪʃ/"
+  },
+  {
+    "english": "book",
+    "russian": "книга",
+    "level": "A1",
+    "example": "I read a book.",
+    "transcription": "/buːk/"
+  },
+  {
+    "english": "pen",
+    "russian": "ручка",
+    "level": "A1",
+    "example": "Give me a pen.",
+    "transcription": "/pɛn/"
+  },
+  {
+    "english": "school",
+    "russian": "школа",
+    "level": "A1",
+    "example": "I go to school.",
+    "transcription": "/skuːl/"
+  },
+  {
+    "english": "teacher",
+    "russian": "учитель",
+    "level": "A1",
+    "example": "The teacher is kind.",
+    "transcription": "/ˈtiːt͡ʃə/"
+  },
+  {
+    "english": "student",
+    "russian": "студент",
+    "level": "A1",
+    "example": "She is a good student.",
+    "transcription": "/ˈstjuː.dənt/"
+  },
+  {
+    "english": "city",
+    "russian": "город",
+    "level": "A1",
+    "example": "Moscow is a big city.",
+    "transcription": "/sɪtɪ/"
+  },
+  {
+    "english": "street",
+    "russian": "улица",
+    "level": "A1",
+    "example": "I live on this street.",
+    "transcription": "/stɹiːt/"
+  },
+  {
+    "english": "car",
+    "russian": "машина",
+    "level": "A1",
+    "example": "He has a red car.",
+    "transcription": "/kɑː/"
+  },
+  {
+    "english": "bus",
+    "russian": "автобус",
+    "level": "A1",
+    "example": "I take the bus to work.",
+    "transcription": "/bɐs/"
+  },
+  {
+    "english": "time",
+    "russian": "время",
+    "level": "A1",
+    "example": "What time is it?",
+    "transcription": "/tɑem/"
+  },
+  {
+    "english": "day",
+    "russian": "день",
+    "level": "A1",
+    "example": "It is a beautiful day.",
+    "transcription": "/deɪ/"
+  },
+  {
+    "english": "night",
+    "russian": "ночь",
+    "level": "A1",
+    "example": "Good night!",
+    "transcription": "/naɪt/"
+  },
+  {
+    "english": "morning",
+    "russian": "утро",
+    "level": "A1",
+    "example": "Good morning!",
+    "transcription": "/ˈmɔːnɪŋ/"
+  },
+  {
+    "english": "week",
+    "russian": "неделя",
+    "level": "A1",
+    "example": "I work five days a week.",
+    "transcription": "/wiːk/"
+  },
+  {
+    "english": "year",
+    "russian": "год",
+    "level": "A1",
+    "example": "I am twenty years old.",
+    "transcription": "/jɪə/"
+  },
+  {
+    "english": "today",
+    "russian": "сегодня",
+    "level": "A1",
+    "example": "Today is Monday.",
+    "transcription": "/təˈdeɪ/"
+  },
+  {
+    "english": "tomorrow",
+    "russian": "завтра",
+    "level": "A1",
+    "example": "See you tomorrow.",
+    "transcription": "/təˈmɔɹoʊ/"
+  },
+  {
+    "english": "yesterday",
+    "russian": "вчера",
+    "level": "A1",
+    "example": "I was busy yesterday.",
+    "transcription": "/ˈjɛstədeɪ/"
+  },
+  {
+    "english": "big",
+    "russian": "большой",
+    "level": "A1",
+    "example": "This is a big house.",
+    "transcription": "/bɪɡ/"
+  },
+  {
+    "english": "small",
+    "russian": "маленький",
+    "level": "A1",
+    "example": "I have a small cat.",
+    "transcription": "/smoːl/"
+  },
+  {
+    "english": "good",
+    "russian": "хороший",
+    "level": "A1",
+    "example": "This is a good idea.",
+    "transcription": "/ɡʊ(d)/"
+  },
+  {
+    "english": "bad",
+    "russian": "плохой",
+    "level": "A1",
+    "example": "The weather is bad today.",
+    "transcription": "/bæːd/"
+  },
+  {
+    "english": "new",
+    "russian": "новый",
+    "level": "A1",
+    "example": "I have a new phone.",
+    "transcription": "/njʉː/"
+  },
+  {
+    "english": "old",
+    "russian": "старый",
+    "level": "A1",
+    "example": "This is an old building.",
+    "transcription": "/ˈɒʊld/"
+  },
+  {
+    "english": "hot",
+    "russian": "горячий",
+    "level": "A1",
+    "example": "The tea is hot.",
+    "transcription": "/hɒt/"
+  },
+  {
+    "english": "cold",
+    "russian": "холодный",
+    "level": "A1",
+    "example": "It is cold outside.",
+    "transcription": "/kɔʊld/"
+  },
+  {
+    "english": "happy",
+    "russian": "счастливый",
+    "level": "A1",
+    "example": "I am happy today.",
+    "transcription": "/ˈhæpiː/"
+  },
+  {
+    "english": "red",
+    "russian": "красный",
+    "level": "A1",
+    "example": "I have a red bag.",
+    "transcription": "/ɹɛd/"
+  },
+  {
+    "english": "blue",
+    "russian": "синий",
+    "level": "A1",
+    "example": "The sky is blue.",
+    "transcription": "/bluː/"
+  },
+  {
+    "english": "green",
+    "russian": "зелёный",
+    "level": "A1",
+    "example": "The grass is green.",
+    "transcription": "/ɡɹiːn/"
+  },
+  {
+    "english": "white",
+    "russian": "белый",
+    "level": "A1",
+    "example": "Snow is white.",
+    "transcription": "/waɪt/"
+  },
+  {
+    "english": "black",
+    "russian": "чёрный",
+    "level": "A1",
+    "example": "I have a black cat.",
+    "transcription": "/blak/"
+  },
+  {
+    "english": "number",
+    "russian": "число",
+    "level": "A1",
+    "example": "What is your phone number?",
+    "transcription": "/ˈnʌmbə/"
+  },
+  {
+    "english": "one",
+    "russian": "один",
+    "level": "A1",
+    "example": "I have one brother.",
+    "transcription": "/wan/"
+  },
+  {
+    "english": "two",
+    "russian": "два",
+    "level": "A1",
+    "example": "I have two sisters.",
+    "transcription": "/tuː/"
+  },
+  {
+    "english": "money",
+    "russian": "деньги",
+    "level": "A1",
+    "example": "I have no money.",
+    "transcription": "/ˈmʌni/"
+  },
+  {
+    "english": "shop",
+    "russian": "магазин",
+    "level": "A1",
+    "example": "The shop is closed.",
+    "transcription": "/ʃɒp/"
+  },
+  {
+    "english": "eat",
+    "russian": "есть",
+    "level": "A1",
+    "example": "I eat breakfast at eight.",
+    "transcription": "/iːt/"
+  },
+  {
+    "english": "drink",
+    "russian": "пить",
+    "level": "A1",
+    "example": "I drink water.",
+    "transcription": "/dɹɪŋk/"
+  },
+  {
+    "english": "go",
+    "russian": "идти",
+    "level": "A1",
+    "example": "I go to school.",
+    "transcription": "/ɡəʉ/"
+  },
+  {
+    "english": "come",
+    "russian": "приходить",
+    "level": "A1",
+    "example": "Come here, please.",
+    "transcription": "/kʌm/"
+  },
+  {
+    "english": "see",
+    "russian": "видеть",
+    "level": "A1",
+    "example": "I can see the mountains.",
+    "transcription": "/siː/"
+  },
+  {
+    "english": "hear",
+    "russian": "слышать",
+    "level": "A1",
+    "example": "I can hear music.",
+    "transcription": "/hɪə(ɹ)/"
+  },
+  {
+    "english": "know",
+    "russian": "знать",
+    "level": "A1",
+    "example": "I know this word.",
+    "transcription": "/nəʊ/"
+  },
+  {
+    "english": "want",
+    "russian": "хотеть",
+    "level": "A1",
+    "example": "I want to go home.",
+    "transcription": "/wɔnt/"
+  },
+  {
+    "english": "like",
+    "russian": "нравиться",
+    "level": "A1",
+    "example": "I like ice cream.",
+    "transcription": "/laɪk/"
+  },
+  {
+    "english": "love",
+    "russian": "любить",
+    "level": "A1",
+    "example": "I love my family.",
+    "transcription": "/lʊv/"
+  },
+  {
+    "english": "work",
+    "russian": "работать",
+    "level": "A1",
+    "example": "I work in an office.",
+    "transcription": "/wɜːk/"
+  },
+  {
+    "english": "live",
+    "russian": "жить",
+    "level": "A1",
+    "example": "I live in Moscow.",
+    "transcription": "/lɪv/"
+  },
+  {
+    "english": "speak",
+    "russian": "говорить",
+    "level": "A1",
+    "example": "I speak English.",
+    "transcription": "/spiːk/"
+  },
+  {
+    "english": "read",
+    "russian": "читать",
+    "level": "A1",
+    "example": "I read books every day.",
+    "transcription": "/ɹiːd/"
+  },
+  {
+    "english": "write",
+    "russian": "писать",
+    "level": "A1",
+    "example": "I write letters.",
+    "transcription": "/ɹaɪt/"
+  },
+  {
+    "english": "play",
+    "russian": "играть",
+    "level": "A1",
+    "example": "Children play in the park.",
+    "transcription": "/pleɪ/"
+  },
+  {
+    "english": "sleep",
+    "russian": "спать",
+    "level": "A1",
+    "example": "I sleep eight hours.",
+    "transcription": "/sliːp/"
+  },
+  {
+    "english": "open",
+    "russian": "открывать",
+    "level": "A1",
+    "example": "Open the door.",
+    "transcription": "/ˈəʊ.pən/"
+  },
+  {
+    "english": "close",
+    "russian": "закрывать",
+    "level": "A1",
+    "example": "Close the window.",
+    "transcription": "/kləʊz/"
+  },
+  {
+    "english": "give",
+    "russian": "давать",
+    "level": "A1",
+    "example": "Give me the book.",
+    "transcription": "/ɡɪv/"
+  },
+  {
+    "english": "take",
+    "russian": "брать",
+    "level": "A1",
+    "example": "Take this pen.",
+    "transcription": "/teɪk/"
+  },
+  {
+    "english": "help",
+    "russian": "помогать",
+    "level": "A1",
+    "example": "Can you help me?",
+    "transcription": "/hɛlp/"
+  },
+  {
+    "english": "buy",
+    "russian": "покупать",
+    "level": "A1",
+    "example": "I buy food every day.",
+    "transcription": "/baɪ/"
+  },
+  {
+    "english": "make",
+    "russian": "делать",
+    "level": "A1",
+    "example": "I make breakfast.",
+    "transcription": "/meɪk/"
+  },
+  {
+    "english": "have",
+    "russian": "иметь",
+    "level": "A1",
+    "example": "I have a cat.",
+    "transcription": "/hæv/"
+  },
+  {
+    "english": "think",
+    "russian": "думать",
+    "level": "A1",
+    "example": "I think it is good.",
+    "transcription": "/θɪŋk/"
+  },
+  {
+    "english": "say",
+    "russian": "сказать",
+    "level": "A1",
+    "example": "What did you say?",
+    "transcription": "/seɪ/"
+  },
+  {
+    "english": "country",
+    "russian": "страна",
+    "level": "A1",
+    "example": "Russia is a big country.",
+    "transcription": "/ˈkɐntɹi/"
+  },
+  {
+    "english": "weather",
+    "russian": "погода",
+    "level": "A2",
+    "example": "The weather is nice today.",
+    "transcription": "/ˈwɛðə/"
+  },
+  {
+    "english": "travel",
+    "russian": "путешествие",
+    "level": "A2",
+    "example": "I love to travel.",
+    "transcription": "/ˈtɹævəl/"
+  },
+  {
+    "english": "breakfast",
+    "russian": "завтрак",
+    "level": "A2",
+    "example": "I had eggs for breakfast.",
+    "transcription": "/ˈbɹɛkfəst/"
+  },
+  {
+    "english": "lunch",
+    "russian": "обед",
+    "level": "A2",
+    "example": "We have lunch at noon.",
+    "transcription": "/lʌnt͡ʃ/"
+  },
+  {
+    "english": "dinner",
+    "russian": "ужин",
+    "level": "A2",
+    "example": "Dinner is ready.",
+    "transcription": "/ˈdɪnə/"
+  },
+  {
+    "english": "kitchen",
+    "russian": "кухня",
+    "level": "A2",
+    "example": "She is cooking in the kitchen.",
+    "transcription": "/ˈkɪt͡ʃən/"
+  },
+  {
+    "english": "bathroom",
+    "russian": "ванная",
+    "level": "A2",
+    "example": "The bathroom is upstairs.",
+    "transcription": "/ˈbæθ.ɹuːm/"
+  },
+  {
+    "english": "garden",
+    "russian": "сад",
+    "level": "A2",
+    "example": "We have a beautiful garden.",
+    "transcription": "/ˈɡɑːdn̩/"
+  },
+  {
+    "english": "village",
+    "russian": "деревня",
+    "level": "A2",
+    "example": "My grandmother lives in a village.",
+    "transcription": "/ˈvɪlɪd͡ʒ/"
+  },
+  {
+    "english": "island",
+    "russian": "остров",
+    "level": "A2",
+    "example": "We visited a small island.",
+    "transcription": "/ˈaɪ̯lənd/"
+  },
+  {
+    "english": "mountain",
+    "russian": "гора",
+    "level": "A2",
+    "example": "The mountain is very high.",
+    "transcription": "/ˈmaʊntɪn/"
+  },
+  {
+    "english": "river",
+    "russian": "река",
+    "level": "A2",
+    "example": "The river is deep.",
+    "transcription": "/ˈɹɪvə/"
+  },
+  {
+    "english": "sea",
+    "russian": "море",
+    "level": "A2",
+    "example": "We went to the sea.",
+    "transcription": "/siː/"
+  },
+  {
+    "english": "forest",
+    "russian": "лес",
+    "level": "A2",
+    "example": "There is a big forest near our village.",
+    "transcription": "/ˈfɒɹɪst/"
+  },
+  {
+    "english": "beach",
+    "russian": "пляж",
+    "level": "A2",
+    "example": "We spent the day at the beach.",
+    "transcription": "/biːt͡ʃ/"
+  },
+  {
+    "english": "airport",
+    "russian": "аэропорт",
+    "level": "A2",
+    "example": "The airport is far from the city.",
+    "transcription": "/ˈɛə.pɔːt/"
+  },
+  {
+    "english": "station",
+    "russian": "станция",
+    "level": "A2",
+    "example": "The train station is nearby.",
+    "transcription": "/ˈsteɪʃən/"
+  },
+  {
+    "english": "hospital",
+    "russian": "больница",
+    "level": "A2",
+    "example": "He went to the hospital.",
+    "transcription": "/ˈhɒs.pɪ.tl̩/"
+  },
+  {
+    "english": "restaurant",
+    "russian": "ресторан",
+    "level": "A2",
+    "example": "We had dinner at a restaurant.",
+    "transcription": "/ˈɹɛs.t(ə).ɹ(ə)nt/"
+  },
+  {
+    "english": "hotel",
+    "russian": "отель",
+    "level": "A2",
+    "example": "We stayed at a hotel.",
+    "transcription": "/(h)əʊˈtɛl/"
+  },
+  {
+    "english": "museum",
+    "russian": "музей",
+    "level": "A2",
+    "example": "The museum is very interesting.",
+    "transcription": "/mjuːˈziːəm/"
+  },
+  {
+    "english": "theater",
+    "russian": "театр",
+    "level": "A2",
+    "example": "We went to the theater.",
+    "transcription": "/ˈθi(ə)tɚ/"
+  },
+  {
+    "english": "library",
+    "russian": "библиотека",
+    "level": "A2",
+    "example": "I study at the library.",
+    "transcription": "/ˈlaɪbɹi/"
+  },
+  {
+    "english": "vacation",
+    "russian": "отпуск",
+    "level": "A2",
+    "example": "I need a vacation.",
+    "transcription": "/veɪˈkeɪʃ(ə)n/"
+  },
+  {
+    "english": "holiday",
+    "russian": "праздник",
+    "level": "A2",
+    "example": "Christmas is my favorite holiday.",
+    "transcription": "/ˈhɒlɪdeɪ/"
+  },
+  {
+    "english": "sport",
+    "russian": "спорт",
+    "level": "A2",
+    "example": "I like sport.",
+    "transcription": "/spɔːt/"
+  },
+  {
+    "english": "football",
+    "russian": "футбол",
+    "level": "A2",
+    "example": "I play football on Saturdays.",
+    "transcription": "[fʷʊʔt̚bɑɫ]"
+  },
+  {
+    "english": "swimming",
+    "russian": "плавание",
+    "level": "A2",
+    "example": "Swimming is good exercise.",
+    "transcription": "/ˈswɪmɪŋ/"
+  },
+  {
+    "english": "music",
+    "russian": "музыка",
+    "level": "A2",
+    "example": "I listen to music every day.",
+    "transcription": "/ˈmjuːzɪk/"
+  },
+  {
+    "english": "movie",
+    "russian": "фильм",
+    "level": "A2",
+    "example": "Let's watch a movie.",
+    "transcription": "/ˈmuːvi/"
+  },
+  {
+    "english": "photo",
+    "russian": "фото",
+    "level": "A2",
+    "example": "Can I take a photo?",
+    "transcription": "/ˈfəʊ.təʊ/"
+  },
+  {
+    "english": "phone",
+    "russian": "телефон",
+    "level": "A2",
+    "example": "My phone is broken.",
+    "transcription": "/fəʊ̯n/"
+  },
+  {
+    "english": "computer",
+    "russian": "компьютер",
+    "level": "A2",
+    "example": "I work on a computer.",
+    "transcription": "/kəmˈpjuːtə/"
+  },
+  {
+    "english": "internet",
+    "russian": "интернет",
+    "level": "A2",
+    "example": "The internet is fast here.",
+    "transcription": "/ˈɪntəˌnɛt/"
+  },
+  {
+    "english": "message",
+    "russian": "сообщение",
+    "level": "A2",
+    "example": "I got a message from her.",
+    "transcription": "/ˈmɛsɪd͡ʒ/"
+  },
+  {
+    "english": "letter",
+    "russian": "письмо",
+    "level": "A2",
+    "example": "I wrote a letter to my friend.",
+    "transcription": "/-ɾə(ɹ)/"
+  },
+  {
+    "english": "newspaper",
+    "russian": "газета",
+    "level": "A2",
+    "example": "He reads the newspaper.",
+    "transcription": "/ˈnjuːsˌpeɪpə/"
+  },
+  {
+    "english": "mistake",
+    "russian": "ошибка",
+    "level": "A2",
+    "example": "Everyone makes mistakes.",
+    "transcription": "/mɪˈsteɪk/"
+  },
+  {
+    "english": "advice",
+    "russian": "совет",
+    "level": "A2",
+    "example": "Can you give me some advice?",
+    "transcription": "/ədˈvaɪs/"
+  },
+  {
+    "english": "healthy",
+    "russian": "здоровый",
+    "level": "A2",
+    "example": "Vegetables are healthy.",
+    "transcription": "/ˈhɛl.θi/"
+  },
+  {
+    "english": "ill",
+    "russian": "больной",
+    "level": "A2",
+    "example": "She feels ill today.",
+    "transcription": "/ɪl/"
+  },
+  {
+    "english": "medicine",
+    "russian": "лекарство",
+    "level": "A2",
+    "example": "Take your medicine.",
+    "transcription": "/ˈmed(ɪ).sn̩/"
+  },
+  {
+    "english": "doctor",
+    "russian": "врач",
+    "level": "A2",
+    "example": "You should see a doctor.",
+    "transcription": "/ˈdɒktə/"
+  },
+  {
+    "english": "pain",
+    "russian": "боль",
+    "level": "A2",
+    "example": "I have a pain in my back.",
+    "transcription": "/peɪn/"
+  },
+  {
+    "english": "tired",
+    "russian": "усталый",
+    "level": "A2",
+    "example": "I am very tired.",
+    "transcription": "/taɪəd/"
+  },
+  {
+    "english": "hungry",
+    "russian": "голодный",
+    "level": "A2",
+    "example": "I am hungry.",
+    "transcription": "/ˈhʌŋ.ɡɹi/"
+  },
+  {
+    "english": "thirsty",
+    "russian": "жаждущий",
+    "level": "A2",
+    "example": "I am thirsty.",
+    "transcription": "/ˈθɜː(ɹ)st.i/"
+  },
+  {
+    "english": "angry",
+    "russian": "злой",
+    "level": "A2",
+    "example": "Don't be angry.",
+    "transcription": "/ˈæŋ.ɡɹi/"
+  },
+  {
+    "english": "afraid",
+    "russian": "испуганный",
+    "level": "A2",
+    "example": "She is afraid of dogs.",
+    "transcription": "/əˈfɹeɪd/"
+  },
+  {
+    "english": "surprised",
+    "russian": "удивлённый",
+    "level": "A2",
+    "example": "I was surprised to see him.",
+    "transcription": "/səˈpɹaɪzd/"
+  },
+  {
+    "english": "excited",
+    "russian": "взволнованный",
+    "level": "A2",
+    "example": "I am excited about the trip.",
+    "transcription": "/ɪkˈsaɪtɪd/"
+  },
+  {
+    "english": "dangerous",
+    "russian": "опасный",
+    "level": "A2",
+    "example": "Swimming here is dangerous.",
+    "transcription": "/ˈdeɪnd͡ʒ(ə)ɹəs/"
+  },
+  {
+    "english": "safe",
+    "russian": "безопасный",
+    "level": "A2",
+    "example": "This area is safe.",
+    "transcription": "/seɪf/"
+  },
+  {
+    "english": "easy",
+    "russian": "лёгкий",
+    "level": "A2",
+    "example": "This exercise is easy.",
+    "transcription": "/ˈiːzi/"
+  },
+  {
+    "english": "difficult",
+    "russian": "трудный",
+    "level": "A2",
+    "example": "The test was difficult.",
+    "transcription": "/ˈdɪfɪkəlt/"
+  },
+  {
+    "english": "important",
+    "russian": "важный",
+    "level": "A2",
+    "example": "This is very important.",
+    "transcription": "/ɪmˈpɔːtənt/"
+  },
+  {
+    "english": "possible",
+    "russian": "возможный",
+    "level": "A2",
+    "example": "Is it possible to change the date?",
+    "transcription": "/ˈpɒsɪbl̩/"
+  },
+  {
+    "english": "different",
+    "russian": "разный",
+    "level": "A2",
+    "example": "We have different opinions.",
+    "transcription": "/ˈdɪf.(ə)ɹ.ənt/"
+  },
+  {
+    "english": "same",
+    "russian": "одинаковый",
+    "level": "A2",
+    "example": "We have the same shoes.",
+    "transcription": "/seɪm/"
+  },
+  {
+    "english": "popular",
+    "russian": "популярный",
+    "level": "A2",
+    "example": "This song is very popular.",
+    "transcription": "/ˈpɒpjʊlə/"
+  },
+  {
+    "english": "famous",
+    "russian": "знаменитый",
+    "level": "A2",
+    "example": "He is a famous actor.",
+    "transcription": "/ˈfeɪməs/"
+  },
+  {
+    "english": "cheap",
+    "russian": "дешёвый",
+    "level": "A2",
+    "example": "This shirt is cheap.",
+    "transcription": "/t͡ʃiːp/"
+  },
+  {
+    "english": "expensive",
+    "russian": "дорогой",
+    "level": "A2",
+    "example": "This car is expensive.",
+    "transcription": "/ɛkˈspɛnsɪv/"
+  },
+  {
+    "english": "free",
+    "russian": "бесплатный",
+    "level": "A2",
+    "example": "The concert is free.",
+    "transcription": "/fɹiː/"
+  },
+  {
+    "english": "ready",
+    "russian": "готовый",
+    "level": "A2",
+    "example": "Dinner is ready.",
+    "transcription": "/ˈɹɛdi/"
+  },
+  {
+    "english": "busy",
+    "russian": "занятой",
+    "level": "A2",
+    "example": "I am busy now.",
+    "transcription": "/ˈbɪzi/"
+  },
+  {
+    "english": "late",
+    "russian": "поздний",
+    "level": "A2",
+    "example": "Sorry, I am late.",
+    "transcription": "/leɪt/"
+  },
+  {
+    "english": "early",
+    "russian": "ранний",
+    "level": "A2",
+    "example": "I wake up early.",
+    "transcription": "/ˈɜː.li/"
+  },
+  {
+    "english": "fast",
+    "russian": "быстрый",
+    "level": "A2",
+    "example": "He runs very fast.",
+    "transcription": "/fɑːst/"
+  },
+  {
+    "english": "slow",
+    "russian": "медленный",
+    "level": "A2",
+    "example": "The traffic is slow.",
+    "transcription": "/sləʊ/"
+  },
+  {
+    "english": "heavy",
+    "russian": "тяжёлый",
+    "level": "A2",
+    "example": "This bag is heavy.",
+    "transcription": "/ˈhe.vi/"
+  },
+  {
+    "english": "light",
+    "russian": "лёгкий",
+    "level": "A2",
+    "example": "This box is very light.",
+    "transcription": "/lʌɪt/"
+  },
+  {
+    "english": "dark",
+    "russian": "тёмный",
+    "level": "A2",
+    "example": "It gets dark at six.",
+    "transcription": "/dɑːk/"
+  },
+  {
+    "english": "bright",
+    "russian": "яркий",
+    "level": "A2",
+    "example": "The sun is bright today.",
+    "transcription": "/bɹaɪt/"
+  },
+  {
+    "english": "clean",
+    "russian": "чистый",
+    "level": "A2",
+    "example": "The room is clean.",
+    "transcription": "/kleːn/"
+  },
+  {
+    "english": "dirty",
+    "russian": "грязный",
+    "level": "A2",
+    "example": "Your shoes are dirty.",
+    "transcription": "/ˈdɜːti/"
+  },
+  {
+    "english": "rich",
+    "russian": "богатый",
+    "level": "A2",
+    "example": "He is a rich man.",
+    "transcription": "/ɹɪt͡ʃ/"
+  },
+  {
+    "english": "poor",
+    "russian": "бедный",
+    "level": "A2",
+    "example": "The poor family needs help.",
+    "transcription": "/poː/"
+  },
+  {
+    "english": "remember",
+    "russian": "помнить",
+    "level": "A2",
+    "example": "I remember this place.",
+    "transcription": "/ɹɪˈmɛmbə/"
+  },
+  {
+    "english": "forget",
+    "russian": "забывать",
+    "level": "A2",
+    "example": "Don't forget your keys.",
+    "transcription": "/fəˈɡɛt/"
+  },
+  {
+    "english": "understand",
+    "russian": "понимать",
+    "level": "A2",
+    "example": "I understand you.",
+    "transcription": "/ˌɞndəɹˈstand/"
+  },
+  {
+    "english": "learn",
+    "russian": "учить",
+    "level": "A2",
+    "example": "I learn English.",
+    "transcription": "/lɜːn/"
+  },
+  {
+    "english": "teach",
+    "russian": "обучать",
+    "level": "A2",
+    "example": "She teaches math.",
+    "transcription": "/tiːt͡ʃ/"
+  },
+  {
+    "english": "study",
+    "russian": "изучать",
+    "level": "A2",
+    "example": "I study at the university.",
+    "transcription": "/ˈstʌdi/"
+  },
+  {
+    "english": "try",
+    "russian": "пытаться",
+    "level": "A2",
+    "example": "Try again.",
+    "transcription": "/tɹaɪ/"
+  },
+  {
+    "english": "begin",
+    "russian": "начинать",
+    "level": "A2",
+    "example": "Let's begin the lesson.",
+    "transcription": "/biˈɡɪn/"
+  },
+  {
+    "english": "finish",
+    "russian": "заканчивать",
+    "level": "A2",
+    "example": "I finished my homework.",
+    "transcription": "/ˈfɪnɪʃ/"
+  },
+  {
+    "english": "wait",
+    "russian": "ждать",
+    "level": "A2",
+    "example": "Wait for me.",
+    "transcription": "/weɪt/"
+  },
+  {
+    "english": "arrive",
+    "russian": "прибывать",
+    "level": "A2",
+    "example": "The train arrives at five.",
+    "transcription": "/əˈɹaɪv/"
+  },
+  {
+    "english": "leave",
+    "russian": "уходить",
+    "level": "A2",
+    "example": "I leave home at eight.",
+    "transcription": "/liːv/"
+  },
+  {
+    "english": "return",
+    "russian": "возвращаться",
+    "level": "A2",
+    "example": "I will return tomorrow.",
+    "transcription": "/ɹɪˈtɜːn/"
+  },
+  {
+    "english": "choose",
+    "russian": "выбирать",
+    "level": "A2",
+    "example": "Choose one color.",
+    "transcription": "/t͡ʃuːz/"
+  },
+  {
+    "english": "change",
+    "russian": "менять",
+    "level": "A2",
+    "example": "I want to change my job.",
+    "transcription": "/tʃeɪndʒ/"
+  },
+  {
+    "english": "spend",
+    "russian": "тратить",
+    "level": "A2",
+    "example": "I spend money on books.",
+    "transcription": "/spɛnd/"
+  },
+  {
+    "english": "pay",
+    "russian": "платить",
+    "level": "A2",
+    "example": "I will pay for the dinner.",
+    "transcription": "/peɪ/"
+  },
+  {
+    "english": "win",
+    "russian": "выигрывать",
+    "level": "A2",
+    "example": "Our team will win.",
+    "transcription": "/wɪn/"
+  },
+  {
+    "english": "lose",
+    "russian": "терять",
+    "level": "A2",
+    "example": "I lost my wallet.",
+    "transcription": "/luːz/"
+  },
+  {
+    "english": "answer",
+    "russian": "отвечать",
+    "level": "A2",
+    "example": "Please answer the question.",
+    "transcription": "/ˈan.sə/"
+  },
+  {
+    "english": "ask",
+    "russian": "спрашивать",
+    "level": "A2",
+    "example": "Can I ask a question?",
+    "transcription": "/ˈask/"
+  },
+  {
+    "english": "explain",
+    "russian": "объяснять",
+    "level": "A2",
+    "example": "Can you explain this?",
+    "transcription": "/ɛkˈspleɪn/"
+  },
+  {
+    "english": "agree",
+    "russian": "соглашаться",
+    "level": "A2",
+    "example": "I agree with you.",
+    "transcription": "/əˈɡɹi/"
+  },
+  {
+    "english": "laugh",
+    "russian": "смеяться",
+    "level": "A2",
+    "example": "She laughed at the joke.",
+    "transcription": "/laːf/"
+  },
+  {
+    "english": "cry",
+    "russian": "плакать",
+    "level": "A2",
+    "example": "The baby is crying.",
+    "transcription": "/kɹaɪ̯/"
+  },
+  {
+    "english": "smile",
+    "russian": "улыбаться",
+    "level": "A2",
+    "example": "She smiled at me.",
+    "transcription": "/ˈsmaɪ.əl/"
+  },
+  {
+    "english": "wear",
+    "russian": "носить",
+    "level": "A2",
+    "example": "I wear a jacket in winter.",
+    "transcription": "/wɛə/"
+  },
+  {
+    "english": "carry",
+    "russian": "нести",
+    "level": "A2",
+    "example": "He carries a heavy bag.",
+    "transcription": "/ˈkæ.ɹi/"
+  },
+  {
+    "english": "grow",
+    "russian": "расти",
+    "level": "A2",
+    "example": "Trees grow slowly.",
+    "transcription": "/ɡɹəʊ/"
+  },
+  {
+    "english": "cook",
+    "russian": "готовить",
+    "level": "A2",
+    "example": "I cook dinner every evening.",
+    "transcription": "/kuːk/"
+  },
+  {
+    "english": "drive",
+    "russian": "водить",
+    "level": "A2",
+    "example": "She drives to work.",
+    "transcription": "/dɹaɪv/"
+  },
+  {
+    "english": "fly",
+    "russian": "летать",
+    "level": "A2",
+    "example": "Birds fly south in winter.",
+    "transcription": "/flaɪ/"
+  },
+  {
+    "english": "send",
+    "russian": "отправлять",
+    "level": "A2",
+    "example": "I sent an email.",
+    "transcription": "/sɛnd/"
+  },
+  {
+    "english": "opportunity",
+    "russian": "возможность",
+    "level": "B1",
+    "example": "This is a great opportunity.",
+    "transcription": "/ˌɒp.əˈtjuː.nɪ.tɪ/"
+  },
+  {
+    "english": "environment",
+    "russian": "окружающая среда",
+    "level": "B1",
+    "example": "We must protect the environment.",
+    "transcription": "/-mɪnt/"
+  },
+  {
+    "english": "experience",
+    "russian": "опыт",
+    "level": "B1",
+    "example": "She has a lot of experience.",
+    "transcription": "/ɪkˈspɪə.ɹɪəns/"
+  },
+  {
+    "english": "achieve",
+    "russian": "достигать",
+    "level": "B1",
+    "example": "He achieved his goal.",
+    "transcription": "/əˈtʃiːv/"
+  },
+  {
+    "english": "improve",
+    "russian": "улучшать",
+    "level": "B1",
+    "example": "I want to improve my English.",
+    "transcription": "/ɪmˈpɹuːv/"
+  },
+  {
+    "english": "participate",
+    "russian": "участвовать",
+    "level": "B1",
+    "example": "She participated in the competition.",
+    "transcription": "/pɑːˈtɪsɪpeɪt/"
+  },
+  {
+    "english": "decision",
+    "russian": "решение",
+    "level": "B1",
+    "example": "It was a difficult decision.",
+    "transcription": "/dɪˈsɪʒən/"
+  },
+  {
+    "english": "responsible",
+    "russian": "ответственный",
+    "level": "B1",
+    "example": "He is a responsible person.",
+    "transcription": "/ɹɪˈspɒnsəbl̩/"
+  },
+  {
+    "english": "advantage",
+    "russian": "преимущество",
+    "level": "B1",
+    "example": "Living in the city has many advantages.",
+    "transcription": "/ədˈvɑːn.tɪdʒ/"
+  },
+  {
+    "english": "audience",
+    "russian": "аудитория",
+    "level": "B1",
+    "example": "The audience applauded loudly.",
+    "transcription": "/ˈɔːdi.əns/"
+  },
+  {
+    "english": "attitude",
+    "russian": "отношение",
+    "level": "B1",
+    "example": "He has a positive attitude.",
+    "transcription": "/ˈætɪˌtjuːd/"
+  },
+  {
+    "english": "behaviour",
+    "russian": "поведение",
+    "level": "B1",
+    "example": "His behaviour was strange.",
+    "transcription": "/bɪˈheɪvjə/"
+  },
+  {
+    "english": "benefit",
+    "russian": "выгода",
+    "level": "B1",
+    "example": "There are many benefits to exercise.",
+    "transcription": "/ˈbɛn.ɪ.fɪt/"
+  },
+  {
+    "english": "career",
+    "russian": "карьера",
+    "level": "B1",
+    "example": "She has a successful career.",
+    "transcription": "/kəˈɹɪə/"
+  },
+  {
+    "english": "challenge",
+    "russian": "вызов",
+    "level": "B1",
+    "example": "This is a big challenge.",
+    "transcription": "/ˈtʃæl.əndʒ/"
+  },
+  {
+    "english": "community",
+    "russian": "сообщество",
+    "level": "B1",
+    "example": "Our community is friendly.",
+    "transcription": "/k(ə)ˈmjunəti/"
+  },
+  {
+    "english": "competition",
+    "russian": "конкуренция",
+    "level": "B1",
+    "example": "There is a lot of competition.",
+    "transcription": "/ˌkɒmpəˈtɪʃən/"
+  },
+  {
+    "english": "complaint",
+    "russian": "жалоба",
+    "level": "B1",
+    "example": "I want to make a complaint.",
+    "transcription": "/kəmˈpleɪnt/"
+  },
+  {
+    "english": "confidence",
+    "russian": "уверенность",
+    "level": "B1",
+    "example": "She speaks with confidence.",
+    "transcription": "/ˈkɒnfɪdəns/"
+  },
+  {
+    "english": "connection",
+    "russian": "связь",
+    "level": "B1",
+    "example": "There is a connection between them.",
+    "transcription": "/kəˈnɛkʃən/"
+  },
+  {
+    "english": "consequence",
+    "russian": "последствие",
+    "level": "B1",
+    "example": "Think about the consequences.",
+    "transcription": "/ˈkɒnsɪkwɛns/"
+  },
+  {
+    "english": "construction",
+    "russian": "строительство",
+    "level": "B1",
+    "example": "The construction will take a year.",
+    "transcription": "/kənˈstɹʌkʃən/"
+  },
+  {
+    "english": "contribution",
+    "russian": "вклад",
+    "level": "B1",
+    "example": "Thank you for your contribution.",
+    "transcription": "/ˌkɒntɹɪˈbjuːʃən/"
+  },
+  {
+    "english": "conversation",
+    "russian": "разговор",
+    "level": "B1",
+    "example": "We had an interesting conversation.",
+    "transcription": "/ˌkɒn.vəˈseɪ.ʃən/"
+  },
+  {
+    "english": "courage",
+    "russian": "мужество",
+    "level": "B1",
+    "example": "She showed great courage.",
+    "transcription": "/ˈkʌɹɪdʒ/"
+  },
+  {
+    "english": "criticism",
+    "russian": "критика",
+    "level": "B1",
+    "example": "He doesn't accept criticism well.",
+    "transcription": "/ˈkɹɪtɪsɪzəm/"
+  },
+  {
+    "english": "curious",
+    "russian": "любопытный",
+    "level": "B1",
+    "example": "Children are naturally curious.",
+    "transcription": "/ˈkjɔː-/"
+  },
+  {
+    "english": "customer",
+    "russian": "клиент",
+    "level": "B1",
+    "example": "The customer is always right.",
+    "transcription": "/ˈkʌstəmə/"
+  },
+  {
+    "english": "damage",
+    "russian": "ущерб",
+    "level": "B1",
+    "example": "The storm caused a lot of damage.",
+    "transcription": "/ˈdæmɪdʒ/"
+  },
+  {
+    "english": "delivery",
+    "russian": "доставка",
+    "level": "B1",
+    "example": "The delivery will arrive tomorrow.",
+    "transcription": "/dɪˈlɪv(ə)ɹi/"
+  },
+  {
+    "english": "demand",
+    "russian": "требование",
+    "level": "B1",
+    "example": "There is a high demand for nurses.",
+    "transcription": "/dɪˈmɑːnd/"
+  },
+  {
+    "english": "department",
+    "russian": "отдел",
+    "level": "B1",
+    "example": "She works in the marketing department.",
+    "transcription": "/dɪˈpɑːtm(ə)nt/"
+  },
+  {
+    "english": "depend",
+    "russian": "зависеть",
+    "level": "B1",
+    "example": "It depends on the weather.",
+    "transcription": "/dɪˈpɛnd/"
+  },
+  {
+    "english": "describe",
+    "russian": "описывать",
+    "level": "B1",
+    "example": "Can you describe the person?",
+    "transcription": "/dəˈskɹaɪb/"
+  },
+  {
+    "english": "destroy",
+    "russian": "разрушать",
+    "level": "B1",
+    "example": "The fire destroyed the building.",
+    "transcription": "/dɪˈstɹɔɪ/"
+  },
+  {
+    "english": "develop",
+    "russian": "развивать",
+    "level": "B1",
+    "example": "We need to develop new skills.",
+    "transcription": "/dɛˈvɛ.ləp/"
+  },
+  {
+    "english": "discover",
+    "russian": "обнаруживать",
+    "level": "B1",
+    "example": "Scientists discovered a new species.",
+    "transcription": "/dɪsˈkʊvə/"
+  },
+  {
+    "english": "discuss",
+    "russian": "обсуждать",
+    "level": "B1",
+    "example": "Let's discuss this problem.",
+    "transcription": "/dɪsˈkʊs/"
+  },
+  {
+    "english": "distance",
+    "russian": "расстояние",
+    "level": "B1",
+    "example": "The distance is ten kilometers.",
+    "transcription": "/ˈdɪs.təns/"
+  },
+  {
+    "english": "economy",
+    "russian": "экономика",
+    "level": "B1",
+    "example": "The economy is growing.",
+    "transcription": "/iːˈkɒn.ə.mi/"
+  },
+  {
+    "english": "education",
+    "russian": "образование",
+    "level": "B1",
+    "example": "Education is important.",
+    "transcription": "/ˌɛdjʊˈkeɪʃn̩/"
+  },
+  {
+    "english": "effort",
+    "russian": "усилие",
+    "level": "B1",
+    "example": "It takes a lot of effort.",
+    "transcription": "/ˈɛfət/"
+  },
+  {
+    "english": "employ",
+    "russian": "нанимать",
+    "level": "B1",
+    "example": "The company employs 500 people.",
+    "transcription": "/ɛmˈplɔɪ/"
+  },
+  {
+    "english": "encourage",
+    "russian": "поощрять",
+    "level": "B1",
+    "example": "Teachers encourage students to read.",
+    "transcription": "/ɪnˈkʌɹɪdʒ/"
+  },
+  {
+    "english": "enemy",
+    "russian": "враг",
+    "level": "B1",
+    "example": "He has no enemies.",
+    "transcription": "/ˈɛnəmi/"
+  },
+  {
+    "english": "energy",
+    "russian": "энергия",
+    "level": "B1",
+    "example": "Solar energy is renewable.",
+    "transcription": "/ˈɛnəd͡ʒi/"
+  },
+  {
+    "english": "engineer",
+    "russian": "инженер",
+    "level": "B1",
+    "example": "She is a software engineer.",
+    "transcription": "/ˌɛnd͡ʒɪˈnɪə/"
+  },
+  {
+    "english": "equipment",
+    "russian": "оборудование",
+    "level": "B1",
+    "example": "We need new equipment.",
+    "transcription": "/ɪˈkwɪpmənt/"
+  },
+  {
+    "english": "establish",
+    "russian": "устанавливать",
+    "level": "B1",
+    "example": "The company was established in 1990.",
+    "transcription": "/ɪˈstæb.lɪʃ/"
+  },
+  {
+    "english": "event",
+    "russian": "событие",
+    "level": "B1",
+    "example": "It was an important event.",
+    "transcription": "/əˈvɛnt/"
+  },
+  {
+    "english": "evidence",
+    "russian": "доказательство",
+    "level": "B1",
+    "example": "There is no evidence.",
+    "transcription": "[ˈɛvəɾəns]"
+  },
+  {
+    "english": "exist",
+    "russian": "существовать",
+    "level": "B1",
+    "example": "Dinosaurs no longer exist.",
+    "transcription": "/ɪɡˈzɪst/"
+  },
+  {
+    "english": "expect",
+    "russian": "ожидать",
+    "level": "B1",
+    "example": "I expect you to be on time.",
+    "transcription": "/ɛkˈspɛkt/"
+  },
+  {
+    "english": "experiment",
+    "russian": "эксперимент",
+    "level": "B1",
+    "example": "The experiment was successful.",
+    "transcription": "/ɛk.ˈspɛ.ɹɪ.mənt/"
+  },
+  {
+    "english": "explore",
+    "russian": "исследовать",
+    "level": "B1",
+    "example": "We explored the old city.",
+    "transcription": "/ɪkˈsplɔː/"
+  },
+  {
+    "english": "express",
+    "russian": "выражать",
+    "level": "B1",
+    "example": "He expressed his opinion.",
+    "transcription": "/ɛk.ˈspɹɛs/"
+  },
+  {
+    "english": "failure",
+    "russian": "неудача",
+    "level": "B1",
+    "example": "Failure is part of learning.",
+    "transcription": "/ˈfeɪl.jɚ/"
+  },
+  {
+    "english": "fair",
+    "russian": "справедливый",
+    "level": "B1",
+    "example": "That's not fair.",
+    "transcription": "/feː(ə)/"
+  },
+  {
+    "english": "feature",
+    "russian": "особенность",
+    "level": "B1",
+    "example": "This phone has many features.",
+    "transcription": "/ˈfiːtʃə/"
+  },
+  {
+    "english": "focus",
+    "russian": "сосредоточиться",
+    "level": "B1",
+    "example": "Focus on your work.",
+    "transcription": "/ˈfəʊ.kəs/"
+  },
+  {
+    "english": "frequent",
+    "russian": "частый",
+    "level": "B1",
+    "example": "Buses are frequent here.",
+    "transcription": "/ˈfɹiː.kwənt/"
+  },
+  {
+    "english": "generation",
+    "russian": "поколение",
+    "level": "B1",
+    "example": "The younger generation thinks differently.",
+    "transcription": "/ˌd͡ʒɛnəˈɹeɪʃən/"
+  },
+  {
+    "english": "government",
+    "russian": "правительство",
+    "level": "B1",
+    "example": "The government made a decision.",
+    "transcription": "/ˈɡʌvə(n)mənt/"
+  },
+  {
+    "english": "habit",
+    "russian": "привычка",
+    "level": "B1",
+    "example": "Reading is a good habit.",
+    "transcription": "/ˈhæbət/"
+  },
+  {
+    "english": "imagination",
+    "russian": "воображение",
+    "level": "B1",
+    "example": "Use your imagination.",
+    "transcription": "/ɪˌmædʒəˈneɪʃən/"
+  },
+  {
+    "english": "include",
+    "russian": "включать",
+    "level": "B1",
+    "example": "The price includes breakfast.",
+    "transcription": "/ɪnˈkluːd/"
+  },
+  {
+    "english": "increase",
+    "russian": "увеличивать",
+    "level": "B1",
+    "example": "Prices have increased.",
+    "transcription": "/ɪnˈkriːs/"
+  },
+  {
+    "english": "independent",
+    "russian": "независимый",
+    "level": "B1",
+    "example": "She is very independent.",
+    "transcription": "/ɪndɪˈpɛndənt/"
+  },
+  {
+    "english": "industry",
+    "russian": "промышленность",
+    "level": "B1",
+    "example": "The car industry is growing.",
+    "transcription": "/ˈɪndəstɹi/"
+  },
+  {
+    "english": "influence",
+    "russian": "влияние",
+    "level": "B1",
+    "example": "Music has a big influence on me.",
+    "transcription": "/ˈɪn.flu.əns/"
+  },
+  {
+    "english": "international",
+    "russian": "международный",
+    "level": "B1",
+    "example": "It's an international company.",
+    "transcription": "/ˌɪntəˈnæʃ(ə)n(ə)l/"
+  },
+  {
+    "english": "interview",
+    "russian": "интервью",
+    "level": "B1",
+    "example": "I have a job interview tomorrow.",
+    "transcription": "/ˈɪntəvjuː/"
+  },
+  {
+    "english": "introduce",
+    "russian": "представлять",
+    "level": "B1",
+    "example": "Let me introduce my colleague.",
+    "transcription": "/ˌɪntɹəˈdjuːs/"
+  },
+  {
+    "english": "invest",
+    "russian": "инвестировать",
+    "level": "B1",
+    "example": "He invested in stocks.",
+    "transcription": "/ɪnˈvɛst/"
+  },
+  {
+    "english": "involve",
+    "russian": "вовлекать",
+    "level": "B1",
+    "example": "The project involves many people.",
+    "transcription": "/ɪnˈvɒlv/"
+  },
+  {
+    "english": "knowledge",
+    "russian": "знание",
+    "level": "B1",
+    "example": "Knowledge is power.",
+    "transcription": "/ˈnɒlɪdʒ/"
+  },
+  {
+    "english": "lack",
+    "russian": "нехватка",
+    "level": "B1",
+    "example": "There is a lack of information.",
+    "transcription": "/lak/"
+  },
+  {
+    "english": "limit",
+    "russian": "ограничение",
+    "level": "B1",
+    "example": "There is a speed limit here.",
+    "transcription": "/ˈlɪmt/"
+  },
+  {
+    "english": "literature",
+    "russian": "литература",
+    "level": "B1",
+    "example": "I study Russian literature.",
+    "transcription": "/ˈlɪ.tə.ɹɪ.tʃə(ɹ)/"
+  },
+  {
+    "english": "manage",
+    "russian": "управлять",
+    "level": "B1",
+    "example": "She manages the team.",
+    "transcription": "/ˈmænɪdʒ/"
+  },
+  {
+    "english": "material",
+    "russian": "материал",
+    "level": "B1",
+    "example": "What material is this made of?",
+    "transcription": "/məˈtɪəɹɪəl/"
+  },
+  {
+    "english": "measure",
+    "russian": "измерять",
+    "level": "B1",
+    "example": "Measure the length of the table.",
+    "transcription": "/ˈmɛʒə/"
+  },
+  {
+    "english": "mention",
+    "russian": "упоминать",
+    "level": "B1",
+    "example": "He didn't mention the problem.",
+    "transcription": "/ˈmɛnʃən/"
+  },
+  {
+    "english": "method",
+    "russian": "метод",
+    "level": "B1",
+    "example": "We need a new method.",
+    "transcription": "/ˈmɛθəd/"
+  },
+  {
+    "english": "modern",
+    "russian": "современный",
+    "level": "B1",
+    "example": "This is a modern building.",
+    "transcription": "/ˈmɒd(ə)n/"
+  },
+  {
+    "english": "necessary",
+    "russian": "необходимый",
+    "level": "B1",
+    "example": "Water is necessary for life.",
+    "transcription": "/ˈnɛsəsɹɪ/"
+  },
+  {
+    "english": "negative",
+    "russian": "отрицательный",
+    "level": "B1",
+    "example": "Don't be so negative.",
+    "transcription": "/ˈnɛ(e)ɡəˌɾɪv/"
+  },
+  {
+    "english": "normal",
+    "russian": "нормальный",
+    "level": "B1",
+    "example": "This is perfectly normal.",
+    "transcription": "/ˈnɔːməl/"
+  },
+  {
+    "english": "notice",
+    "russian": "замечать",
+    "level": "B1",
+    "example": "I noticed something strange.",
+    "transcription": "/ˈnəʊtɪs/"
+  },
+  {
+    "english": "obvious",
+    "russian": "очевидный",
+    "level": "B1",
+    "example": "The answer is obvious.",
+    "transcription": "/ˈɒ.vɪəs/"
+  },
+  {
+    "english": "offer",
+    "russian": "предлагать",
+    "level": "B1",
+    "example": "She offered me a cup of tea.",
+    "transcription": "/ˈɑfɚ/"
+  },
+  {
+    "english": "opinion",
+    "russian": "мнение",
+    "level": "B1",
+    "example": "What is your opinion?",
+    "transcription": "/əˈpɪnjən/"
+  },
+  {
+    "english": "opportunity",
+    "russian": "возможность",
+    "level": "B1",
+    "example": "Don't miss this opportunity.",
+    "transcription": "/ˌɒp.əˈtjuː.nɪ.tɪ/"
+  },
+  {
+    "english": "organize",
+    "russian": "организовывать",
+    "level": "B1",
+    "example": "She organized the event.",
+    "transcription": "/ˈɔːɡənaɪz/"
+  },
+  {
+    "english": "patient",
+    "russian": "терпеливый",
+    "level": "B1",
+    "example": "Please be patient.",
+    "transcription": "/ˈpeɪʃənt/"
+  },
+  {
+    "english": "pattern",
+    "russian": "шаблон",
+    "level": "B1",
+    "example": "I see a pattern here.",
+    "transcription": "/ˈpat(ə)n/"
+  },
+  {
+    "english": "perform",
+    "russian": "выполнять",
+    "level": "B1",
+    "example": "She performed well in the exam.",
+    "transcription": "/pəˈfɔːm/"
+  },
+  {
+    "english": "permanent",
+    "russian": "постоянный",
+    "level": "B1",
+    "example": "He found a permanent job.",
+    "transcription": "/ˈpɜːmənənt/"
+  },
+  {
+    "english": "personal",
+    "russian": "личный",
+    "level": "B1",
+    "example": "This is a personal question.",
+    "transcription": "/ˈpɜː.sən.əl/"
+  },
+  {
+    "english": "physical",
+    "russian": "физический",
+    "level": "B1",
+    "example": "Physical exercise is important.",
+    "transcription": "/ˈfɪzɪkəl/"
+  },
+  {
+    "english": "pleasant",
+    "russian": "приятный",
+    "level": "B1",
+    "example": "It was a pleasant surprise.",
+    "transcription": "/ˈplɛzənt/"
+  },
+  {
+    "english": "politics",
+    "russian": "политика",
+    "level": "B1",
+    "example": "I'm not interested in politics.",
+    "transcription": "/ˈpɒl.ɪ.tɪks/"
+  },
+  {
+    "english": "pollution",
+    "russian": "загрязнение",
+    "level": "B1",
+    "example": "Air pollution is a problem.",
+    "transcription": "/pəˈl(j)uːʃn̩/"
+  },
+  {
+    "english": "population",
+    "russian": "население",
+    "level": "B1",
+    "example": "The population is growing.",
+    "transcription": "/ˌpɒpjʊˈleɪʃən/"
+  },
+  {
+    "english": "positive",
+    "russian": "положительный",
+    "level": "B1",
+    "example": "Stay positive.",
+    "transcription": "/ˈpɒzɪ̈tɪv/"
+  },
+  {
+    "english": "powerful",
+    "russian": "мощный",
+    "level": "B1",
+    "example": "This is a powerful engine.",
+    "transcription": "/ˈpaʊəfl/"
+  },
+  {
+    "english": "practical",
+    "russian": "практичный",
+    "level": "B1",
+    "example": "This is a practical solution.",
+    "transcription": "/ˈpɹæktɪkəl/"
+  },
+  {
+    "english": "prefer",
+    "russian": "предпочитать",
+    "level": "B1",
+    "example": "I prefer tea to coffee.",
+    "transcription": "/pɹɪˈfɜː/"
+  },
+  {
+    "english": "prepare",
+    "russian": "готовить",
+    "level": "B1",
+    "example": "I need to prepare for the exam.",
+    "transcription": "/pɹɪˈpɛə/"
+  },
+  {
+    "english": "present",
+    "russian": "представлять",
+    "level": "B1",
+    "example": "She presented her research.",
+    "transcription": "/pɹəˈzɛnt/"
+  },
+  {
+    "english": "prevent",
+    "russian": "предотвращать",
+    "level": "B1",
+    "example": "We can prevent this problem.",
+    "transcription": "/pɹəˈvɛnt/"
+  },
+  {
+    "english": "principle",
+    "russian": "принцип",
+    "level": "B1",
+    "example": "It's a matter of principle.",
+    "transcription": "/ˈpɹɪnsəpəl/"
+  },
+  {
+    "english": "private",
+    "russian": "частный",
+    "level": "B1",
+    "example": "This is a private matter.",
+    "transcription": "/ˈpɹaɪvət/"
+  },
+  {
+    "english": "process",
+    "russian": "процесс",
+    "level": "B1",
+    "example": "The process takes time.",
+    "transcription": "/ˈpɹoʊsɛs/"
+  },
+  {
+    "english": "produce",
+    "russian": "производить",
+    "level": "B1",
+    "example": "This factory produces cars.",
+    "transcription": "/pɹəˈdjuːs/"
+  },
+  {
+    "english": "profession",
+    "russian": "профессия",
+    "level": "B1",
+    "example": "What is your profession?",
+    "transcription": "/pɹəˈfɛʃən/"
+  },
+  {
+    "english": "profit",
+    "russian": "прибыль",
+    "level": "B1",
+    "example": "The company made a profit.",
+    "transcription": "/ˈpɹɒfɪt/"
+  },
+  {
+    "english": "progress",
+    "russian": "прогресс",
+    "level": "B1",
+    "example": "You are making good progress.",
+    "transcription": "/ˈpɹɒɡɹɛs/"
+  },
+  {
+    "english": "project",
+    "russian": "проект",
+    "level": "B1",
+    "example": "We started a new project.",
+    "transcription": "/ˈprɒdʒ.ekt/"
+  },
+  {
+    "english": "promise",
+    "russian": "обещать",
+    "level": "B1",
+    "example": "I promise to help you.",
+    "transcription": "/ˈpɹɒmɪs/"
+  },
+  {
+    "english": "protect",
+    "russian": "защищать",
+    "level": "B1",
+    "example": "We must protect nature.",
+    "transcription": "/pɹəˈtɛkt/"
+  },
+  {
+    "english": "prove",
+    "russian": "доказывать",
+    "level": "B1",
+    "example": "Can you prove it?",
+    "transcription": "/pɹuːv/"
+  },
+  {
+    "english": "provide",
+    "russian": "обеспечивать",
+    "level": "B1",
+    "example": "The hotel provides free Wi-Fi.",
+    "transcription": "/pɹəˈvaɪd/"
+  },
+  {
+    "english": "public",
+    "russian": "общественный",
+    "level": "B1",
+    "example": "This is a public park.",
+    "transcription": "/ˈpʌblɪk/"
+  },
+  {
+    "english": "purpose",
+    "russian": "цель",
+    "level": "B1",
+    "example": "What is the purpose of this meeting?",
+    "transcription": "/ˈpɜːpəs/"
+  },
+  {
+    "english": "quality",
+    "russian": "качество",
+    "level": "B1",
+    "example": "The quality is excellent.",
+    "transcription": "/ˈkwɒlɪti/"
+  },
+  {
+    "english": "quantity",
+    "russian": "количество",
+    "level": "B1",
+    "example": "We need a large quantity.",
+    "transcription": "/ˈkwɑndədi/"
+  },
+  {
+    "english": "realize",
+    "russian": "осознавать",
+    "level": "B1",
+    "example": "I realized my mistake.",
+    "transcription": "/ˈɹɪə.laɪz/"
+  },
+  {
+    "english": "receive",
+    "russian": "получать",
+    "level": "B1",
+    "example": "I received your letter.",
+    "transcription": "/ɹɪˈsiːv/"
+  },
+  {
+    "english": "recognize",
+    "russian": "узнавать",
+    "level": "B1",
+    "example": "I didn't recognize you.",
+    "transcription": "/ˈɹɛkənaɪz/"
+  },
+  {
+    "english": "recommend",
+    "russian": "рекомендовать",
+    "level": "B1",
+    "example": "I recommend this book.",
+    "transcription": "/ɹɛkəˈmɛnd/"
+  },
+  {
+    "english": "reduce",
+    "russian": "сокращать",
+    "level": "B1",
+    "example": "We need to reduce costs.",
+    "transcription": "/ɹɪˈdjuːs/"
+  },
+  {
+    "english": "region",
+    "russian": "регион",
+    "level": "B1",
+    "example": "This region is famous for wine.",
+    "transcription": "/ˈɹiːd͡ʒn̩/"
+  },
+  {
+    "english": "relationship",
+    "russian": "отношения",
+    "level": "B1",
+    "example": "They have a good relationship.",
+    "transcription": "/ɹɪˈleɪʃ(ə)nʃɪp/"
+  },
+  {
+    "english": "religion",
+    "russian": "религия",
+    "level": "B1",
+    "example": "People have different religions.",
+    "transcription": "/ɹɪˈlɪdʒən/"
+  },
+  {
+    "english": "replace",
+    "russian": "заменять",
+    "level": "B1",
+    "example": "We need to replace the battery.",
+    "transcription": "/ɹɪˈpleɪs/"
+  },
+  {
+    "english": "reply",
+    "russian": "ответ",
+    "level": "B1",
+    "example": "I'm waiting for your reply.",
+    "transcription": "/ɹɪˈplaɪ/"
+  },
+  {
+    "english": "represent",
+    "russian": "представлять",
+    "level": "B1",
+    "example": "She represents our company.",
+    "transcription": "/ɹɛp.ɹɪ.ˈzɛnt/"
+  },
+  {
+    "english": "require",
+    "russian": "требовать",
+    "level": "B1",
+    "example": "This job requires experience.",
+    "transcription": "/ɹɪˈkwaɪə/"
+  },
+  {
+    "english": "research",
+    "russian": "исследование",
+    "level": "B1",
+    "example": "He does research in biology.",
+    "transcription": "/ɹɪˈsɜːtʃ/"
+  },
+  {
+    "english": "respect",
+    "russian": "уважение",
+    "level": "B1",
+    "example": "I have great respect for her.",
+    "transcription": "/ɹɪˈspɛkt/"
+  },
+  {
+    "english": "result",
+    "russian": "результат",
+    "level": "B1",
+    "example": "The results are impressive.",
+    "transcription": "/ɹɪˈzʌlt/"
+  },
+  {
+    "english": "satisfy",
+    "russian": "удовлетворять",
+    "level": "B1",
+    "example": "The answer didn't satisfy me.",
+    "transcription": "/ˈsætɪsfaɪ/"
+  },
+  {
+    "english": "situation",
+    "russian": "ситуация",
+    "level": "B1",
+    "example": "The situation is serious.",
+    "transcription": "/sɪtjuːˈeɪʃən/"
+  },
+  {
+    "english": "skill",
+    "russian": "навык",
+    "level": "B1",
+    "example": "Communication is an important skill.",
+    "transcription": "/skɪl/"
+  },
+  {
+    "english": "society",
+    "russian": "общество",
+    "level": "B1",
+    "example": "We live in a modern society.",
+    "transcription": "/səˈsaɪ.ə.ti/"
+  },
+  {
+    "english": "solution",
+    "russian": "решение",
+    "level": "B1",
+    "example": "We found a solution.",
+    "transcription": "/səˈl(j)uːʃən/"
+  },
+  {
+    "english": "source",
+    "russian": "источник",
+    "level": "B1",
+    "example": "What is the source of this information?",
+    "transcription": "/sɔːs/"
+  },
+  {
+    "english": "specific",
+    "russian": "конкретный",
+    "level": "B1",
+    "example": "Give me a specific example.",
+    "transcription": "/spəˈsɪf.ɪk/"
+  },
+  {
+    "english": "structure",
+    "russian": "структура",
+    "level": "B1",
+    "example": "The structure of the building is strong.",
+    "transcription": "/ˈstɹʌktʃə(ɹ)/"
+  },
+  {
+    "english": "success",
+    "russian": "успех",
+    "level": "B1",
+    "example": "I wish you success.",
+    "transcription": "/səkˈsɛs/"
+  },
+  {
+    "english": "suffer",
+    "russian": "страдать",
+    "level": "B1",
+    "example": "He suffers from headaches.",
+    "transcription": "/ˈsʌfə/"
+  },
+  {
+    "english": "suggest",
+    "russian": "предлагать",
+    "level": "B1",
+    "example": "I suggest we take a break.",
+    "transcription": "/səˈdʒɛst/"
+  },
+  {
+    "english": "support",
+    "russian": "поддерживать",
+    "level": "B1",
+    "example": "My family supports me.",
+    "transcription": "/səˈpɔːt/"
+  },
+  {
+    "english": "surprise",
+    "russian": "удивление",
+    "level": "B1",
+    "example": "What a nice surprise!",
+    "transcription": "/səˈpɹaɪz/"
+  },
+  {
+    "english": "survive",
+    "russian": "выживать",
+    "level": "B1",
+    "example": "Few plants survive in the desert.",
+    "transcription": "/səˈvʌɪv/"
+  },
+  {
+    "english": "technology",
+    "russian": "технология",
+    "level": "B1",
+    "example": "Technology is changing fast.",
+    "transcription": "/tɛkˈnɒlədʒi/"
+  },
+  {
+    "english": "tradition",
+    "russian": "традиция",
+    "level": "B1",
+    "example": "This is an old tradition.",
+    "transcription": "/tɹəˈdɪʃn̩/"
+  },
+  {
+    "english": "valuable",
+    "russian": "ценный",
+    "level": "B1",
+    "example": "This information is very valuable.",
+    "transcription": "/ˈvæljuəbl̩/"
+  },
+  {
+    "english": "ambiguous",
+    "russian": "неоднозначный",
+    "level": "B2",
+    "example": "The statement was ambiguous.",
+    "transcription": "/æmˈbɪɡjuəs/"
+  },
+  {
+    "english": "compromise",
+    "russian": "компромисс",
+    "level": "B2",
+    "example": "They reached a compromise.",
+    "transcription": "/ˈkɒmpɹəˌmaɪz/"
+  },
+  {
+    "english": "inevitable",
+    "russian": "неизбежный",
+    "level": "B2",
+    "example": "Change is inevitable.",
+    "transcription": "/ɪnˈɛvɪtəbəl/"
+  },
+  {
+    "english": "controversy",
+    "russian": "полемика",
+    "level": "B2",
+    "example": "The decision caused controversy.",
+    "transcription": "/ˈkɑntɹəˌvɝsi/"
+  },
+  {
+    "english": "perceive",
+    "russian": "воспринимать",
+    "level": "B2",
+    "example": "How do you perceive this situation?",
+    "transcription": "/pəˈsiːv/"
+  },
+  {
+    "english": "emphasize",
+    "russian": "подчёркивать",
+    "level": "B2",
+    "example": "I want to emphasize this point.",
+    "transcription": "/ˈɛm.fə.saɪz/"
+  },
+  {
+    "english": "reluctant",
+    "russian": "неохотный",
+    "level": "B2",
+    "example": "He was reluctant to agree.",
+    "transcription": "/ɹɪˈlʌktənt/"
+  },
+  {
+    "english": "sophisticated",
+    "russian": "утончённый",
+    "level": "B2",
+    "example": "She has a sophisticated taste.",
+    "transcription": "/səˈfɪs.tɪ.keɪ.tɪd/"
+  },
+  {
+    "english": "substantial",
+    "russian": "существенный",
+    "level": "B2",
+    "example": "There was a substantial increase.",
+    "transcription": "/səbˈstænʃəl/"
+  },
+  {
+    "english": "undermine",
+    "russian": "подрывать",
+    "level": "B2",
+    "example": "This could undermine our efforts.",
+    "transcription": "/ʌndəˈmaɪn/"
+  },
+  {
+    "english": "acquire",
+    "russian": "приобретать",
+    "level": "B2",
+    "example": "She acquired new skills.",
+    "transcription": "/əˈkwaɪə/"
+  },
+  {
+    "english": "adequate",
+    "russian": "достаточный",
+    "level": "B2",
+    "example": "The explanation was not adequate.",
+    "transcription": "/ˈæd.ɪ.kwət/"
+  },
+  {
+    "english": "advocate",
+    "russian": "защитник",
+    "level": "B2",
+    "example": "She is an advocate for change.",
+    "transcription": "/ˈæd.və.keɪt/"
+  },
+  {
+    "english": "allocate",
+    "russian": "распределять",
+    "level": "B2",
+    "example": "We need to allocate resources.",
+    "transcription": "/ˈæl.ə.keɪt/"
+  },
+  {
+    "english": "anticipate",
+    "russian": "предвидеть",
+    "level": "B2",
+    "example": "We didn't anticipate the problem.",
+    "transcription": "/ænˈtɪs.ɪ.peɪt/"
+  },
+  {
+    "english": "apparent",
+    "russian": "очевидный",
+    "level": "B2",
+    "example": "The reason was apparent.",
+    "transcription": "/əˈpæ.ɹənt/"
+  },
+  {
+    "english": "appreciate",
+    "russian": "ценить",
+    "level": "B2",
+    "example": "I appreciate your help.",
+    "transcription": "/əˈpɹiː.si.eɪt/"
+  },
+  {
+    "english": "assess",
+    "russian": "оценивать",
+    "level": "B2",
+    "example": "We need to assess the damage.",
+    "transcription": "/əˈsɛs/"
+  },
+  {
+    "english": "assume",
+    "russian": "предполагать",
+    "level": "B2",
+    "example": "I assume you know the answer.",
+    "transcription": "/əˈsuːm/"
+  },
+  {
+    "english": "authentic",
+    "russian": "подлинный",
+    "level": "B2",
+    "example": "This is an authentic painting.",
+    "transcription": "/ɒ.ˈθɛn.tɪk/"
+  },
+  {
+    "english": "capacity",
+    "russian": "ёмкость",
+    "level": "B2",
+    "example": "The stadium has a capacity of 50,000.",
+    "transcription": "/kəˈpæsɪti/"
+  },
+  {
+    "english": "circumstance",
+    "russian": "обстоятельство",
+    "level": "B2",
+    "example": "Under the circumstances, we agreed.",
+    "transcription": "/-æns/"
+  },
+  {
+    "english": "coherent",
+    "russian": "связный",
+    "level": "B2",
+    "example": "His argument was coherent.",
+    "transcription": "/koːˈhiɹənt/"
+  },
+  {
+    "english": "coincidence",
+    "russian": "совпадение",
+    "level": "B2",
+    "example": "What a coincidence!",
+    "transcription": "/kəʊˈɪnsɪdəns/"
+  },
+  {
+    "english": "commodity",
+    "russian": "товар",
+    "level": "B2",
+    "example": "Oil is a valuable commodity.",
+    "transcription": "/kəˈmɒdəti/"
+  },
+  {
+    "english": "complex",
+    "russian": "сложный",
+    "level": "B2",
+    "example": "This is a complex problem.",
+    "transcription": "/ˈkɒm.pleks/"
+  },
+  {
+    "english": "comprehensive",
+    "russian": "всесторонний",
+    "level": "B2",
+    "example": "We need a comprehensive plan.",
+    "transcription": "/ˌkɒm.pɹɪˈhɛn.sɪv/"
+  },
+  {
+    "english": "concept",
+    "russian": "концепция",
+    "level": "B2",
+    "example": "This is an important concept.",
+    "transcription": "/ˈkɒn.sɛpt/"
+  },
+  {
+    "english": "conflict",
+    "russian": "конфликт",
+    "level": "B2",
+    "example": "There is a conflict of interest.",
+    "transcription": "/kənˈflɪkt/"
+  },
+  {
+    "english": "consent",
+    "russian": "согласие",
+    "level": "B2",
+    "example": "She gave her consent.",
+    "transcription": "/kənˈsɛnt/"
+  },
+  {
+    "english": "considerable",
+    "russian": "значительный",
+    "level": "B2",
+    "example": "There was a considerable delay.",
+    "transcription": "/kənˈsɪdəɹəbl̩/"
+  },
+  {
+    "english": "consistent",
+    "russian": "последовательный",
+    "level": "B2",
+    "example": "Be consistent in your work.",
+    "transcription": "/kənˈsɪstənt/"
+  },
+  {
+    "english": "constitute",
+    "russian": "составлять",
+    "level": "B2",
+    "example": "Women constitute 60% of the staff.",
+    "transcription": "/ˈkɒnstɪtjuːt/"
+  },
+  {
+    "english": "contemporary",
+    "russian": "современный",
+    "level": "B2",
+    "example": "Contemporary art is interesting.",
+    "transcription": "/kənˈtɛm.p(ə).ɹi/"
+  },
+  {
+    "english": "context",
+    "russian": "контекст",
+    "level": "B2",
+    "example": "You need to understand the context.",
+    "transcription": "/ˈkɒntɛkst/"
+  },
+  {
+    "english": "contrast",
+    "russian": "контраст",
+    "level": "B2",
+    "example": "There is a strong contrast.",
+    "transcription": "/ˈkɒntɹɑːst/"
+  },
+  {
+    "english": "contribute",
+    "russian": "вносить вклад",
+    "level": "B2",
+    "example": "Everyone should contribute.",
+    "transcription": "/kənˈt(ʃ)ɹɪb.juːt/"
+  },
+  {
+    "english": "conventional",
+    "russian": "традиционный",
+    "level": "B2",
+    "example": "The conventional approach didn't work.",
+    "transcription": "/kənˈvɛnʃənl/"
+  },
+  {
+    "english": "convince",
+    "russian": "убеждать",
+    "level": "B2",
+    "example": "I couldn't convince him.",
+    "transcription": "/kənˈvɪns/"
+  },
+  {
+    "english": "crucial",
+    "russian": "решающий",
+    "level": "B2",
+    "example": "This is a crucial moment.",
+    "transcription": "/ˈkɹuː.ʃəl/"
+  },
+  {
+    "english": "decade",
+    "russian": "десятилетие",
+    "level": "B2",
+    "example": "It happened a decade ago.",
+    "transcription": "/dəˈkeɪd/"
+  },
+  {
+    "english": "decline",
+    "russian": "снижение",
+    "level": "B2",
+    "example": "There was a decline in sales.",
+    "transcription": "/dɪˈklaɪn/"
+  },
+  {
+    "english": "demonstrate",
+    "russian": "демонстрировать",
+    "level": "B2",
+    "example": "She demonstrated the method.",
+    "transcription": "/ˈdɛmənstɹeɪt/"
+  },
+  {
+    "english": "detect",
+    "russian": "обнаруживать",
+    "level": "B2",
+    "example": "They detected a problem.",
+    "transcription": "/dɪˈtɛkt/"
+  },
+  {
+    "english": "distinct",
+    "russian": "отчётливый",
+    "level": "B2",
+    "example": "There is a distinct difference.",
+    "transcription": "/dɪsˈtɪŋkt/"
+  },
+  {
+    "english": "distribute",
+    "russian": "распространять",
+    "level": "B2",
+    "example": "The company distributes goods worldwide.",
+    "transcription": "/dɨˈstɹɪbjuːt/"
+  },
+  {
+    "english": "dramatic",
+    "russian": "драматический",
+    "level": "B2",
+    "example": "There was a dramatic change.",
+    "transcription": "/dɹəˈmætɪk/"
+  },
+  {
+    "english": "efficient",
+    "russian": "эффективный",
+    "level": "B2",
+    "example": "This method is more efficient.",
+    "transcription": "/əˈfɪʃənt/"
+  },
+  {
+    "english": "eliminate",
+    "russian": "устранять",
+    "level": "B2",
+    "example": "We must eliminate errors.",
+    "transcription": "/ɪˈlɪməneɪt/"
+  },
+  {
+    "english": "emerge",
+    "russian": "появляться",
+    "level": "B2",
+    "example": "New trends are emerging.",
+    "transcription": "/iˈmɜːd͡ʒ/"
+  },
+  {
+    "english": "enable",
+    "russian": "позволять",
+    "level": "B2",
+    "example": "Technology enables remote work.",
+    "transcription": "/ɪˈneɪbəl/"
+  },
+  {
+    "english": "enormous",
+    "russian": "огромный",
+    "level": "B2",
+    "example": "There is an enormous difference.",
+    "transcription": "/ɪˈnɔː(ɹ)məs/"
+  },
+  {
+    "english": "ensure",
+    "russian": "обеспечивать",
+    "level": "B2",
+    "example": "We must ensure quality.",
+    "transcription": "/ɪnˈʃɔː/"
+  },
+  {
+    "english": "essential",
+    "russian": "существенный",
+    "level": "B2",
+    "example": "Sleep is essential for health.",
+    "transcription": "/ɪˈsɛn.ʃəl/"
+  },
+  {
+    "english": "evaluate",
+    "russian": "оценивать",
+    "level": "B2",
+    "example": "We need to evaluate the results.",
+    "transcription": "/ɨˈvaljʊeɪt/"
+  },
+  {
+    "english": "evolve",
+    "russian": "развиваться",
+    "level": "B2",
+    "example": "Languages evolve over time.",
+    "transcription": "/ɪˈvɒlv/"
+  },
+  {
+    "english": "exceed",
+    "russian": "превышать",
+    "level": "B2",
+    "example": "Costs exceeded the budget.",
+    "transcription": "/ɪkˈsiːd/"
+  },
+  {
+    "english": "exploit",
+    "russian": "эксплуатировать",
+    "level": "B2",
+    "example": "We should exploit this opportunity.",
+    "transcription": "/ɪkˈsplɔɪt/"
+  },
+  {
+    "english": "extensive",
+    "russian": "обширный",
+    "level": "B2",
+    "example": "She has extensive knowledge.",
+    "transcription": "/ɛksˈtɛn.sɪv/"
+  },
+  {
+    "english": "extract",
+    "russian": "извлекать",
+    "level": "B2",
+    "example": "We extract oil from the ground.",
+    "transcription": "/ɪkˈstrækt/"
+  },
+  {
+    "english": "fundamental",
+    "russian": "фундаментальный",
+    "level": "B2",
+    "example": "This is a fundamental principle.",
+    "transcription": "/ˌfʌndəˈmɛntəl/"
+  },
+  {
+    "english": "generate",
+    "russian": "генерировать",
+    "level": "B2",
+    "example": "Wind turbines generate electricity.",
+    "transcription": "/ˈdʒɛn.əɹ.eɪt/"
+  },
+  {
+    "english": "genuine",
+    "russian": "настоящий",
+    "level": "B2",
+    "example": "Is this a genuine painting?",
+    "transcription": "/ˈdʒɛnjuːˌaɪn/"
+  },
+  {
+    "english": "global",
+    "russian": "глобальный",
+    "level": "B2",
+    "example": "Climate change is a global problem.",
+    "transcription": "/ˈɡləʊbəl/"
+  },
+  {
+    "english": "guarantee",
+    "russian": "гарантировать",
+    "level": "B2",
+    "example": "I can't guarantee success.",
+    "transcription": "/ˌɡæɹənˈtiː/"
+  },
+  {
+    "english": "hypothesis",
+    "russian": "гипотеза",
+    "level": "B2",
+    "example": "We need to test this hypothesis.",
+    "transcription": "/-əsəs/"
+  },
+  {
+    "english": "identical",
+    "russian": "идентичный",
+    "level": "B2",
+    "example": "The twins look identical.",
+    "transcription": "/aɪˈdɛntɪkl̩/"
+  },
+  {
+    "english": "ideology",
+    "russian": "идеология",
+    "level": "B2",
+    "example": "Different ideologies coexist.",
+    "transcription": "/ˌaɪ.diːˈɒl.ə.d͡ʒiː/"
+  },
+  {
+    "english": "illustrate",
+    "russian": "иллюстрировать",
+    "level": "B2",
+    "example": "This example illustrates the point.",
+    "transcription": "/ɪ.ˈlʌs.tɹeɪt/"
+  },
+  {
+    "english": "impact",
+    "russian": "воздействие",
+    "level": "B2",
+    "example": "The impact was significant.",
+    "transcription": "/ˈɪm.pækt/"
+  },
+  {
+    "english": "implement",
+    "russian": "осуществлять",
+    "level": "B2",
+    "example": "We need to implement the plan.",
+    "transcription": "/ˈɪmpləmənt/"
+  },
+  {
+    "english": "imply",
+    "russian": "подразумевать",
+    "level": "B2",
+    "example": "What are you implying?",
+    "transcription": "/ɪmˈplaɪ/"
+  },
+  {
+    "english": "impose",
+    "russian": "навязывать",
+    "level": "B2",
+    "example": "They imposed new restrictions.",
+    "transcription": "/ɪmˈpəʊz/"
+  },
+  {
+    "english": "indicate",
+    "russian": "указывать",
+    "level": "B2",
+    "example": "Studies indicate a problem.",
+    "transcription": "/ˈɪndɪkeɪt/"
+  },
+  {
+    "english": "inevitable",
+    "russian": "неизбежный",
+    "level": "B2",
+    "example": "Mistakes are inevitable.",
+    "transcription": "/ɪnˈɛvɪtəbəl/"
+  },
+  {
+    "english": "initial",
+    "russian": "начальный",
+    "level": "B2",
+    "example": "The initial results were good.",
+    "transcription": "/ɪˈnɪʃəl/"
+  },
+  {
+    "english": "initiative",
+    "russian": "инициатива",
+    "level": "B2",
+    "example": "She took the initiative.",
+    "transcription": "/ɪˈnɪʃətɪv/"
+  },
+  {
+    "english": "innovation",
+    "russian": "инновация",
+    "level": "B2",
+    "example": "Innovation drives progress.",
+    "transcription": "/ˌɪnəˈveɪʃən/"
+  },
+  {
+    "english": "insight",
+    "russian": "понимание",
+    "level": "B2",
+    "example": "He provided valuable insights.",
+    "transcription": "/ˈɪnsaɪt/"
+  },
+  {
+    "english": "instance",
+    "russian": "пример",
+    "level": "B2",
+    "example": "For instance, consider this case.",
+    "transcription": "/ˈɪnstəns/"
+  },
+  {
+    "english": "integrate",
+    "russian": "интегрировать",
+    "level": "B2",
+    "example": "We need to integrate the systems.",
+    "transcription": "/ˈɪntəɡɹeɪt/"
+  },
+  {
+    "english": "interpret",
+    "russian": "интерпретировать",
+    "level": "B2",
+    "example": "How do you interpret this data?",
+    "transcription": "/ɪnˈtɜː.pɹɪt/"
+  },
+  {
+    "english": "justify",
+    "russian": "оправдывать",
+    "level": "B2",
+    "example": "Can you justify this decision?",
+    "transcription": "/ˈdʒʌstɪfaɪ/"
+  },
+  {
+    "english": "maintain",
+    "russian": "поддерживать",
+    "level": "B2",
+    "example": "We must maintain high standards.",
+    "transcription": "/meɪnˈteɪn/"
+  },
+  {
+    "english": "majority",
+    "russian": "большинство",
+    "level": "B2",
+    "example": "The majority agreed.",
+    "transcription": "/məˈd͡ʒɒɹɪti/"
+  },
+  {
+    "english": "minor",
+    "russian": "незначительный",
+    "level": "B2",
+    "example": "It's a minor problem.",
+    "transcription": "/ˈmaɪnɚ/"
+  },
+  {
+    "english": "modify",
+    "russian": "модифицировать",
+    "level": "B2",
+    "example": "We modified the design.",
+    "transcription": "/ˈmɒdɪfaɪ/"
+  },
+  {
+    "english": "monitor",
+    "russian": "мониторить",
+    "level": "B2",
+    "example": "We monitor the situation closely.",
+    "transcription": "/ˈmɒnɨtə/"
+  },
+  {
+    "english": "negotiate",
+    "russian": "вести переговоры",
+    "level": "B2",
+    "example": "They negotiated a deal.",
+    "transcription": "/nəˈɡəʊ.ʃi.eɪt/"
+  },
+  {
+    "english": "notion",
+    "russian": "понятие",
+    "level": "B2",
+    "example": "I reject that notion.",
+    "transcription": "/ˈnəʊʃən/"
+  },
+  {
+    "english": "objective",
+    "russian": "цель",
+    "level": "B2",
+    "example": "Our main objective is growth.",
+    "transcription": "/ɒbˈd͡ʒɛk.tɪv/"
+  },
+  {
+    "english": "obtain",
+    "russian": "получать",
+    "level": "B2",
+    "example": "She obtained a degree.",
+    "transcription": "/əbˈteɪn/"
+  },
+  {
+    "english": "occupy",
+    "russian": "занимать",
+    "level": "B2",
+    "example": "The building occupies the whole block.",
+    "transcription": "/ˈɒkjʊpaɪ/"
+  },
+  {
+    "english": "occur",
+    "russian": "происходить",
+    "level": "B2",
+    "example": "The accident occurred yesterday.",
+    "transcription": "/əˈkɜː/"
+  },
+  {
+    "english": "outcome",
+    "russian": "исход",
+    "level": "B2",
+    "example": "The outcome was positive.",
+    "transcription": "/ˈaʊtkʌm/"
+  },
+  {
+    "english": "overcome",
+    "russian": "преодолевать",
+    "level": "B2",
+    "example": "She overcame many obstacles.",
+    "transcription": "/ˌəʊvəˈkʌm/"
+  },
+  {
+    "english": "phenomenon",
+    "russian": "явление",
+    "level": "B2",
+    "example": "This is a natural phenomenon.",
+    "transcription": "/fɪˈnɒmənɒn/"
+  },
+  {
+    "english": "perspective",
+    "russian": "перспектива",
+    "level": "B2",
+    "example": "Try to see it from my perspective.",
+    "transcription": "/pɚˈspɛktɪv/"
+  },
+  {
+    "english": "precise",
+    "russian": "точный",
+    "level": "B2",
+    "example": "Be more precise.",
+    "transcription": "/pɹɪˈsaɪs/"
+  },
+  {
+    "english": "predict",
+    "russian": "предсказывать",
+    "level": "B2",
+    "example": "It's hard to predict the future.",
+    "transcription": "/pɹɪˈdɪkt/"
+  },
+  {
+    "english": "predominantly",
+    "russian": "преимущественно",
+    "level": "B2",
+    "example": "The area is predominantly rural.",
+    "transcription": "/prɪˈdɒm.ɪ.nənt.li/"
+  },
+  {
+    "english": "priority",
+    "russian": "приоритет",
+    "level": "B2",
+    "example": "Safety is our priority.",
+    "transcription": "/pɹaɪˈɒɹɨti/"
+  },
+  {
+    "english": "proportion",
+    "russian": "пропорция",
+    "level": "B2",
+    "example": "A large proportion of people agreed.",
+    "transcription": "/pɹəˈpɔːʃən/"
+  },
+  {
+    "english": "prospect",
+    "russian": "перспектива",
+    "level": "B2",
+    "example": "The prospects look good.",
+    "transcription": "/ˈpɹɒspɛkt/"
+  },
+  {
+    "english": "pursue",
+    "russian": "преследовать",
+    "level": "B2",
+    "example": "She pursued her dream.",
+    "transcription": "/pəˈʃu/"
+  },
+  {
+    "english": "radical",
+    "russian": "радикальный",
+    "level": "B2",
+    "example": "Radical changes are needed.",
+    "transcription": "/ˈɹædɪkəl/"
+  },
+  {
+    "english": "rational",
+    "russian": "рациональный",
+    "level": "B2",
+    "example": "Let's be rational about this.",
+    "transcription": "/ˈɹæʃ(ə)nəl/"
+  },
+  {
+    "english": "relevant",
+    "russian": "уместный",
+    "level": "B2",
+    "example": "This information is relevant.",
+    "transcription": "/ˈɹɛləvənt/"
+  },
+  {
+    "english": "reluctance",
+    "russian": "неохота",
+    "level": "B2",
+    "example": "He showed some reluctance.",
+    "transcription": "/ɹɪˈlʌktəns/"
+  },
+  {
+    "english": "resolve",
+    "russian": "решать",
+    "level": "B2",
+    "example": "We resolved the issue.",
+    "transcription": "/ɹiːˈzɒlv/"
+  },
+  {
+    "english": "reveal",
+    "russian": "раскрывать",
+    "level": "B2",
+    "example": "The study revealed new facts.",
+    "transcription": "/ɹəˈviːl/"
+  },
+  {
+    "english": "revenue",
+    "russian": "доход",
+    "level": "B2",
+    "example": "Revenue increased by 20%.",
+    "transcription": "/ˈɹɛvənjuː/"
+  },
+  {
+    "english": "shift",
+    "russian": "сдвиг",
+    "level": "B2",
+    "example": "There was a shift in policy.",
+    "transcription": "/ʃɪft/"
+  },
+  {
+    "english": "significant",
+    "russian": "значительный",
+    "level": "B2",
+    "example": "This is a significant achievement.",
+    "transcription": "/sɪɡˈnɪ.fɪ.kənt/"
+  },
+  {
+    "english": "sufficient",
+    "russian": "достаточный",
+    "level": "B2",
+    "example": "The evidence is not sufficient.",
+    "transcription": "/səˈfɪʃənt/"
+  },
+  {
+    "english": "tendency",
+    "russian": "тенденция",
+    "level": "B2",
+    "example": "There is a tendency to overreact.",
+    "transcription": "/ˈtɛndənsi/"
+  },
+  {
+    "english": "thorough",
+    "russian": "тщательный",
+    "level": "B2",
+    "example": "She did a thorough analysis.",
+    "transcription": "/ˈθʌɹə/"
+  },
+  {
+    "english": "transform",
+    "russian": "трансформировать",
+    "level": "B2",
+    "example": "Technology transformed our lives.",
+    "transcription": "/tɹænzˈfɔːm/"
+  },
+  {
+    "english": "tremendous",
+    "russian": "огромный",
+    "level": "B2",
+    "example": "She made tremendous progress.",
+    "transcription": "/tɹəˈmɛndəs/"
+  },
+  {
+    "english": "ultimately",
+    "russian": "в конечном итоге",
+    "level": "B2",
+    "example": "Ultimately, we succeeded.",
+    "transcription": "/ˈʌltɪmətli/"
+  },
+  {
+    "english": "unique",
+    "russian": "уникальный",
+    "level": "B2",
+    "example": "Every person is unique.",
+    "transcription": "/juːˈniːk/"
+  },
+  {
+    "english": "valid",
+    "russian": "действительный",
+    "level": "B2",
+    "example": "Is your passport still valid?",
+    "transcription": "/ˈvælɪd/"
+  },
+  {
+    "english": "vulnerable",
+    "russian": "уязвимый",
+    "level": "B2",
+    "example": "Children are especially vulnerable.",
+    "transcription": "/ˈvʌln(ə)ɹəbl̩/"
+  },
+  {
+    "english": "widespread",
+    "russian": "распространённый",
+    "level": "B2",
+    "example": "The practice is widespread.",
+    "transcription": "/ˈwaɪd.spred/"
+  },
+  {
+    "english": "ubiquitous",
+    "russian": "вездесущий",
+    "level": "C1",
+    "example": "Smartphones are ubiquitous today.",
+    "transcription": "/juːˈbɪk.wə.təs/"
+  },
+  {
+    "english": "pragmatic",
+    "russian": "прагматичный",
+    "level": "C1",
+    "example": "She took a pragmatic approach.",
+    "transcription": "/pɹæɡˈmætɪk/"
+  },
+  {
+    "english": "meticulous",
+    "russian": "скрупулёзный",
+    "level": "C1",
+    "example": "He is meticulous in his work.",
+    "transcription": "/mɨˈtɪkjuləs/"
+  },
+  {
+    "english": "eloquent",
+    "russian": "красноречивый",
+    "level": "C1",
+    "example": "She gave an eloquent speech.",
+    "transcription": "/ˈɛl.əˌkwənt/"
+  },
+  {
+    "english": "paradigm",
+    "russian": "парадигма",
+    "level": "C1",
+    "example": "This represents a paradigm shift.",
+    "transcription": "/ˈpæ.ɹə.daɪm/"
+  },
+  {
+    "english": "resilient",
+    "russian": "стойкий",
+    "level": "C1",
+    "example": "Children are remarkably resilient.",
+    "transcription": "/rɪˈzɪl.i.ənt/"
+  },
+  {
+    "english": "alleviate",
+    "russian": "облегчать",
+    "level": "C1",
+    "example": "Medicine can alleviate the pain.",
+    "transcription": "/əˈli.vi.eɪt/"
+  },
+  {
+    "english": "discrepancy",
+    "russian": "расхождение",
+    "level": "C1",
+    "example": "There is a discrepancy in the data.",
+    "transcription": "/dɪsˈkɹɛpənsi/"
+  },
+  {
+    "english": "deteriorate",
+    "russian": "ухудшаться",
+    "level": "C1",
+    "example": "His health began to deteriorate.",
+    "transcription": "/dɪˈtɪəɹɪəɹeɪt/"
+  },
+  {
+    "english": "unprecedented",
+    "russian": "беспрецедентный",
+    "level": "C1",
+    "example": "This is an unprecedented situation.",
+    "transcription": "/ʌnˈpɹɛsɪdɛntɪd/"
+  },
+  {
+    "english": "ambivalent",
+    "russian": "двойственный",
+    "level": "C1",
+    "example": "She felt ambivalent about the offer.",
+    "transcription": "/æmˈbɪv.ə.lənt/"
+  },
+  {
+    "english": "conducive",
+    "russian": "способствующий",
+    "level": "C1",
+    "example": "The atmosphere is conducive to learning.",
+    "transcription": "/kənˈdjuːsɪv/"
+  },
+  {
+    "english": "contemplate",
+    "russian": "размышлять",
+    "level": "C1",
+    "example": "He contemplated his future.",
+    "transcription": "/ˈkɒn.təmˌpleɪt/"
+  },
+  {
+    "english": "corroborate",
+    "russian": "подтверждать",
+    "level": "C1",
+    "example": "Evidence corroborated his story.",
+    "transcription": "/kəˈɹɒbəɹeɪ̯t/"
+  },
+  {
+    "english": "curtail",
+    "russian": "сокращать",
+    "level": "C1",
+    "example": "They curtailed public spending.",
+    "transcription": "/kɜːˈteɪl/"
+  },
+  {
+    "english": "delineate",
+    "russian": "очерчивать",
+    "level": "C1",
+    "example": "The report delineates the main issues.",
+    "transcription": "/dɪˈlɪniːeɪt/"
+  },
+  {
+    "english": "denounce",
+    "russian": "осуждать",
+    "level": "C1",
+    "example": "They denounced the act of violence.",
+    "transcription": "/diˈnaʊns/"
+  },
+  {
+    "english": "deplete",
+    "russian": "истощать",
+    "level": "C1",
+    "example": "We are depleting natural resources.",
+    "transcription": "/dɪˈpliːt/"
+  },
+  {
+    "english": "detrimental",
+    "russian": "вредный",
+    "level": "C1",
+    "example": "Smoking is detrimental to health.",
+    "transcription": "/ˌdɛtɹɪˈmɛntəl/"
+  },
+  {
+    "english": "diligent",
+    "russian": "усердный",
+    "level": "C1",
+    "example": "She is a diligent worker.",
+    "transcription": "/ˈdɪlɪdʒənt/"
+  },
+  {
+    "english": "diminish",
+    "russian": "уменьшать",
+    "level": "C1",
+    "example": "His influence has diminished.",
+    "transcription": "/dɪˈmɪnɪʃ/"
+  },
+  {
+    "english": "disparity",
+    "russian": "неравенство",
+    "level": "C1",
+    "example": "There is a huge disparity in income.",
+    "transcription": "/dɪsˈpæɹɪti/"
+  },
+  {
+    "english": "disposition",
+    "russian": "характер",
+    "level": "C1",
+    "example": "She has a cheerful disposition.",
+    "transcription": "/ˌdɪs.pəˈzɪ.ʃən/"
+  },
+  {
+    "english": "elaborate",
+    "russian": "разрабатывать",
+    "level": "C1",
+    "example": "Could you elaborate on that?",
+    "transcription": "/ɪˈlæbəɹeɪt/"
+  },
+  {
+    "english": "elicit",
+    "russian": "вызывать",
+    "level": "C1",
+    "example": "His speech elicited strong reactions.",
+    "transcription": "/ɪˈlɪsɪt/"
+  },
+  {
+    "english": "encompass",
+    "russian": "охватывать",
+    "level": "C1",
+    "example": "The study encompasses many topics.",
+    "transcription": "/ɛnˈkʌm.pəs/"
+  },
+  {
+    "english": "endeavour",
+    "russian": "стремление",
+    "level": "C1",
+    "example": "It was a worthy endeavour.",
+    "transcription": "/ɪnˈdɛv.ə/"
+  },
+  {
+    "english": "eradicate",
+    "russian": "искоренять",
+    "level": "C1",
+    "example": "We must eradicate poverty.",
+    "transcription": "/ɪˈɹæd.ɪ.keɪt/"
+  },
+  {
+    "english": "exacerbate",
+    "russian": "усугублять",
+    "level": "C1",
+    "example": "The rain exacerbated the flooding.",
+    "transcription": "/ɪkˈsæs-/"
+  },
+  {
+    "english": "exemplify",
+    "russian": "служить примером",
+    "level": "C1",
+    "example": "This case exemplifies the problem.",
+    "transcription": "/ɛɡˈzɛmplɪfaɪ/"
+  },
+  {
+    "english": "expedite",
+    "russian": "ускорять",
+    "level": "C1",
+    "example": "We need to expedite the process.",
+    "transcription": "/ˈɛk.spəˌdaɪt/"
+  },
+  {
+    "english": "explicit",
+    "russian": "явный",
+    "level": "C1",
+    "example": "The instructions are explicit.",
+    "transcription": "/ɪkˈsplɪsɪt/"
+  },
+  {
+    "english": "feasible",
+    "russian": "осуществимый",
+    "level": "C1",
+    "example": "Is the plan feasible?",
+    "transcription": "/ˈfiːzəbəl/"
+  },
+  {
+    "english": "fluctuate",
+    "russian": "колебаться",
+    "level": "C1",
+    "example": "Prices fluctuate daily.",
+    "transcription": "/ˈflʌk.tʃu.eɪt/"
+  },
+  {
+    "english": "formidable",
+    "russian": "грозный",
+    "level": "C1",
+    "example": "She is a formidable opponent.",
+    "transcription": "/fɔːˈmɪdəbəl/"
+  },
+  {
+    "english": "foster",
+    "russian": "содействовать",
+    "level": "C1",
+    "example": "We aim to foster creativity.",
+    "transcription": "/ˈfɒstə/"
+  },
+  {
+    "english": "gratify",
+    "russian": "удовлетворять",
+    "level": "C1",
+    "example": "The results were gratifying.",
+    "transcription": "/ˈɡrætɪfaɪ/"
+  },
+  {
+    "english": "hinder",
+    "russian": "препятствовать",
+    "level": "C1",
+    "example": "Bad weather hindered our progress.",
+    "transcription": "/ˈhɪndə/"
+  },
+  {
+    "english": "hypothetical",
+    "russian": "гипотетический",
+    "level": "C1",
+    "example": "Consider a hypothetical situation.",
+    "transcription": "/ˌhaɪpəˈθɛtɪkl/"
+  },
+  {
+    "english": "imminent",
+    "russian": "неминуемый",
+    "level": "C1",
+    "example": "A storm is imminent.",
+    "transcription": "/ˈɪmɪnənt/"
+  },
+  {
+    "english": "impartial",
+    "russian": "беспристрастный",
+    "level": "C1",
+    "example": "The judge must be impartial.",
+    "transcription": "/ɪmˈpɑɹ.ʃəl/"
+  },
+  {
+    "english": "impede",
+    "russian": "затруднять",
+    "level": "C1",
+    "example": "Bureaucracy impedes progress.",
+    "transcription": "/ɪmˈpiːd/"
+  },
+  {
+    "english": "imperative",
+    "russian": "обязательный",
+    "level": "C1",
+    "example": "It is imperative that we act now.",
+    "transcription": "/ɪmˈpɛɹ.ə.tɪv/"
+  },
+  {
+    "english": "incentive",
+    "russian": "стимул",
+    "level": "C1",
+    "example": "Financial incentives attract workers.",
+    "transcription": "/ɪnˈsɛntɪv/"
+  },
+  {
+    "english": "inclination",
+    "russian": "склонность",
+    "level": "C1",
+    "example": "He has an inclination toward art.",
+    "transcription": "/ɪn.klɪˈneɪ.ʃən/"
+  },
+  {
+    "english": "indispensable",
+    "russian": "незаменимый",
+    "level": "C1",
+    "example": "She is indispensable to the team.",
+    "transcription": "/ɪndɪˈspɛnsəbəl/"
+  },
+  {
+    "english": "inherent",
+    "russian": "присущий",
+    "level": "C1",
+    "example": "There are inherent risks.",
+    "transcription": "/ɪnˈhɛɹənt/"
+  },
+  {
+    "english": "inhibit",
+    "russian": "подавлять",
+    "level": "C1",
+    "example": "Fear can inhibit creativity.",
+    "transcription": "/ɪnˈhɪbɪt/"
+  },
+  {
+    "english": "innate",
+    "russian": "врождённый",
+    "level": "C1",
+    "example": "She has an innate talent for music.",
+    "transcription": "/ɪˈneɪt/"
+  },
+  {
+    "english": "jeopardize",
+    "russian": "ставить под угрозу",
+    "level": "C1",
+    "example": "Don't jeopardize your career.",
+    "transcription": "/ˈdʒep.ə.daɪz/"
+  },
+  {
+    "english": "legitimate",
+    "russian": "законный",
+    "level": "C1",
+    "example": "This is a legitimate concern.",
+    "transcription": "/lɪˈdʒɪt.ɪ.mɪt/"
+  },
+  {
+    "english": "liability",
+    "russian": "ответственность",
+    "level": "C1",
+    "example": "The company faces potential liability.",
+    "transcription": "/laɪəˈbɪlɪti/"
+  },
+  {
+    "english": "lucrative",
+    "russian": "прибыльный",
+    "level": "C1",
+    "example": "It's a lucrative business.",
+    "transcription": "/ˈluː.krə.tɪv/"
+  },
+  {
+    "english": "mandate",
+    "russian": "мандат",
+    "level": "C1",
+    "example": "The government issued a mandate.",
+    "transcription": "/ˈmæn.deɪt/"
+  },
+  {
+    "english": "mitigate",
+    "russian": "смягчать",
+    "level": "C1",
+    "example": "We must mitigate the risks.",
+    "transcription": "/ˈmɪt.ɪ.ɡeɪt/"
+  },
+  {
+    "english": "negligible",
+    "russian": "незначительный",
+    "level": "C1",
+    "example": "The effect was negligible.",
+    "transcription": "/ˈnɛɡlɪdʒɪbəl/"
+  },
+  {
+    "english": "notorious",
+    "russian": "печально известный",
+    "level": "C1",
+    "example": "The criminal is notorious.",
+    "transcription": "/nəʊˈtɔːɹɪəs/"
+  },
+  {
+    "english": "novice",
+    "russian": "новичок",
+    "level": "C1",
+    "example": "She is a novice in programming.",
+    "transcription": "/ˈnɒvɪs/"
+  },
+  {
+    "english": "nuance",
+    "russian": "нюанс",
+    "level": "C1",
+    "example": "There are important nuances.",
+    "transcription": "/ˈnjuː.ɑːns/"
+  },
+  {
+    "english": "obsolete",
+    "russian": "устаревший",
+    "level": "C1",
+    "example": "This technology is obsolete.",
+    "transcription": "/ˈɒbsəliːt/"
+  },
+  {
+    "english": "optimal",
+    "russian": "оптимальный",
+    "level": "C1",
+    "example": "We need to find the optimal solution.",
+    "transcription": "/ˈɒptɪməl/"
+  },
+  {
+    "english": "paradox",
+    "russian": "парадокс",
+    "level": "C1",
+    "example": "This is a curious paradox.",
+    "transcription": "/ˈpaɹədɒks/"
+  },
+  {
+    "english": "paramount",
+    "russian": "первостепенный",
+    "level": "C1",
+    "example": "Safety is paramount.",
+    "transcription": "/ˈpa.ɹə.maʊnt/"
+  },
+  {
+    "english": "penchant",
+    "russian": "склонность",
+    "level": "C1",
+    "example": "He has a penchant for drama.",
+    "transcription": "/ˈpɒnʃɒn/"
+  },
+  {
+    "english": "permeate",
+    "russian": "пронизывать",
+    "level": "C1",
+    "example": "The smell permeated the room.",
+    "transcription": "/ˈpɜːmiˌeɪt/"
+  },
+  {
+    "english": "perpetuate",
+    "russian": "увековечивать",
+    "level": "C1",
+    "example": "Don't perpetuate stereotypes.",
+    "transcription": "/pəˈpet.ju.eɪt/"
+  },
+  {
+    "english": "pertinent",
+    "russian": "уместный",
+    "level": "C1",
+    "example": "That is a pertinent question.",
+    "transcription": "/ˈpəːtɪnənt/"
+  },
+  {
+    "english": "plausible",
+    "russian": "правдоподобный",
+    "level": "C1",
+    "example": "That's a plausible explanation.",
+    "transcription": "/ˈplɔːz.ə.bəl/"
+  },
+  {
+    "english": "preclude",
+    "russian": "исключать",
+    "level": "C1",
+    "example": "Bad weather precluded the trip.",
+    "transcription": "/pɹiːˈkluːd/"
+  },
+  {
+    "english": "predominant",
+    "russian": "преобладающий",
+    "level": "C1",
+    "example": "Blue is the predominant color.",
+    "transcription": "/prɪˈdɒm.ɪ.nənt/"
+  },
+  {
+    "english": "premise",
+    "russian": "предпосылка",
+    "level": "C1",
+    "example": "The premise of the argument is wrong.",
+    "transcription": "/ˈpɹɛ.mɪs/"
+  },
+  {
+    "english": "prevalent",
+    "russian": "распространённый",
+    "level": "C1",
+    "example": "The disease is prevalent in Africa.",
+    "transcription": "/ˈpɹɛvələnt/"
+  },
+  {
+    "english": "proficiency",
+    "russian": "владение",
+    "level": "C1",
+    "example": "Language proficiency is required.",
+    "transcription": "/pɹəˈfɪʃənsi/"
+  },
+  {
+    "english": "profound",
+    "russian": "глубокий",
+    "level": "C1",
+    "example": "The book had a profound effect.",
+    "transcription": "/pɹəˈfaʊnd/"
+  },
+  {
+    "english": "proliferate",
+    "russian": "распространяться",
+    "level": "C1",
+    "example": "Fake news proliferates online.",
+    "transcription": "/pɹəˈlɪf.əɹ.eɪt/"
+  },
+  {
+    "english": "prone",
+    "russian": "склонный",
+    "level": "C1",
+    "example": "He is prone to exaggeration.",
+    "transcription": "/pɹəʊn/"
+  },
+  {
+    "english": "propensity",
+    "russian": "склонность",
+    "level": "C1",
+    "example": "She has a propensity for risk.",
+    "transcription": "/pɹəˈpɛnsɪti/"
+  },
+  {
+    "english": "provisional",
+    "russian": "временный",
+    "level": "C1",
+    "example": "This is a provisional agreement.",
+    "transcription": "/pɹəˈvɪʒənəl/"
+  },
+  {
+    "english": "proximity",
+    "russian": "близость",
+    "level": "C1",
+    "example": "The proximity to the station is convenient.",
+    "transcription": "/pɹɑkˈsɪ.mɪ.ti/"
+  },
+  {
+    "english": "rationale",
+    "russian": "обоснование",
+    "level": "C1",
+    "example": "What is the rationale behind this?",
+    "transcription": "/ɹæ.ʃəˈnɑːl/"
+  },
+  {
+    "english": "redundant",
+    "russian": "избыточный",
+    "level": "C1",
+    "example": "Some jobs have become redundant.",
+    "transcription": "/ɹɪˈdʌn.dənt/"
+  },
+  {
+    "english": "reinforce",
+    "russian": "укреплять",
+    "level": "C1",
+    "example": "This reinforces my belief.",
+    "transcription": "/ˌɹiːɪnˈfɔː(ɹ)s/"
+  },
+  {
+    "english": "relinquish",
+    "russian": "отказываться",
+    "level": "C1",
+    "example": "He relinquished his position.",
+    "transcription": "[ɹɪˈlɪŋkwɪʃ]"
+  },
+  {
+    "english": "repercussion",
+    "russian": "последствие",
+    "level": "C1",
+    "example": "The decision had serious repercussions.",
+    "transcription": "/ˌɹiː.pəˈkʌʃ.ən/"
+  },
+  {
+    "english": "rigorous",
+    "russian": "строгий",
+    "level": "C1",
+    "example": "The testing was rigorous.",
+    "transcription": "/ˈɹɪɡəɹəs/"
+  },
+  {
+    "english": "robust",
+    "russian": "надёжный",
+    "level": "C1",
+    "example": "We need a robust system.",
+    "transcription": "/ɹəʊˈbʌst/"
+  },
+  {
+    "english": "scrutinize",
+    "russian": "тщательно изучать",
+    "level": "C1",
+    "example": "The report was scrutinized.",
+    "transcription": "/ˈskɹuːtɨnaɪz/"
+  },
+  {
+    "english": "simultaneously",
+    "russian": "одновременно",
+    "level": "C1",
+    "example": "Both events occurred simultaneously.",
+    "transcription": "/ˌsɪməlˈteɪnɪəsli/"
+  },
+  {
+    "english": "speculate",
+    "russian": "предполагать",
+    "level": "C1",
+    "example": "We can only speculate.",
+    "transcription": "/ˈspek.jʊ.leɪt/"
+  },
+  {
+    "english": "spontaneous",
+    "russian": "спонтанный",
+    "level": "C1",
+    "example": "It was a spontaneous decision.",
+    "transcription": "/spɒnˈteɪ.ni.əs/"
+  },
+  {
+    "english": "stagnant",
+    "russian": "застойный",
+    "level": "C1",
+    "example": "The economy is stagnant.",
+    "transcription": "/ˈstæɡnənt/"
+  },
+  {
+    "english": "stimulus",
+    "russian": "стимул",
+    "level": "C1",
+    "example": "The government introduced a stimulus package.",
+    "transcription": "/ˈstɪm.jə.ləs/"
+  },
+  {
+    "english": "stringent",
+    "russian": "строгий",
+    "level": "C1",
+    "example": "There are stringent regulations.",
+    "transcription": "/ˈstrɪn.dʒənt/"
+  },
+  {
+    "english": "succinct",
+    "russian": "краткий",
+    "level": "C1",
+    "example": "Keep your answer succinct.",
+    "transcription": "/sə(k)ˈsɪŋkt/"
+  },
+  {
+    "english": "superficial",
+    "russian": "поверхностный",
+    "level": "C1",
+    "example": "The analysis was superficial.",
+    "transcription": "/ˌs(j)uːpəˈfɪʃəl/"
+  },
+  {
+    "english": "supplement",
+    "russian": "дополнять",
+    "level": "C1",
+    "example": "Vitamins supplement your diet.",
+    "transcription": "/ˈsʌpləmənt/"
+  },
+  {
+    "english": "tangible",
+    "russian": "ощутимый",
+    "level": "C1",
+    "example": "We need tangible results.",
+    "transcription": "/ˈtæn(d)ʒɪb(ə)l/"
+  },
+  {
+    "english": "tentative",
+    "russian": "предварительный",
+    "level": "C1",
+    "example": "We made a tentative plan.",
+    "transcription": "/ˈtɛntətɪv/"
+  },
+  {
+    "english": "terminate",
+    "russian": "прекращать",
+    "level": "C1",
+    "example": "The contract was terminated.",
+    "transcription": "/ˈtɜːmɪneɪt/"
+  },
+  {
+    "english": "trajectory",
+    "russian": "траектория",
+    "level": "C1",
+    "example": "The company is on an upward trajectory.",
+    "transcription": "/tɹəˈdʒɛktəɹɪ/"
+  },
+  {
+    "english": "trivial",
+    "russian": "тривиальный",
+    "level": "C1",
+    "example": "This is a trivial matter.",
+    "transcription": "/ˈtɹɪ.vi.əl/"
+  },
+  {
+    "english": "turbulent",
+    "russian": "бурный",
+    "level": "C1",
+    "example": "It was a turbulent period.",
+    "transcription": "/ˈtɜːbjələnt/"
+  },
+  {
+    "english": "underestimate",
+    "russian": "недооценивать",
+    "level": "C1",
+    "example": "Don't underestimate the difficulty.",
+    "transcription": "/ʌndɚˈɛs.tɨ.meɪt/"
+  },
+  {
+    "english": "versatile",
+    "russian": "разносторонний",
+    "level": "C1",
+    "example": "She is a versatile musician.",
+    "transcription": "/ˈvɝsətl̩/"
+  },
+  {
+    "english": "viable",
+    "russian": "жизнеспособный",
+    "level": "C1",
+    "example": "Is this a viable option?",
+    "transcription": "/ˈvaɪəbəl/"
+  },
+  {
+    "english": "volatile",
+    "russian": "нестабильный",
+    "level": "C1",
+    "example": "The market is volatile.",
+    "transcription": "/ˈvɒl.əˌtaɪ.(ə)l/"
+  },
+  {
+    "english": "warrant",
+    "russian": "гарантировать",
+    "level": "C1",
+    "example": "The situation warrants attention.",
+    "transcription": "/ˈwɒɹənt/"
+  },
+  {
+    "english": "ephemeral",
+    "russian": "эфемерный",
+    "level": "C2",
+    "example": "Fame can be ephemeral.",
+    "transcription": "/əˈfɛ.mə.ɹəl/"
+  },
+  {
+    "english": "perfunctory",
+    "russian": "формальный",
+    "level": "C2",
+    "example": "He gave a perfunctory nod.",
+    "transcription": "/pəˈfʌŋk.t(ə)ɹɪ/"
+  },
+  {
+    "english": "sycophant",
+    "russian": "подхалим",
+    "level": "C2",
+    "example": "The king was surrounded by sycophants.",
+    "transcription": "/ˈsɪkəfænt/"
+  },
+  {
+    "english": "obfuscate",
+    "russian": "запутывать",
+    "level": "C2",
+    "example": "The report was designed to obfuscate.",
+    "transcription": "/ˈɒbfəskeɪt/"
+  },
+  {
+    "english": "recalcitrant",
+    "russian": "непокорный",
+    "level": "C2",
+    "example": "The recalcitrant child refused to obey.",
+    "transcription": "/ɹɪ.ˈkæl.sɪ.tɹənt/"
+  },
+  {
+    "english": "perspicacious",
+    "russian": "проницательный",
+    "level": "C2",
+    "example": "A perspicacious observer would notice.",
+    "transcription": "/ˌpɜː.spɪˈkeɪ.ʃəs/"
+  },
+  {
+    "english": "juxtapose",
+    "russian": "сопоставлять",
+    "level": "C2",
+    "example": "The artist juxtaposed light and shadow.",
+    "transcription": "/ˈd͡ʒʌkstəpəʊz/"
+  },
+  {
+    "english": "ineffable",
+    "russian": "невыразимый",
+    "level": "C2",
+    "example": "The beauty was ineffable.",
+    "transcription": "/ɪˈnɛf.ə.bəl/"
+  },
+  {
+    "english": "vicissitude",
+    "russian": "превратность",
+    "level": "C2",
+    "example": "The vicissitudes of life taught him patience.",
+    "transcription": "[vaɪˈsɪs.ɨˌt(j)u(ː)d]"
+  },
+  {
+    "english": "sesquipedalian",
+    "russian": "многосложный",
+    "level": "C2",
+    "example": "He had a sesquipedalian vocabulary.",
+    "transcription": "/ˌsɛskwɪpɪˈdeɪlɪən/"
+  },
+  {
+    "english": "abnegate",
+    "russian": "отрекаться",
+    "level": "C2",
+    "example": "He abnegated all responsibility.",
+    "transcription": "/ˈæb.nɪ.ɡeɪt/"
+  },
+  {
+    "english": "acrimonious",
+    "russian": "едкий",
+    "level": "C2",
+    "example": "The divorce was acrimonious.",
+    "transcription": "/ˌæk.ɹɪ.ˈməʊ̯.nɪ.əs/"
+  },
+  {
+    "english": "anachronism",
+    "russian": "анахронизм",
+    "level": "C2",
+    "example": "The law is an anachronism.",
+    "transcription": "/əˈnæ.kɹə.nɪ.z(ə)m/"
+  },
+  {
+    "english": "antithesis",
+    "russian": "антитеза",
+    "level": "C2",
+    "example": "His style is the antithesis of mine.",
+    "transcription": "/æn.ˈtɪ.θə.sɪs/"
+  },
+  {
+    "english": "apocryphal",
+    "russian": "апокрифический",
+    "level": "C2",
+    "example": "The story may be apocryphal.",
+    "transcription": "/əˈpɒkɹəfəl/"
+  },
+  {
+    "english": "assuage",
+    "russian": "утолять",
+    "level": "C2",
+    "example": "Nothing could assuage her grief.",
+    "transcription": "/əˈsweɪdʒ/"
+  },
+  {
+    "english": "bellicose",
+    "russian": "воинственный",
+    "level": "C2",
+    "example": "His bellicose rhetoric alarmed diplomats.",
+    "transcription": "/ˈbɛləkoʊs/"
+  },
+  {
+    "english": "capitulate",
+    "russian": "капитулировать",
+    "level": "C2",
+    "example": "The army capitulated after the siege.",
+    "transcription": "/kəˈpɪ.tjʊ.leɪt/"
+  },
+  {
+    "english": "chicanery",
+    "russian": "крючкотворство",
+    "level": "C2",
+    "example": "Political chicanery undermined trust.",
+    "transcription": "/ʃɪˈkeɪn(ə)ɹi/"
+  },
+  {
+    "english": "circumlocution",
+    "russian": "многословие",
+    "level": "C2",
+    "example": "He avoided directness through circumlocution.",
+    "transcription": "/ˌsɜːkəmləˈkjuːʃən/"
+  },
+  {
+    "english": "conflagration",
+    "russian": "пожар",
+    "level": "C2",
+    "example": "The conflagration destroyed the village.",
+    "transcription": "/ˌkɒnfləˈɡɹeɪʃən/"
+  },
+  {
+    "english": "conundrum",
+    "russian": "головоломка",
+    "level": "C2",
+    "example": "It's quite a conundrum.",
+    "transcription": "/kəˈnʌn.dɹəm/"
+  },
+  {
+    "english": "debacle",
+    "russian": "фиаско",
+    "level": "C2",
+    "example": "The project ended in a debacle.",
+    "transcription": "/deɪˈbɑː.kəl/"
+  },
+  {
+    "english": "deleterious",
+    "russian": "вредоносный",
+    "level": "C2",
+    "example": "The substance has deleterious effects.",
+    "transcription": "/ˌdɛlɪˈtɪəɹi.əs/"
+  },
+  {
+    "english": "denouement",
+    "russian": "развязка",
+    "level": "C2",
+    "example": "The novel's denouement was surprising.",
+    "transcription": "/ˌdeɪnuˈmɑ̃/"
+  },
+  {
+    "english": "deprecate",
+    "russian": "осуждать",
+    "level": "C2",
+    "example": "She deprecated his rude behaviour.",
+    "transcription": "/ˈdɛpɹəkeɪt/"
+  },
+  {
+    "english": "diaphanous",
+    "russian": "прозрачный",
+    "level": "C2",
+    "example": "She wore a diaphanous gown.",
+    "transcription": "/daɪˈæf.ən.əs/"
+  },
+  {
+    "english": "dichotomy",
+    "russian": "дихотомия",
+    "level": "C2",
+    "example": "There is a dichotomy between theory and practice.",
+    "transcription": "/daɪˈkɒt.ə.mi/"
+  },
+  {
+    "english": "ebullient",
+    "russian": "восторженный",
+    "level": "C2",
+    "example": "She was ebullient after the victory.",
+    "transcription": "/ɪˈbʊljənt/"
+  },
+  {
+    "english": "egregious",
+    "russian": "вопиющий",
+    "level": "C2",
+    "example": "It was an egregious error.",
+    "transcription": "/əˈɡɹiː.dʒi.əs/"
+  },
+  {
+    "english": "enervate",
+    "russian": "обессиливать",
+    "level": "C2",
+    "example": "The heat enervated everyone.",
+    "transcription": "/ˈen.ə.veɪt/"
+  },
+  {
+    "english": "equanimity",
+    "russian": "невозмутимость",
+    "level": "C2",
+    "example": "She faced the crisis with equanimity.",
+    "transcription": "/ˌiːkwəˈnɪmɪtiː/"
+  },
+  {
+    "english": "equivocate",
+    "russian": "уклоняться",
+    "level": "C2",
+    "example": "Stop equivocating and answer.",
+    "transcription": "/ɪˈkwɪvəˌkeɪt/"
+  },
+  {
+    "english": "excoriate",
+    "russian": "порицать",
+    "level": "C2",
+    "example": "The critics excoriated the film.",
+    "transcription": "/ɪkˈskoʊɹ.iˌeɪt/"
+  },
+  {
+    "english": "exigent",
+    "russian": "неотложный",
+    "level": "C2",
+    "example": "Exigent circumstances required immediate action.",
+    "transcription": "/ˈɛk.sɪ.dʒənt/"
+  },
+  {
+    "english": "fatuous",
+    "russian": "бессмысленный",
+    "level": "C2",
+    "example": "He made a fatuous remark.",
+    "transcription": "/ˈfæt.ju.əs/"
+  },
+  {
+    "english": "garrulous",
+    "russian": "болтливый",
+    "level": "C2",
+    "example": "The garrulous old man talked for hours.",
+    "transcription": "/ˈɡæɹ.jʊ.ləs/"
+  },
+  {
+    "english": "hapless",
+    "russian": "незадачливый",
+    "level": "C2",
+    "example": "The hapless tourist got lost.",
+    "transcription": "/ˈhæplɪs/"
+  },
+  {
+    "english": "ignominious",
+    "russian": "позорный",
+    "level": "C2",
+    "example": "It was an ignominious defeat.",
+    "transcription": "/ɪɡnəˈmɪnɪəs/"
+  },
+  {
+    "english": "impecunious",
+    "russian": "безденежный",
+    "level": "C2",
+    "example": "The impecunious student couldn't afford books.",
+    "transcription": "/ˌɪm.pəˈkjuː.ni.əs/"
+  },
+  {
+    "english": "imperturbable",
+    "russian": "невозмутимый",
+    "level": "C2",
+    "example": "She remained imperturbable under pressure.",
+    "transcription": "/ˌɪmpəˈtɜːbəbəl/"
+  },
+  {
+    "english": "impervious",
+    "russian": "непроницаемый",
+    "level": "C2",
+    "example": "He seemed impervious to criticism.",
+    "transcription": "/ɪmˈpɜːvi.əs/"
+  },
+  {
+    "english": "inchoate",
+    "russian": "зачаточный",
+    "level": "C2",
+    "example": "The plan was still inchoate.",
+    "transcription": "/ɪnˈkəʊeɪt/"
+  },
+  {
+    "english": "incontrovertible",
+    "russian": "неопровержимый",
+    "level": "C2",
+    "example": "The evidence is incontrovertible.",
+    "transcription": "/ˌɪŋ.kɒn.tɹəˈvɜː.təbl̩/"
+  },
+  {
+    "english": "inscrutable",
+    "russian": "загадочный",
+    "level": "C2",
+    "example": "Her expression was inscrutable.",
+    "transcription": "/ˌɪnˈskɹuːtəbl/"
+  },
+  {
+    "english": "laconic",
+    "russian": "лаконичный",
+    "level": "C2",
+    "example": "His laconic reply surprised everyone.",
+    "transcription": "/ləˈkɒnɪk/"
+  },
+  {
+    "english": "magnanimous",
+    "russian": "великодушный",
+    "level": "C2",
+    "example": "She was magnanimous in victory.",
+    "transcription": "/mæɡˈnæn.ɪ.məs/"
+  },
+  {
+    "english": "mendacious",
+    "russian": "лживый",
+    "level": "C2",
+    "example": "The mendacious claim was exposed.",
+    "transcription": "/mɛnˈdeɪʃəs/"
+  },
+  {
+    "english": "munificent",
+    "russian": "щедрый",
+    "level": "C2",
+    "example": "A munificent donation saved the charity.",
+    "transcription": "/mjuˈnɪfɨsn̩t/"
+  },
+  {
+    "english": "nefarious",
+    "russian": "гнусный",
+    "level": "C2",
+    "example": "They uncovered a nefarious plot.",
+    "transcription": "/nɛˈfɛəɹi.əs/"
+  },
+  {
+    "english": "obsequious",
+    "russian": "подобострастный",
+    "level": "C2",
+    "example": "His obsequious manner annoyed everyone.",
+    "transcription": "/əbˈsiːkwi.əs/"
+  },
+  {
+    "english": "panacea",
+    "russian": "панацея",
+    "level": "C2",
+    "example": "There is no panacea for poverty.",
+    "transcription": "/ˌpæn.əˈsiː.ə/"
+  },
+  {
+    "english": "parsimonious",
+    "russian": "скупой",
+    "level": "C2",
+    "example": "He is parsimonious with praise.",
+    "transcription": "/pɑɹ.sɪˈmo͡ʊn.i.əs/"
+  },
+  {
+    "english": "pejorative",
+    "russian": "уничижительный",
+    "level": "C2",
+    "example": "The term has pejorative connotations.",
+    "transcription": "/pɪˈdʒɒɹətɪv/"
+  },
+  {
+    "english": "pernicious",
+    "russian": "пагубный",
+    "level": "C2",
+    "example": "The pernicious effects of pollution.",
+    "transcription": "/pəˈnɪʃəs/"
+  },
+  {
+    "english": "pusillanimous",
+    "russian": "малодушный",
+    "level": "C2",
+    "example": "His pusillanimous response disappointed allies.",
+    "transcription": "/pjuːsəlˈænəməs/"
+  },
+  {
+    "english": "quixotic",
+    "russian": "донкихотский",
+    "level": "C2",
+    "example": "His quixotic quest amused observers.",
+    "transcription": "/kwɪkˈsɒtɪk/"
+  },
+  {
+    "english": "rapacious",
+    "russian": "хищный",
+    "level": "C2",
+    "example": "Rapacious corporations exploit workers.",
+    "transcription": "/ɹəˈpeɪ.ʃəs/"
+  },
+  {
+    "english": "recondite",
+    "russian": "заумный",
+    "level": "C2",
+    "example": "The topic is rather recondite.",
+    "transcription": "/ɹɪˈkɒndaɪt/"
+  },
+  {
+    "english": "repudiate",
+    "russian": "отвергать",
+    "level": "C2",
+    "example": "She repudiated the allegations.",
+    "transcription": "/ɹəˈpjuː.di.eɪt/"
+  },
+  {
+    "english": "sagacious",
+    "russian": "мудрый",
+    "level": "C2",
+    "example": "The sagacious leader foresaw the crisis.",
+    "transcription": "/səˈɡeɪʃəs/"
+  },
+  {
+    "english": "sanguine",
+    "russian": "оптимистичный",
+    "level": "C2",
+    "example": "She remains sanguine about the outcome.",
+    "transcription": "/ˈsæŋ.ɡwɪn/"
+  },
+  {
+    "english": "specious",
+    "russian": "благовидный",
+    "level": "C2",
+    "example": "The argument was specious.",
+    "transcription": "/ˈspiːʃəs/"
+  },
+  {
+    "english": "temerity",
+    "russian": "дерзость",
+    "level": "C2",
+    "example": "He had the temerity to disagree.",
+    "transcription": "/tɛˈmɛɹəti/"
+  },
+  {
+    "english": "truculent",
+    "russian": "агрессивный",
+    "level": "C2",
+    "example": "His truculent attitude caused problems.",
+    "transcription": "/ˈtɹʌkjʊlənt/"
+  },
+  {
+    "english": "unctuous",
+    "russian": "елейный",
+    "level": "C2",
+    "example": "His unctuous smile was unsettling.",
+    "transcription": "/ˈʌnktʃuəs/"
+  },
+  {
+    "english": "venal",
+    "russian": "продажный",
+    "level": "C2",
+    "example": "The venal official took bribes.",
+    "transcription": "/ˈviːnəl/"
+  },
+  {
+    "english": "vituperate",
+    "russian": "поносить",
+    "level": "C2",
+    "example": "He vituperated his opponents.",
+    "transcription": "/vaɪˈtjuːpəɹeɪt/"
+  },
+  {
+    "english": "zealous",
+    "russian": "рьяный",
+    "level": "C2",
+    "example": "She is a zealous advocate for justice.",
+    "transcription": "/ˈzɛl.əs/"
+  },
+  {
+    "english": "evening",
+    "russian": "вечер",
+    "level": "A1",
+    "example": "Good evening, how was your day?",
+    "transcription": "/ˈivnɪŋ/"
+  },
+  {
+    "english": "month",
+    "russian": "месяц",
+    "level": "A1",
+    "example": "January is the first month.",
+    "transcription": "/mʌnθ/"
+  },
+  {
+    "english": "minute",
+    "russian": "минута",
+    "level": "A1",
+    "example": "Wait one minute, please.",
+    "transcription": "/ˈmɪnɪt/"
+  },
+  {
+    "english": "hour",
+    "russian": "час",
+    "level": "A1",
+    "example": "The lesson is one hour long.",
+    "transcription": "/ˈaʊɚ/"
+  },
+  {
+    "english": "breakfast",
+    "russian": "завтрак",
+    "level": "A1",
+    "example": "I have breakfast at 8 o'clock.",
+    "transcription": "/ˈbɹɛkfəst/"
+  },
+  {
+    "english": "lunch",
+    "russian": "обед",
+    "level": "A1",
+    "example": "We have lunch at noon.",
+    "transcription": "/lʌnt͡ʃ/"
+  },
+  {
+    "english": "dinner",
+    "russian": "ужин",
+    "level": "A1",
+    "example": "Dinner is at 7 p.m.",
+    "transcription": "/ˈdɪnə/"
+  },
+  {
+    "english": "egg",
+    "russian": "яйцо",
+    "level": "A1",
+    "example": "I eat an egg for breakfast.",
+    "transcription": "/eɪɡ/"
+  },
+  {
+    "english": "rice",
+    "russian": "рис",
+    "level": "A1",
+    "example": "Rice is popular in Asia.",
+    "transcription": "/ɹaɪs/"
+  },
+  {
+    "english": "meat",
+    "russian": "мясо",
+    "level": "A1",
+    "example": "I don't eat meat.",
+    "transcription": "/miːt/"
+  },
+  {
+    "english": "sugar",
+    "russian": "сахар",
+    "level": "A1",
+    "example": "No sugar in my tea, please.",
+    "transcription": "/ˈʃʊɡə(ɹ)/"
+  },
+  {
+    "english": "salt",
+    "russian": "соль",
+    "level": "A1",
+    "example": "Pass the salt, please.",
+    "transcription": "/sɔlt/"
+  },
+  {
+    "english": "hand",
+    "russian": "рука",
+    "level": "A1",
+    "example": "Wash your hands before eating.",
+    "transcription": "/hænd/"
+  },
+  {
+    "english": "head",
+    "russian": "голова",
+    "level": "A1",
+    "example": "My head hurts.",
+    "transcription": "/hɛd/"
+  },
+  {
+    "english": "eye",
+    "russian": "глаз",
+    "level": "A1",
+    "example": "She has blue eyes.",
+    "transcription": "/aɪ/"
+  },
+  {
+    "english": "ear",
+    "russian": "ухо",
+    "level": "A1",
+    "example": "I can't hear with my left ear.",
+    "transcription": "/ɪə̯/"
+  },
+  {
+    "english": "nose",
+    "russian": "нос",
+    "level": "A1",
+    "example": "His nose is red from the cold.",
+    "transcription": "/nəʊz/"
+  },
+  {
+    "english": "mouth",
+    "russian": "рот",
+    "level": "A1",
+    "example": "Open your mouth, please.",
+    "transcription": "/mʌʊθ/"
+  },
+  {
+    "english": "leg",
+    "russian": "нога",
+    "level": "A1",
+    "example": "My leg hurts after running.",
+    "transcription": "/leɪɡ/"
+  },
+  {
+    "english": "foot",
+    "russian": "ступня",
+    "level": "A1",
+    "example": "I hurt my foot.",
+    "transcription": "[fʊt̚]"
+  },
+  {
+    "english": "hair",
+    "russian": "волосы",
+    "level": "A1",
+    "example": "She has long hair.",
+    "transcription": "/heː/"
+  },
+  {
+    "english": "shirt",
+    "russian": "рубашка",
+    "level": "A1",
+    "example": "He wears a white shirt.",
+    "transcription": "/ʃɜːt/"
+  },
+  {
+    "english": "shoes",
+    "russian": "обувь",
+    "level": "A1",
+    "example": "Take off your shoes.",
+    "transcription": "/ʃuːz/"
+  },
+  {
+    "english": "coat",
+    "russian": "пальто",
+    "level": "A1",
+    "example": "Put on your coat, it's cold.",
+    "transcription": "/kəʊt/"
+  },
+  {
+    "english": "hat",
+    "russian": "шапка",
+    "level": "A1",
+    "example": "Wear a hat in winter.",
+    "transcription": "[hat]"
+  },
+  {
+    "english": "bag",
+    "russian": "сумка",
+    "level": "A1",
+    "example": "My bag is very heavy.",
+    "transcription": "/ˈbæːɡ/"
+  },
+  {
+    "english": "key",
+    "russian": "ключ",
+    "level": "A1",
+    "example": "I lost my key.",
+    "transcription": "/kiː/"
+  },
+  {
+    "english": "floor",
+    "russian": "пол",
+    "level": "A1",
+    "example": "The cat is on the floor.",
+    "transcription": "/flɔː/"
+  },
+  {
+    "english": "wall",
+    "russian": "стена",
+    "level": "A1",
+    "example": "The picture is on the wall.",
+    "transcription": "/wɔːl/"
+  },
+  {
+    "english": "rain",
+    "russian": "дождь",
+    "level": "A1",
+    "example": "It's raining today.",
+    "transcription": "/ɹeɪn/"
+  },
+  {
+    "english": "snow",
+    "russian": "снег",
+    "level": "A1",
+    "example": "Children like snow.",
+    "transcription": "/snəʊ/"
+  },
+  {
+    "english": "sun",
+    "russian": "солнце",
+    "level": "A1",
+    "example": "The sun is bright today.",
+    "transcription": "/sʌn/"
+  },
+  {
+    "english": "sky",
+    "russian": "небо",
+    "level": "A1",
+    "example": "The sky is blue.",
+    "transcription": "/skaɪ/"
+  },
+  {
+    "english": "accident",
+    "russian": "авария",
+    "level": "A2",
+    "example": "There was an accident on the road.",
+    "transcription": "/ˈæk.sə.dənt/"
+  },
+  {
+    "english": "already",
+    "russian": "уже",
+    "level": "A2",
+    "example": "I have already eaten.",
+    "transcription": "/ɑlˈɹɛdi/"
+  },
+  {
+    "english": "behave",
+    "russian": "вести себя",
+    "level": "A2",
+    "example": "Please behave well at school.",
+    "transcription": "/bəˈheɪv/"
+  },
+  {
+    "english": "believe",
+    "russian": "верить",
+    "level": "A2",
+    "example": "I believe in you.",
+    "transcription": "/bɪˈliːv/"
+  },
+  {
+    "english": "borrow",
+    "russian": "одалживать",
+    "level": "A2",
+    "example": "Can I borrow your pen?",
+    "transcription": "/ˈbɔɹoʊ/"
+  },
+  {
+    "english": "bridge",
+    "russian": "мост",
+    "level": "A2",
+    "example": "We crossed the bridge.",
+    "transcription": "/bɹɪd͡ʒ/"
+  },
+  {
+    "english": "castle",
+    "russian": "замок",
+    "level": "A2",
+    "example": "The old castle is beautiful.",
+    "transcription": "/kæsl̩/"
+  },
+  {
+    "english": "century",
+    "russian": "век",
+    "level": "A2",
+    "example": "This building is from the 19th century.",
+    "transcription": "/ˈsɛn.t͡ʃə.ɹiː/"
+  },
+  {
+    "english": "climb",
+    "russian": "подниматься",
+    "level": "A2",
+    "example": "We climbed the mountain.",
+    "transcription": "/klaɪm/"
+  },
+  {
+    "english": "count",
+    "russian": "считать",
+    "level": "A2",
+    "example": "Can you count to one hundred?",
+    "transcription": "/kaʊnt/"
+  },
+  {
+    "english": "crowd",
+    "russian": "толпа",
+    "level": "A2",
+    "example": "There was a big crowd at the concert.",
+    "transcription": "/kɹaʊd/"
+  },
+  {
+    "english": "damage",
+    "russian": "ущерб",
+    "level": "A2",
+    "example": "The storm caused a lot of damage.",
+    "transcription": "/ˈdæmɪdʒ/"
+  },
+  {
+    "english": "deliver",
+    "russian": "доставлять",
+    "level": "A2",
+    "example": "They will deliver the package tomorrow.",
+    "transcription": "/dɪˈlɪvə(ɹ)/"
+  },
+  {
+    "english": "desert",
+    "russian": "пустыня",
+    "level": "A2",
+    "example": "The Sahara is the largest desert.",
+    "transcription": "/dɪˈzɜːt/"
+  },
+  {
+    "english": "drawer",
+    "russian": "ящик",
+    "level": "A2",
+    "example": "The keys are in the drawer.",
+    "transcription": "/dɹɔː(ɹ)/"
+  },
+  {
+    "english": "enemy",
+    "russian": "враг",
+    "level": "A2",
+    "example": "He has no enemies.",
+    "transcription": "/ˈɛnəmi/"
+  },
+  {
+    "english": "envelope",
+    "russian": "конверт",
+    "level": "A2",
+    "example": "Put the letter in the envelope.",
+    "transcription": "/ˈɒn.və.ləʊp/"
+  },
+  {
+    "english": "escape",
+    "russian": "сбежать",
+    "level": "A2",
+    "example": "The bird escaped from the cage.",
+    "transcription": "/əˈskeɪp/"
+  },
+  {
+    "english": "fault",
+    "russian": "вина",
+    "level": "A2",
+    "example": "It's not your fault.",
+    "transcription": "/fɒlt/"
+  },
+  {
+    "english": "goal",
+    "russian": "цель",
+    "level": "A2",
+    "example": "My goal is to learn English.",
+    "transcription": "/ɡɒʊl/"
+  },
+  {
+    "english": "guard",
+    "russian": "охранник",
+    "level": "A2",
+    "example": "The guard stood at the gate.",
+    "transcription": "/ɡɑːd/"
+  },
+  {
+    "english": "hide",
+    "russian": "прятать",
+    "level": "A2",
+    "example": "The children like to hide in the garden.",
+    "transcription": "/haɪd/"
+  },
+  {
+    "english": "knee",
+    "russian": "колено",
+    "level": "A2",
+    "example": "I hurt my knee playing football.",
+    "transcription": "/niː/"
+  },
+  {
+    "english": "ladder",
+    "russian": "лестница",
+    "level": "A2",
+    "example": "He climbed up the ladder.",
+    "transcription": "/ˈladə/"
+  },
+  {
+    "english": "medal",
+    "russian": "медаль",
+    "level": "A2",
+    "example": "She won a gold medal.",
+    "transcription": "[ˈmeɾ.ɫ̩]"
+  },
+  {
+    "english": "nephew",
+    "russian": "племянник",
+    "level": "A2",
+    "example": "My nephew is ten years old.",
+    "transcription": "/ˈnɛf.ju/"
+  },
+  {
+    "english": "peaceful",
+    "russian": "мирный",
+    "level": "A2",
+    "example": "It was a peaceful evening.",
+    "transcription": "/ˈpiːsfəl/"
+  },
+  {
+    "english": "plenty",
+    "russian": "множество",
+    "level": "A2",
+    "example": "There is plenty of food.",
+    "transcription": "/ˈplɛnti/"
+  },
+  {
+    "english": "polite",
+    "russian": "вежливый",
+    "level": "A2",
+    "example": "Be polite to everyone.",
+    "transcription": "/pəˈlaɪt/"
+  },
+  {
+    "english": "primary",
+    "russian": "начальный",
+    "level": "A2",
+    "example": "She goes to primary school.",
+    "transcription": "/ˈpɹɒeməɹi/"
+  },
+  {
+    "english": "protect",
+    "russian": "защищать",
+    "level": "A2",
+    "example": "Parents protect their children.",
+    "transcription": "/pɹəˈtɛkt/"
+  },
+  {
+    "english": "remind",
+    "russian": "напоминать",
+    "level": "A2",
+    "example": "Remind me to call her.",
+    "transcription": "/ɹəˈmaɪnd/"
+  },
+  {
+    "english": "schedule",
+    "russian": "расписание",
+    "level": "A2",
+    "example": "Check the bus schedule.",
+    "transcription": "/ˈskɛ.dʒu.əl/"
+  },
+  {
+    "english": "abolish",
+    "russian": "отменять",
+    "level": "B2",
+    "example": "They voted to abolish the old law.",
+    "transcription": "/əˈbɒlɪʃ/"
+  },
+  {
+    "english": "accumulate",
+    "russian": "накапливать",
+    "level": "B2",
+    "example": "Dust accumulates on unused furniture.",
+    "transcription": "/əˈkjuːmjʊˌleɪt/"
+  },
+  {
+    "english": "allegation",
+    "russian": "обвинение",
+    "level": "B2",
+    "example": "The allegations were never proven.",
+    "transcription": "/ˌæl.əˈɡeɪ.ʃən/"
+  },
+  {
+    "english": "benchmark",
+    "russian": "эталон",
+    "level": "B2",
+    "example": "This score serves as a benchmark.",
+    "transcription": "/ˈbentʃ.mɑːk/"
+  },
+  {
+    "english": "bureaucracy",
+    "russian": "бюрократия",
+    "level": "B2",
+    "example": "Too much bureaucracy slows progress.",
+    "transcription": "/bjʊəˈɹɒkɹəsi/"
+  },
+  {
+    "english": "catastrophe",
+    "russian": "катастрофа",
+    "level": "B2",
+    "example": "The oil spill was an environmental catastrophe.",
+    "transcription": "/kəˈtæstɹəfi/"
+  },
+  {
+    "english": "contemplate",
+    "russian": "размышлять",
+    "level": "B2",
+    "example": "She contemplated the meaning of life.",
+    "transcription": "/ˈkɒn.təmˌpleɪt/"
+  },
+  {
+    "english": "deficit",
+    "russian": "дефицит",
+    "level": "B2",
+    "example": "The budget deficit is growing.",
+    "transcription": "/ˈdɛfɪsɪt/"
+  },
+  {
+    "english": "deteriorate",
+    "russian": "ухудшаться",
+    "level": "B2",
+    "example": "His health began to deteriorate.",
+    "transcription": "/dɪˈtɪəɹɪəɹeɪt/"
+  },
+  {
+    "english": "discrepancy",
+    "russian": "расхождение",
+    "level": "B2",
+    "example": "There is a discrepancy between the two reports.",
+    "transcription": "/dɪsˈkɹɛpənsi/"
+  },
+  {
+    "english": "empathy",
+    "russian": "эмпатия",
+    "level": "B2",
+    "example": "Good leaders show empathy.",
+    "transcription": "/ˈɛmpəθi/"
+  },
+  {
+    "english": "endorse",
+    "russian": "одобрять",
+    "level": "B2",
+    "example": "The committee endorsed the proposal.",
+    "transcription": "/ɪnˈdɔːs/"
+  },
+  {
+    "english": "fluctuate",
+    "russian": "колебаться",
+    "level": "B2",
+    "example": "Prices fluctuate throughout the year.",
+    "transcription": "/ˈflʌk.tʃu.eɪt/"
+  },
+  {
+    "english": "grasp",
+    "russian": "понимать",
+    "level": "B2",
+    "example": "She quickly grasped the concept.",
+    "transcription": "/ɡɹɑːsp/"
+  },
+  {
+    "english": "hazardous",
+    "russian": "опасный",
+    "level": "B2",
+    "example": "Hazardous materials require special handling.",
+    "transcription": "/ˈhæzəɹdəs/"
+  },
+  {
+    "english": "incentive",
+    "russian": "стимул",
+    "level": "B2",
+    "example": "Tax breaks serve as an incentive.",
+    "transcription": "/ɪnˈsɛntɪv/"
+  },
+  {
+    "english": "jurisdiction",
+    "russian": "юрисдикция",
+    "level": "B2",
+    "example": "This falls under federal jurisdiction.",
+    "transcription": "/d͡ʒɔːɹɪsˈdɪkʃən/"
+  },
+  {
+    "english": "legitimate",
+    "russian": "законный",
+    "level": "B2",
+    "example": "That is a legitimate concern.",
+    "transcription": "/lɪˈdʒɪt.ɪ.mɪt/"
+  },
+  {
+    "english": "mandatory",
+    "russian": "обязательный",
+    "level": "B2",
+    "example": "Attendance is mandatory for all staff.",
+    "transcription": "/ˈmæn.də.t(ə)ɹi/"
+  },
+  {
+    "english": "negligent",
+    "russian": "халатный",
+    "level": "B2",
+    "example": "The company was found negligent.",
+    "transcription": "/ˈnɛɡ.lɪ.dʒənt/"
+  },
+  {
+    "english": "outweigh",
+    "russian": "перевешивать",
+    "level": "B2",
+    "example": "The benefits outweigh the risks.",
+    "transcription": "/ˌaʊtˈweɪ/"
+  },
+  {
+    "english": "perception",
+    "russian": "восприятие",
+    "level": "B2",
+    "example": "Perception of risk varies by culture.",
+    "transcription": "/pəˈsɛpʃ(ə)n/"
+  },
+  {
+    "english": "solidarity",
+    "russian": "солидарность",
+    "level": "B2",
+    "example": "They showed solidarity with the workers.",
+    "transcription": "/ˌsɒl.ɪˈdær.ɪ.ti/"
+  },
+  {
+    "english": "acquiesce",
+    "russian": "уступать",
+    "level": "C1",
+    "example": "She acquiesced to their demands.",
+    "transcription": "/ˌækwiˈɛs/"
+  },
+  {
+    "english": "admonish",
+    "russian": "увещевать",
+    "level": "C1",
+    "example": "The teacher admonished the student.",
+    "transcription": "/ədˈmɒn.ɪʃ/"
+  },
+  {
+    "english": "aesthetic",
+    "russian": "эстетический",
+    "level": "C1",
+    "example": "The building has great aesthetic appeal.",
+    "transcription": "/iːs.ˈθe.tɪk/"
+  },
+  {
+    "english": "amalgamate",
+    "russian": "объединять",
+    "level": "C1",
+    "example": "The two companies amalgamated.",
+    "transcription": "/əˈmælɡəˌmeɪt/"
+  },
+  {
+    "english": "ascertain",
+    "russian": "устанавливать",
+    "level": "C1",
+    "example": "We need to ascertain the facts.",
+    "transcription": "/ˌæsəˈteɪn/"
+  },
+  {
+    "english": "benevolent",
+    "russian": "благожелательный",
+    "level": "C1",
+    "example": "A benevolent leader inspires loyalty.",
+    "transcription": "/bəˈnɛvələnt/"
+  },
+  {
+    "english": "candid",
+    "russian": "откровенный",
+    "level": "C1",
+    "example": "She gave a candid interview.",
+    "transcription": "/ˈkæn.dɪd/"
+  },
+  {
+    "english": "commensurate",
+    "russian": "соразмерный",
+    "level": "C1",
+    "example": "Salary commensurate with experience.",
+    "transcription": "/kəˈmɛnʃəɹət/"
+  },
+  {
+    "english": "conundrum",
+    "russian": "головоломка",
+    "level": "C1",
+    "example": "This presents a real conundrum.",
+    "transcription": "/kəˈnʌn.dɹəm/"
+  },
+  {
+    "english": "debilitate",
+    "russian": "ослаблять",
+    "level": "C1",
+    "example": "The illness debilitated him for months.",
+    "transcription": "/dɪˈbɪlɪteɪt/"
+  },
+  {
+    "english": "disparate",
+    "russian": "разнородный",
+    "level": "C1",
+    "example": "Disparate groups came together.",
+    "transcription": "/ˈdɪsp(ə)ɹət/"
+  },
+  {
+    "english": "efficacy",
+    "russian": "эффективность",
+    "level": "C1",
+    "example": "The efficacy of the drug was proven.",
+    "transcription": "/ˈɛf.ɪ.kə.si/"
+  },
+  {
+    "english": "gratuitous",
+    "russian": "безосновательный",
+    "level": "C1",
+    "example": "The violence in the film was gratuitous.",
+    "transcription": "/ɡɹəˈtjuː.ɪt.əs/"
+  },
+  {
+    "english": "harbinger",
+    "russian": "предвестник",
+    "level": "C1",
+    "example": "Warm winds are a harbinger of spring.",
+    "transcription": "/ˈhɑːbɪndʒə/"
+  },
+  {
+    "english": "impervious",
+    "russian": "непроницаемый",
+    "level": "C1",
+    "example": "He seemed impervious to criticism.",
+    "transcription": "/ɪmˈpɜːvi.əs/"
+  },
+  {
+    "english": "incorrigible",
+    "russian": "неисправимый",
+    "level": "C1",
+    "example": "He's an incorrigible optimist.",
+    "transcription": "/ɪnˈkɒɹɨdʒɨb(ə)l/"
+  },
+  {
+    "english": "juxtapose",
+    "russian": "сопоставлять",
+    "level": "C1",
+    "example": "The artist juxtaposed old and new.",
+    "transcription": "/ˈd͡ʒʌkstəpəʊz/"
+  },
+  {
+    "english": "laudable",
+    "russian": "похвальный",
+    "level": "C1",
+    "example": "Their efforts are laudable.",
+    "transcription": "/lɔːdəbl/"
+  },
+  {
+    "english": "nonchalant",
+    "russian": "беспечный",
+    "level": "C1",
+    "example": "He gave a nonchalant shrug.",
+    "transcription": "/ˈnɒn.ʃəl.ənt/"
+  },
+  {
+    "english": "ostentatious",
+    "russian": "показной",
+    "level": "C1",
+    "example": "The decoration was ostentatious.",
+    "transcription": "/ˌɒs.tənˈteɪ.ʃəs/"
+  },
+  {
+    "english": "pervasive",
+    "russian": "повсеместный",
+    "level": "C1",
+    "example": "Corruption was pervasive in the system.",
+    "transcription": "/pəˈveɪ.sɪv/"
+  },
+  {
+    "english": "poignant",
+    "russian": "пронзительный",
+    "level": "C1",
+    "example": "The film had a poignant ending.",
+    "transcription": "/ˈpɔɪn.jənt/"
+  },
+  {
+    "english": "quintessential",
+    "russian": "типичный",
+    "level": "C1",
+    "example": "He is the quintessential gentleman.",
+    "transcription": "/ˌkwɪnt.əˈsɛn.ʃəl/"
+  },
+  {
+    "english": "repudiate",
+    "russian": "отвергать",
+    "level": "C1",
+    "example": "She repudiated the accusations.",
+    "transcription": "/ɹəˈpjuː.di.eɪt/"
+  },
+  {
+    "english": "substantiate",
+    "russian": "обосновывать",
+    "level": "C1",
+    "example": "Can you substantiate your claim?",
+    "transcription": "/səbˈstanʃɪeɪt/"
+  },
+  {
+    "english": "surpass",
+    "russian": "превосходить",
+    "level": "C1",
+    "example": "Sales surpassed expectations.",
+    "transcription": "/sɚˈpæs/"
+  },
+  {
+    "english": "tenuous",
+    "russian": "слабый",
+    "level": "C1",
+    "example": "The connection is tenuous at best.",
+    "transcription": "/ˈtɛn.ju.əs/"
+  },
+  {
+    "english": "vindicate",
+    "russian": "оправдывать",
+    "level": "C1",
+    "example": "The evidence vindicated her.",
+    "transcription": "/ˈvɪn.dɪ.keɪt/"
+  },
+  {
+    "english": "watershed",
+    "russian": "переломный момент",
+    "level": "C1",
+    "example": "This was a watershed moment.",
+    "transcription": "/ˈwɔːtəʃɛd/"
+  },
+  {
+    "english": "abstruse",
+    "russian": "заумный",
+    "level": "C2",
+    "example": "The theory is abstruse for beginners.",
+    "transcription": "/əbˈstɹuːs/"
+  },
+  {
+    "english": "anathema",
+    "russian": "анафема",
+    "level": "C2",
+    "example": "Censorship is anathema to free speech.",
+    "transcription": "/əˈnæθəmə/"
+  },
+  {
+    "english": "anomalous",
+    "russian": "аномальный",
+    "level": "C2",
+    "example": "The results were anomalous.",
+    "transcription": "/əˈnɒm.ə.ləs/"
+  },
+  {
+    "english": "Byzantine",
+    "russian": "витиеватый",
+    "level": "C2",
+    "example": "The rules are Byzantine in complexity.",
+    "transcription": "/ˈbɪz.ən.taɪn/"
+  },
+  {
+    "english": "calumny",
+    "russian": "клевета",
+    "level": "C2",
+    "example": "She was the victim of calumny.",
+    "transcription": "/kəˈlʌmni/"
+  },
+  {
+    "english": "capricious",
+    "russian": "капризный",
+    "level": "C2",
+    "example": "The weather here is capricious.",
+    "transcription": "/kəˈpɹɪʃəs/"
+  },
+  {
+    "english": "conflate",
+    "russian": "смешивать",
+    "level": "C2",
+    "example": "Don't conflate correlation with causation.",
+    "transcription": "/kɒnˈfleɪt/"
+  },
+  {
+    "english": "consternation",
+    "russian": "смятение",
+    "level": "C2",
+    "example": "The news caused consternation.",
+    "transcription": "/ˌkɒn.stəˈneɪ.ʃən/"
+  },
+  {
+    "english": "contrite",
+    "russian": "раскаявшийся",
+    "level": "C2",
+    "example": "He appeared genuinely contrite.",
+    "transcription": "/kənˈtɹaɪt/"
+  },
+  {
+    "english": "corroborate",
+    "russian": "подтверждать",
+    "level": "C2",
+    "example": "Witnesses corroborated her story.",
+    "transcription": "/kəˈɹɒbəɹeɪ̯t/"
+  },
+  {
+    "english": "diatribe",
+    "russian": "диатриба",
+    "level": "C2",
+    "example": "He launched into a diatribe.",
+    "transcription": "/ˈdaɪ.əˌtɹaɪb/"
+  },
+  {
+    "english": "dilettante",
+    "russian": "дилетант",
+    "level": "C2",
+    "example": "He's a dilettante in art.",
+    "transcription": "/dɪləˈtɒnti/"
+  },
+  {
+    "english": "erudite",
+    "russian": "эрудированный",
+    "level": "C2",
+    "example": "She gave an erudite lecture.",
+    "transcription": "/ˈɛɹ.ʊ.daɪt/"
+  },
+  {
+    "english": "fastidious",
+    "russian": "привередливый",
+    "level": "C2",
+    "example": "She is fastidious about cleanliness.",
+    "transcription": "/fæˈstɪdi.əs/"
+  },
+  {
+    "english": "filibuster",
+    "russian": "обструкция",
+    "level": "C2",
+    "example": "The senator began a filibuster.",
+    "transcription": "/ˈfɪlɪbʌstə(ɹ)/"
+  },
+  {
+    "english": "grandiloquent",
+    "russian": "напыщенный",
+    "level": "C2",
+    "example": "His grandiloquent speech impressed few.",
+    "transcription": "/ɡɹænˈdɪl.ə.kwənt/"
+  },
+  {
+    "english": "hegemony",
+    "russian": "гегемония",
+    "level": "C2",
+    "example": "They sought cultural hegemony.",
+    "transcription": "/hɪˈdʒɛm.ə.ni/"
+  },
+  {
+    "english": "iconoclast",
+    "russian": "иконоборец",
+    "level": "C2",
+    "example": "She was an iconoclast in the art world.",
+    "transcription": "/aɪˈkɒnəklæst/"
+  },
+  {
+    "english": "insidious",
+    "russian": "коварный",
+    "level": "C2",
+    "example": "The disease has insidious onset.",
+    "transcription": "/ɪnˈsɪdi.əs/"
+  },
+  {
+    "english": "intransigent",
+    "russian": "непримиримый",
+    "level": "C2",
+    "example": "Both sides remained intransigent.",
+    "transcription": "/ɪnˈtɹæn.sə.d͡ʒənt/"
+  },
+  {
+    "english": "loquacious",
+    "russian": "разговорчивый",
+    "level": "C2",
+    "example": "She becomes loquacious after coffee.",
+    "transcription": "/ləʊˈkweɪʃəs/"
+  },
+  {
+    "english": "malfeasance",
+    "russian": "должностное преступление",
+    "level": "C2",
+    "example": "He was charged with malfeasance.",
+    "transcription": "/ˌmælˈfiːzənts/"
+  },
+  {
+    "english": "mercurial",
+    "russian": "переменчивый",
+    "level": "C2",
+    "example": "Her mercurial temperament was legendary.",
+    "transcription": "/məːˈkjʊə.ɹɪ.əl/"
+  },
+  {
+    "english": "mitigate",
+    "russian": "смягчать",
+    "level": "C2",
+    "example": "Steps were taken to mitigate the risk.",
+    "transcription": "/ˈmɪt.ɪ.ɡeɪt/"
+  },
+  {
+    "english": "nascent",
+    "russian": "зарождающийся",
+    "level": "C2",
+    "example": "The nascent industry shows promise.",
+    "transcription": "/ˈneɪ.sənt/"
+  },
+  {
+    "english": "obdurate",
+    "russian": "непреклонный",
+    "level": "C2",
+    "example": "She remained obdurate in her refusal.",
+    "transcription": "/-ət/"
+  },
+  {
+    "english": "obviate",
+    "russian": "устранять",
+    "level": "C2",
+    "example": "This approach obviates the need for surgery.",
+    "transcription": "/ˈɒbviˌeɪt/"
+  },
+  {
+    "english": "onerous",
+    "russian": "обременительный",
+    "level": "C2",
+    "example": "The regulations are onerous.",
+    "transcription": "/ˈɒnəɹəs/"
+  },
+  {
+    "english": "opprobrious",
+    "russian": "оскорбительный",
+    "level": "C2",
+    "example": "He used opprobrious language.",
+    "transcription": "/əˈprəʊ.bri.əs/"
+  },
+  {
+    "english": "pellucid",
+    "russian": "прозрачный",
+    "level": "C2",
+    "example": "Her writing style is pellucid.",
+    "transcription": "/pəˈluːsɪd/"
+  },
+  {
+    "english": "petulant",
+    "russian": "раздражительный",
+    "level": "C2",
+    "example": "The child gave a petulant reply.",
+    "transcription": "/ˈpɛtjələnt/"
+  },
+  {
+    "english": "polemic",
+    "russian": "полемика",
+    "level": "C2",
+    "example": "His article was a fierce polemic.",
+    "transcription": "/pəˈlɛmɪk/"
+  },
+  {
+    "english": "precipitous",
+    "russian": "стремительный",
+    "level": "C2",
+    "example": "There was a precipitous decline.",
+    "transcription": "/pɹɪˈsɪpɪtəs/"
+  },
+  {
+    "english": "prevaricate",
+    "russian": "уклоняться от истины",
+    "level": "C2",
+    "example": "Stop prevaricating and tell the truth.",
+    "transcription": "/pɹɪˈvaɹɪkeɪt/"
+  },
+  {
+    "english": "probity",
+    "russian": "честность",
+    "level": "C2",
+    "example": "A person of great probity.",
+    "transcription": "/ˈpɹəʊbɪti/"
+  },
+  {
+    "english": "profligate",
+    "russian": "расточительный",
+    "level": "C2",
+    "example": "Profligate spending led to debt.",
+    "transcription": "/ˈpɹɒflɪɡət/"
+  },
+  {
+    "english": "promulgate",
+    "russian": "обнародовать",
+    "level": "C2",
+    "example": "The government promulgated new regulations.",
+    "transcription": "/ˈpɹɒml̩.ɡeɪt/"
+  },
+  {
+    "english": "propitious",
+    "russian": "благоприятный",
+    "level": "C2",
+    "example": "Conditions were propitious for growth.",
+    "transcription": "/pɹoʊˈpɪʃəs/"
+  },
+  {
+    "english": "remunerate",
+    "russian": "вознаграждать",
+    "level": "C2",
+    "example": "Staff should be fairly remunerated.",
+    "transcription": "/ɹɪˈmjuːnəɹeɪt/"
+  },
+  {
+    "english": "reprehensible",
+    "russian": "предосудительный",
+    "level": "C2",
+    "example": "His behavior was reprehensible.",
+    "transcription": "/ˌrep.rɪˈhen.sɪ.bəl/"
+  },
+  {
+    "english": "vacillate",
+    "russian": "колебаться",
+    "level": "C2",
+    "example": "She vacillated between two options.",
+    "transcription": "/ˈvæ.sə.leɪt/"
+  },
+  {
+    "english": "venerate",
+    "russian": "почитать",
+    "level": "C2",
+    "example": "They venerate their ancestors.",
+    "transcription": "/ˈvɛnəɹeɪt/"
+  },
+  {
+    "english": "vex",
+    "russian": "досаждать",
+    "level": "C2",
+    "example": "The problem vexed scientists for years.",
+    "transcription": "/vɛks/"
+  },
+  {
+    "english": "vitriolic",
+    "russian": "язвительный",
+    "level": "C2",
+    "example": "She received vitriolic criticism.",
+    "transcription": "/vɪtɹɪˈɒlɪk/"
+  },
+  {
+    "english": "paper",
+    "russian": "бумага",
+    "level": "A1",
+    "example": "Write your name on the paper.",
+    "transcription": "/ˈpeɪpə/"
+  },
+  {
+    "english": "train",
+    "russian": "поезд",
+    "level": "A1",
+    "example": "The train is fast.",
+    "transcription": "/tɹeɪn/"
+  },
+  {
+    "english": "tree",
+    "russian": "дерево",
+    "level": "A1",
+    "example": "There is a big tree in the garden.",
+    "transcription": "/tɹiː/"
+  },
+  {
+    "english": "flower",
+    "russian": "цветок",
+    "level": "A1",
+    "example": "This flower is beautiful.",
+    "transcription": "/ˈflaʊ.ə/"
+  },
+  {
+    "english": "river",
+    "russian": "река",
+    "level": "A1",
+    "example": "The river is very long.",
+    "transcription": "/ˈɹɪvə/"
+  },
+  {
+    "english": "mountain",
+    "russian": "гора",
+    "level": "A1",
+    "example": "The mountain is very high.",
+    "transcription": "/ˈmaʊntɪn/"
+  },
+  {
+    "english": "sea",
+    "russian": "море",
+    "level": "A1",
+    "example": "I love the sea.",
+    "transcription": "/siː/"
+  },
+  {
+    "english": "hungry",
+    "russian": "голодный",
+    "level": "A1",
+    "example": "I am hungry.",
+    "transcription": "/ˈhʌŋ.ɡɹi/"
+  },
+  {
+    "english": "thirsty",
+    "russian": "хочется пить",
+    "level": "A1",
+    "example": "I am thirsty.",
+    "transcription": "/ˈθɜː(ɹ)st.i/"
+  },
+  {
+    "english": "tired",
+    "russian": "уставший",
+    "level": "A1",
+    "example": "I am tired after work.",
+    "transcription": "/taɪəd/"
+  },
+  {
+    "english": "achieve",
+    "russian": "достигать",
+    "level": "A2",
+    "example": "She achieved her goal.",
+    "transcription": "/əˈtʃiːv/"
+  },
+  {
+    "english": "afford",
+    "russian": "позволить себе",
+    "level": "A2",
+    "example": "I can't afford a new car.",
+    "transcription": "/əˈfɔːd/"
+  },
+  {
+    "english": "announce",
+    "russian": "объявлять",
+    "level": "A2",
+    "example": "They announced the winner.",
+    "transcription": "/əˈnaʊns/"
+  },
+  {
+    "english": "attract",
+    "russian": "привлекать",
+    "level": "A2",
+    "example": "The city attracts many tourists.",
+    "transcription": "/əˈtɹækt/"
+  },
+  {
+    "english": "battle",
+    "russian": "битва",
+    "level": "A2",
+    "example": "The battle lasted three days.",
+    "transcription": "/ˈbætəl/"
+  },
+  {
+    "english": "celebrate",
+    "russian": "праздновать",
+    "level": "A2",
+    "example": "We celebrate birthdays with cake.",
+    "transcription": "/ˈsɛl.ə.bɹeɪt/"
+  },
+  {
+    "english": "aberration",
+    "russian": "отклонение",
+    "level": "C1",
+    "example": "This was an aberration, not the norm.",
+    "transcription": "/ˌæb.əˈɹeɪ.ʃn̩/"
+  },
+  {
+    "english": "acumen",
+    "russian": "проницательность",
+    "level": "C1",
+    "example": "She has great business acumen.",
+    "transcription": "/əˈkjuːmən/"
+  },
+  {
+    "english": "antithesis",
+    "russian": "антитеза",
+    "level": "C1",
+    "example": "His style is the antithesis of mine.",
+    "transcription": "/æn.ˈtɪ.θə.sɪs/"
+  },
+  {
+    "english": "cogent",
+    "russian": "убедительный",
+    "level": "C1",
+    "example": "She made a cogent argument.",
+    "transcription": "/ˈkə͡ʊd͡ʒn̩t/"
+  },
+  {
+    "english": "consonant",
+    "russian": "согласующийся",
+    "level": "C1",
+    "example": "His actions are consonant with his words.",
+    "transcription": "/ˈkɒn.sə.nənt/"
+  },
+  {
+    "english": "copious",
+    "russian": "обильный",
+    "level": "C1",
+    "example": "She took copious notes.",
+    "transcription": "/ˈkoʊpi.əs/"
+  },
+  {
+    "english": "dearth",
+    "russian": "нехватка",
+    "level": "C1",
+    "example": "There is a dearth of skilled workers.",
+    "transcription": "/dɜːθ/"
+  },
+  {
+    "english": "digress",
+    "russian": "отвлекаться",
+    "level": "C1",
+    "example": "Let me digress for a moment.",
+    "transcription": "/daɪˈɡɹɛs/"
+  },
+  {
+    "english": "elucidate",
+    "russian": "разъяснять",
+    "level": "C1",
+    "example": "Could you elucidate this point?",
+    "transcription": "/əˈluː.sɪ.de͡ɪt/"
+  },
+  {
+    "english": "fallacious",
+    "russian": "ошибочный",
+    "level": "C1",
+    "example": "The reasoning is fallacious.",
+    "transcription": "/fə.ˈleɪ.ʃəs/"
+  },
+  {
+    "english": "galvanize",
+    "russian": "побуждать",
+    "level": "C1",
+    "example": "The speech galvanized the crowd.",
+    "transcription": "/ˈɡælvənaɪ̯z/"
+  },
+  {
+    "english": "haphazard",
+    "russian": "бессистемный",
+    "level": "C1",
+    "example": "The approach was haphazard.",
+    "transcription": "/ˌhæpˈhæz.əd/"
+  },
+  {
+    "english": "impetus",
+    "russian": "импульс",
+    "level": "C1",
+    "example": "The scandal gave impetus to reform.",
+    "transcription": "/ˈɪm.pə.təs/"
+  },
+  {
+    "english": "abrogate",
+    "russian": "отменять",
+    "level": "C2",
+    "example": "The treaty was abrogated.",
+    "transcription": "/ˈæb.rə.ɡeɪt/"
+  },
+  {
+    "english": "apotheosis",
+    "russian": "апофеоз",
+    "level": "C2",
+    "example": "This is the apotheosis of her career.",
+    "transcription": "/əˌpɒθ.iːˈəʊ.sɪs/"
+  },
+  {
+    "english": "aspersion",
+    "russian": "клевета",
+    "level": "C2",
+    "example": "He cast aspersions on her character.",
+    "transcription": "/əˈspɜː.ʃən/"
+  },
+  {
+    "english": "atavistic",
+    "russian": "атавистический",
+    "level": "C2",
+    "example": "An atavistic fear of the dark.",
+    "transcription": "/æt.əˈvɪs.tɪk/"
+  },
+  {
+    "english": "bathos",
+    "russian": "антиклимакс",
+    "level": "C2",
+    "example": "The speech descended into bathos.",
+    "transcription": "/ˈbeɪθɒs/"
+  },
+  {
+    "english": "blandishment",
+    "russian": "лесть",
+    "level": "C2",
+    "example": "She resisted all blandishments.",
+    "transcription": "/ˈblændɪʃmn̩t/"
+  },
+  {
+    "english": "bumptious",
+    "russian": "самодовольный",
+    "level": "C2",
+    "example": "His bumptious manner annoyed everyone.",
+    "transcription": "/ˈbʌmpʃəs/"
+  },
+  {
+    "english": "cadaverous",
+    "russian": "мертвенно-бледный",
+    "level": "C2",
+    "example": "He had a cadaverous appearance.",
+    "transcription": "/kəˈdæv.ər.əs/"
+  },
+  {
+    "english": "contumacious",
+    "russian": "непокорный",
+    "level": "C2",
+    "example": "The contumacious defendant was fined.",
+    "transcription": "/ˌkɒn.tjʊˈmeɪ.ʃəs/"
+  },
+  {
+    "english": "cupidity",
+    "russian": "алчность",
+    "level": "C2",
+    "example": "Cupidity drove the scandal.",
+    "transcription": "/kjuːˈpɪdəti/"
+  },
+  {
+    "english": "desultory",
+    "russian": "бессвязный",
+    "level": "C2",
+    "example": "They had a desultory conversation.",
+    "transcription": "/ˈdɛs.əl.t(ə).ɹi/"
+  },
+  {
+    "english": "didactic",
+    "russian": "назидательный",
+    "level": "C2",
+    "example": "The novel is overly didactic.",
+    "transcription": "/daɪˈdæk.tɪk/"
+  },
+  {
+    "english": "dissemble",
+    "russian": "притворяться",
+    "level": "C2",
+    "example": "She dissembled to avoid punishment.",
+    "transcription": "[dɪˈsɛmbəɫ]"
+  },
+  {
+    "english": "effulgent",
+    "russian": "сияющий",
+    "level": "C2",
+    "example": "The effulgent sunset was breathtaking.",
+    "transcription": "/ɛ-/"
+  },
+  {
+    "english": "emolument",
+    "russian": "вознаграждение",
+    "level": "C2",
+    "example": "The post carries a generous emolument.",
+    "transcription": "/ɪˈmɒljəmənt/"
+  },
+  {
+    "english": "execrable",
+    "russian": "отвратительный",
+    "level": "C2",
+    "example": "The food was execrable.",
+    "transcription": "/ˈɛkskɹəbl/"
+  },
+  {
+    "english": "expiate",
+    "russian": "искупать",
+    "level": "C2",
+    "example": "He tried to expiate his guilt.",
+    "transcription": "/ˈɛk.spi.eɪt/"
+  },
+  {
+    "english": "flagitious",
+    "russian": "гнусный",
+    "level": "C2",
+    "example": "A flagitious act of treachery.",
+    "transcription": "/fləˈdʒɪʃəs/"
+  },
+  {
+    "english": "fulminate",
+    "russian": "метать громы и молнии",
+    "level": "C2",
+    "example": "He fulminated against the new policy.",
+    "transcription": "/ˈfʌlmɪneɪt/"
+  },
+  {
+    "english": "harangue",
+    "russian": "тирада",
+    "level": "C2",
+    "example": "She launched into a harangue.",
+    "transcription": "/həˈɹeɪŋ/"
+  },
+  {
+    "english": "impugn",
+    "russian": "оспаривать",
+    "level": "C2",
+    "example": "He impugned her motives.",
+    "transcription": "/ɪmˈpjuːn/"
+  },
+  {
+    "english": "inimical",
+    "russian": "враждебный",
+    "level": "C2",
+    "example": "Conditions inimical to growth.",
+    "transcription": "/ɪˈnɪmɪkəl/"
+  },
+  {
+    "english": "inveterate",
+    "russian": "закоренелый",
+    "level": "C2",
+    "example": "He is an inveterate liar.",
+    "transcription": "/ɪnˈvɛtəɹɪt/"
+  },
+  {
+    "english": "jejune",
+    "russian": "пресный",
+    "level": "C2",
+    "example": "His writing is jejune and uninspired.",
+    "transcription": "/dʒiˈdʒuːn/"
+  },
+  {
+    "english": "lugubrious",
+    "russian": "скорбный",
+    "level": "C2",
+    "example": "He gave a lugubrious speech.",
+    "transcription": "/ləˈɡ(j)uːbɹi.əs/"
+  },
+  {
+    "english": "meretricious",
+    "russian": "показной",
+    "level": "C2",
+    "example": "The arguments were meretricious.",
+    "transcription": "/ˌmɛɹəˈtɹɪʃəs/"
+  },
+  {
+    "english": "objurgate",
+    "russian": "бранить",
+    "level": "C2",
+    "example": "The coach objurgated the lazy players.",
+    "transcription": "/ˈɒb.dʒɜː.ɡeɪt/"
+  },
+  {
+    "english": "opprobrium",
+    "russian": "позор",
+    "level": "C2",
+    "example": "He faced public opprobrium.",
+    "transcription": "/əˈpɹoʊbɹi.əm/"
+  },
+  {
+    "english": "perfidious",
+    "russian": "вероломный",
+    "level": "C2",
+    "example": "A perfidious ally betrayed them.",
+    "transcription": "/pəˈfɪdi.əs/"
+  },
+  {
+    "english": "plangent",
+    "russian": "жалобный",
+    "level": "C2",
+    "example": "The plangent sound of the cello.",
+    "transcription": "/ˈplænd͡ʒənt/"
+  },
+  {
+    "english": "soporific",
+    "russian": "снотворный",
+    "level": "C2",
+    "example": "The lecture was soporific.",
+    "transcription": "/ˌsoʊ.pəˈɹɪf.ɪk/"
+  },
+  {
+    "english": "tendentious",
+    "russian": "тенденциозный",
+    "level": "C2",
+    "example": "A tendentious interpretation of events.",
+    "transcription": "/tɛnˈdɛnʃəs/"
+  },
+  {
+    "english": "turpitude",
+    "russian": "порочность",
+    "level": "C2",
+    "example": "Moral turpitude is grounds for dismissal.",
+    "transcription": "/ˈtɜː.pɪ.tjuːd/"
+  },
+  {
+    "english": "umbrage",
+    "russian": "обида",
+    "level": "C2",
+    "example": "She took umbrage at the remark.",
+    "transcription": "/ˈʌm.bɹɪdʒ/"
+  }
+]

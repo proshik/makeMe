@@ -9,26 +9,32 @@ import (
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
 
+	"makeMe/internal/dictionary"
 	"makeMe/internal/domain/assessment"
 	"makeMe/internal/domain/group"
+	"makeMe/internal/domain/srs"
 	"makeMe/internal/domain/task"
 	"makeMe/internal/domain/user"
 )
 
 type Bot struct {
-	bot       *bot.Bot
-	userSvc   *user.Service
-	groupSvc  *group.Service
-	assessSvc *assessment.Service
-	taskSvc   *task.Service
+	bot        *bot.Bot
+	userSvc    *user.Service
+	groupSvc   *group.Service
+	assessSvc  *assessment.Service
+	taskSvc    *task.Service
+	srsRepo    srs.Repository
+	dictClient *dictionary.Client
 }
 
-func New(token string, userSvc *user.Service, groupSvc *group.Service, assessSvc *assessment.Service, taskSvc *task.Service, extraOpts ...bot.Option) (*Bot, error) {
+func New(token string, userSvc *user.Service, groupSvc *group.Service, assessSvc *assessment.Service, taskSvc *task.Service, srsRepo srs.Repository, dictClient *dictionary.Client, extraOpts ...bot.Option) (*Bot, error) {
 	b := &Bot{
-		userSvc:   userSvc,
-		groupSvc:  groupSvc,
-		assessSvc: assessSvc,
-		taskSvc:   taskSvc,
+		userSvc:    userSvc,
+		groupSvc:   groupSvc,
+		assessSvc:  assessSvc,
+		taskSvc:    taskSvc,
+		srsRepo:    srsRepo,
+		dictClient: dictClient,
 	}
 
 	opts := []bot.Option{
@@ -50,6 +56,7 @@ func New(token string, userSvc *user.Service, groupSvc *group.Service, assessSvc
 	tgBot.RegisterHandler(bot.HandlerTypeMessageText, "/tasks", bot.MatchTypeExact, b.handleTasks)
 	tgBot.RegisterHandler(bot.HandlerTypeCallbackQueryData, "assess:", bot.MatchTypePrefix, b.handleAssessCallback)
 	tgBot.RegisterHandler(bot.HandlerTypeCallbackQueryData, "task:", bot.MatchTypePrefix, b.handleTaskCallback)
+	tgBot.RegisterHandler(bot.HandlerTypeCallbackQueryData, "word_audio:", bot.MatchTypePrefix, b.handleWordAudioCallback)
 
 	b.bot = tgBot
 	return b, nil

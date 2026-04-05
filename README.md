@@ -45,8 +45,9 @@ User A                              User B
   │                                   │
   ├─ /tasks                           ├─ /tasks
   │  "📖 Словарь — Задание 1/5"       │  "📝 Грамматика — Задание 1/5"
-  │  "ephemeral"                      │  "She ___ a teacher."
+  │  "ephemeral  /ɪˈfem.ər.əl/"        │  "She ___ a teacher."
   │  [эфемерный] [вездесущий] ...     │  [is] [are] [am] [be]
+  │  [🔊 Послушать]                   │
   │  "✅ Правильно!"                  │  "❌ Неправильно. Ответ: is"
   │  ... (5 tasks) ...                │  ... (5 tasks) ...
   │  "Все задания выполнены! (5/5)"   │  "Все задания выполнены! (5/5)"
@@ -106,7 +107,9 @@ words
 ├── english         TEXT NOT NULL
 ├── russian         TEXT NOT NULL
 ├── level           TEXT NOT NULL  (A1–C2)
-└── example         TEXT
+├── example         TEXT
+├── transcription   TEXT           (IPA, e.g. /ˈwɜːrd/, cached from Free Dictionary API)
+└── audio_url       TEXT           (MP3 URL, cached from Free Dictionary API)
 
 review_cards  (SRS / spaced repetition)
 ├── id              BIGSERIAL PK
@@ -176,10 +179,17 @@ Copy `.env.example` to `.env` and fill in the values:
 cp .env.example .env   # fill in values (see table above)
 
 make migrate-up        # run database migrations
+make seed-words        # seed word bank from data/words.json (~900 words across A1–C2)
 make sqlc              # regenerate sqlc code
 make run               # start the server
 make build             # build binary
 ```
+
+### Word bank
+
+The base word bank lives in `data/words.json` (~900 words, ~150 per CEFR level). To add words, edit the file and re-run `make seed-words` — existing entries are upserted, so no duplicates.
+
+IPA transcription and audio pronunciation are fetched on demand from the [Free Dictionary API](https://dictionaryapi.dev/) (no key required) the first time a user taps **🔊 Послушать** on a vocabulary card, then cached in the DB.
 
 ## Testing
 

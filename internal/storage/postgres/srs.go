@@ -113,12 +113,26 @@ func toReviewCard(row sqlc.ReviewCard) srs.ReviewCard {
 	}
 }
 
+func (r *SRSRepository) UpdateWordAudio(ctx context.Context, wordID int64, transcription, audioURL string) error {
+	err := r.q.UpdateWordAudio(ctx, sqlc.UpdateWordAudioParams{
+		ID:            wordID,
+		Transcription: transcription,
+		AudioURL:      audioURL,
+	})
+	if err != nil {
+		return fmt.Errorf("update word audio: %w", err)
+	}
+	return nil
+}
+
 func toWord(row sqlc.Word) srs.Word {
 	return srs.Word{
-		ID:      row.ID,
-		English: row.English,
-		Russian: row.Russian,
-		Level:   user.Level(row.Level),
-		Example: row.Example,
+		ID:            row.ID,
+		English:       row.English,
+		Russian:       row.Russian,
+		Level:         user.Level(row.Level),
+		Example:       row.Example,
+		Transcription: row.Transcription,
+		AudioURL:      row.AudioURL,
 	}
 }

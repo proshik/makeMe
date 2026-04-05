@@ -100,9 +100,11 @@ type User struct {
 }
 
 type Word struct {
-	ID      int64  `json:"id"`
-	English string `json:"english"`
-	Russian string `json:"russian"`
-	Level   string `json:"level"`
-	Example string `json:"example"`
+	ID            int64  `json:"id"`
+	English       string `json:"english"`
+	Russian       string `json:"russian"`
+	Level         string `json:"level"`
+	Example       string `json:"example"`
+	Transcription string `json:"transcription"`
+	AudioURL      string `json:"audio_url"`
 }

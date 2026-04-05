@@ -1,11 +1,22 @@
+-- name: UpsertWord :exec
+INSERT INTO words (english, russian, level, example, transcription)
+VALUES ($1, $2, $3, $4, $5)
+ON CONFLICT (english, level) DO UPDATE
+    SET russian = EXCLUDED.russian,
+        example = EXCLUDED.example,
+        transcription = EXCLUDED.transcription;
+
+-- name: UpdateWordAudio :exec
+UPDATE words SET transcription = $2, audio_url = $3 WHERE id = $1;
+
 -- name: GetWordsByLevel :many
-SELECT * FROM words WHERE level = $1 ORDER BY random() LIMIT $2;
+SELECT id, english, russian, level, example, transcription, audio_url FROM words WHERE level = $1 ORDER BY random() LIMIT $2;
 
 -- name: GetWordByID :one
-SELECT * FROM words WHERE id = $1;
+SELECT id, english, russian, level, example, transcription, audio_url FROM words WHERE id = $1;
 
 -- name: GetNewWordsForUser :many
-SELECT w.* FROM words w
+SELECT w.id, w.english, w.russian, w.level, w.example, w.transcription, w.audio_url FROM words w
 LEFT JOIN review_cards rc ON rc.word_id = w.id AND rc.user_id = $1
 WHERE w.level = $2 AND rc.id IS NULL
 ORDER BY random()
