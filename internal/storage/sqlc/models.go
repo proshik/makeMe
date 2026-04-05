@@ -30,6 +30,14 @@ type AssessmentSession struct {
 	CompletedAt     pgtype.Timestamptz `json:"completed_at"`
 }
 
+type DailySet struct {
+	ID        int64              `json:"id"`
+	UserID    int64              `json:"user_id"`
+	GroupID   int64              `json:"group_id"`
+	Date      pgtype.Date        `json:"date"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+}
+
 type Group struct {
 	ID         int64              `json:"id"`
 	Name       string             `json:"name"`
@@ -46,6 +54,40 @@ type Membership struct {
 	JoinedAt pgtype.Timestamptz `json:"joined_at"`
 }
 
+type ReviewCard struct {
+	ID             int64              `json:"id"`
+	UserID         int64              `json:"user_id"`
+	WordID         int64              `json:"word_id"`
+	EaseFactor     float32            `json:"ease_factor"`
+	IntervalDays   int32              `json:"interval_days"`
+	Repetitions    int32              `json:"repetitions"`
+	NextReviewDate pgtype.Date        `json:"next_review_date"`
+	UpdatedAt      pgtype.Timestamptz `json:"updated_at"`
+}
+
+type Task struct {
+	ID         int64  `json:"id"`
+	DailySetID int64  `json:"daily_set_id"`
+	Type       string `json:"type"`
+	Level      string `json:"level"`
+	Prompt     string `json:"prompt"`
+	Options    []byte `json:"options"`
+	Answer     string `json:"answer"`
+	Metadata   []byte `json:"metadata"`
+	Position   int32  `json:"position"`
+}
+
+type TaskResult struct {
+	ID         int64              `json:"id"`
+	TaskID     int64              `json:"task_id"`
+	UserID     int64              `json:"user_id"`
+	Response   string             `json:"response"`
+	Correct    bool               `json:"correct"`
+	Score      int32              `json:"score"`
+	DurationMs pgtype.Int4        `json:"duration_ms"`
+	CreatedAt  pgtype.Timestamptz `json:"created_at"`
+}
+
 type User struct {
 	ID         int64              `json:"id"`
 	TelegramID int64              `json:"telegram_id"`
@@ -55,4 +97,12 @@ type User struct {
 	Onboarded  bool               `json:"onboarded"`
 	CreatedAt  pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt  pgtype.Timestamptz `json:"updated_at"`
+}
+
+type Word struct {
+	ID      int64  `json:"id"`
+	English string `json:"english"`
+	Russian string `json:"russian"`
+	Level   string `json:"level"`
+	Example string `json:"example"`
 }

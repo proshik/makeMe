@@ -310,45 +310,36 @@ type Config struct {
 
 ---
 
-### Фаза 5 — Задания + SRS (ядро продукта)
+### Фаза 5 — Задания + SRS (ядро продукта) [DONE]
 
 **Цель:** ежедневная генерация заданий, выполнение через бота, интервальное повторение слов.
 
-Что делаем:
-- `migrations/00003_create_tasks.sql` — таблицы `daily_sets`, `tasks`, `task_results`
-- `migrations/00004_create_srs.sql` — таблицы `words`, `review_cards`
-- `internal/domain/srs/entity.go` — ReviewCard
-- `internal/domain/srs/sm2.go` — алгоритм SM-2 (чистая функция):
-  - На вход: текущая карточка + оценка качества (0–5)
-  - На выход: обновлённая карточка (ease_factor, interval, next_review_date)
-- `internal/domain/srs/repository.go` — интерфейс: `GetDueCards`, `UpsertCard`
-- `internal/domain/task/entity.go` — Task, DailySet, TaskResult, TaskType
-- `internal/domain/task/generator.go` — интерфейс `TaskGenerator`
-- `internal/domain/task/vocab.go` — генерирует задания на слова:
-  - Берёт слова из `review_cards` с `next_review_date <= today` (повторение)
-  - Добавляет новые слова по уровню пользователя
-  - Формат: показать слово → выбрать перевод из вариантов
-- `internal/domain/task/grammar.go` — грамматические задания:
-  - Предложение с пропуском → выбор правильной формы
-- `internal/domain/task/translation.go` — перевод фразы (свободный ввод)
-- `internal/domain/task/service.go` — `GenerateDaily(ctx, userID, groupID)`:
-  - Вызывает каждый зарегистрированный генератор
-  - Собирает задания в DailySet
-  - Сохраняет в БД
-- `internal/scheduler/scheduler.go` — крон (запускается в горутине):
-  - Каждый день в заданное время генерирует задания для всех активных пользователей
-  - Отправляет уведомление в Telegram: «Ваши задания на сегодня готовы!»
-- `internal/telegram/handler_task.go`:
-  - `/tasks` → показать текущий DailySet
-  - Показывает задание → inline-клавиатура с вариантами (или ожидание текстового ответа)
-  - Принимает ответ → записывает TaskResult → обновляет SRS-карточку (для vocab) → показывает следующее задание
-  - По завершении всех заданий → показывает результат дня
-- Seed data: начальный набор слов в таблице `words` (по уровням)
-- Seed data: набор грамматических правил/шаблонов
+Что сделано:
+- [x] `migrations/00004_create_srs.sql` — таблицы `words`, `review_cards`
+- [x] `migrations/00005_create_tasks.sql` — таблицы `daily_sets`, `tasks`, `task_results`
+- [x] `migrations/00006_seed_words.sql` — 60 слов (10 на каждый уровень A1–C2)
+- [x] `internal/domain/srs/entity.go` — Word, ReviewCard
+- [x] `internal/domain/srs/sm2.go` — алгоритм SM-2 (чистая функция): вход — карточка + качество (0–5), выход — обновлённая карточка
+- [x] `internal/domain/srs/repository.go` — интерфейс: `GetDueCards`, `UpsertCard`, `GetWordsByLevel`, `GetWordByID`, `GetNewWordsForUser`
+- [x] `internal/domain/task/entity.go` — Task, DailySet, TaskResult, TaskType (vocab/grammar)
+- [x] `internal/domain/task/repository.go` — интерфейс: `CreateDailySet`, `GetDailySet`, `AddTask`, `GetTasksByDailySet`, `GetTaskByID`, `AddResult`, `GetResult`, `CountResults`
+- [x] `internal/domain/task/generator.go` — интерфейс `TaskGenerator`
+- [x] `internal/domain/task/vocab.go` — VocabGenerator: due review cards + новые слова, 4 варианта ответа
+- [x] `internal/domain/task/grammar.go` — GrammarGenerator: 30 грамматических вопросов (5 на уровень)
+- [x] `internal/domain/task/service.go` — GenerateDaily (идемпотентная), SubmitAnswer (+ SRS update), GetNextUnanswered, GetProgress
+- [x] `internal/storage/postgres/srs.go` — реализация SRS-репозитория через sqlc
+- [x] `internal/storage/postgres/task.go` — реализация Task-репозитория через sqlc
+- [x] `queries/srs.sql` + `queries/tasks.sql` — SQL-запросы
+- [x] `internal/telegram/handler_task.go` — `/tasks` + callback `task:{id}:{option}`, feedback ✅/❌, итог дня
+- [x] `internal/telegram/bot.go` — добавлен taskSvc, регистрация `/tasks` и callback `task:`
+- [x] `cmd/makeme/main.go` — подключены srsRepo, taskRepo, генераторы, taskSvc
+- [x] `internal/domain/srs/sm2_test.go` — unit-тесты SM-2: 7 кейсов
+- [x] `internal/telegram/handler_task_test.go` — integration-тесты: not onboarded, no groups, generates task, full flow
+- [x] `go build` и `go vet` без ошибок
+- [ ] `internal/scheduler/scheduler.go` — отложен (будет в фазе 7)
+- [ ] translation-задания — отложены (расширяемая архитектура через TaskGenerator)
 
-**Проверка:**
-- Запустить генерацию вручную (`make generate-tasks` или через scheduler)
-- `/tasks` → бот показывает задания по одному → ответы записываются → SM-2 обновляет карточки → итог дня
+**Проверка:** `/tasks` → бот показывает задания по одному → ответы записываются → SM-2 обновляет карточки → итог дня
 
 ---
 

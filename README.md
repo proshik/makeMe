@@ -15,6 +15,7 @@ Go, PostgreSQL (pgx/sqlc/goose), chi, [go-telegram/bot](https://github.com/go-te
 | `/newgroup Название` | Create a new group. Returns an invite code to share with friends. |
 | `/join КОД` | Join a group by invite code. |
 | `/mygroups` | List all groups you belong to. |
+| `/tasks` | Get today's tasks (3 vocab + 2 grammar). Generates if needed, resumes where you left off. |
 
 ## Typical Flow
 
@@ -41,6 +42,14 @@ User A                              User B
   │                                   │
   ├─ /mygroups                        ├─ /mygroups
   │  "1. English Club (код: a1b2c3d4)"│  "1. English Club (код: a1b2c3d4)"
+  │                                   │
+  ├─ /tasks                           ├─ /tasks
+  │  "📖 Словарь — Задание 1/5"       │  "📝 Грамматика — Задание 1/5"
+  │  "ephemeral"                      │  "She ___ a teacher."
+  │  [эфемерный] [вездесущий] ...     │  [is] [are] [am] [be]
+  │  "✅ Правильно!"                  │  "❌ Неправильно. Ответ: is"
+  │  ... (5 tasks) ...                │  ... (5 tasks) ...
+  │  "Все задания выполнены! (5/5)"   │  "Все задания выполнены! (5/5)"
 ```
 
 ## Database Schema
@@ -92,9 +101,61 @@ assessment_answers
 └── created_at      TIMESTAMPTZ
 ```
 
+words
+├── id              BIGSERIAL PK
+├── english         TEXT NOT NULL
+├── russian         TEXT NOT NULL
+├── level           TEXT NOT NULL  (A1–C2)
+└── example         TEXT
+
+review_cards  (SRS / spaced repetition)
+├── id              BIGSERIAL PK
+├── user_id         BIGINT FK → users(id)
+├── word_id         BIGINT FK → words(id)
+├── ease_factor     REAL NOT NULL  (SM-2, default 2.5)
+├── interval_days   INT NOT NULL
+├── repetitions     INT NOT NULL
+├── next_review_date DATE NOT NULL
+├── updated_at      TIMESTAMPTZ
+└── UNIQUE(user_id, word_id)
+
+daily_sets
+├── id              BIGSERIAL PK
+├── user_id         BIGINT FK → users(id)
+├── group_id        BIGINT FK → groups(id)
+├── date            DATE NOT NULL
+├── created_at      TIMESTAMPTZ
+└── UNIQUE(user_id, group_id, date)
+
+tasks
+├── id              BIGSERIAL PK
+├── daily_set_id    BIGINT FK → daily_sets(id)
+├── type            TEXT NOT NULL  (vocab/grammar)
+├── level           TEXT NOT NULL  (A1–C2)
+├── prompt          TEXT NOT NULL
+├── options         JSONB
+├── answer          TEXT NOT NULL
+├── metadata        JSONB
+└── position        INT NOT NULL
+
+task_results
+├── id              BIGSERIAL PK
+├── task_id         BIGINT FK → tasks(id)
+├── user_id         BIGINT FK → users(id)
+├── response        TEXT NOT NULL
+├── correct         BOOLEAN NOT NULL
+├── score           INT NOT NULL
+├── duration_ms     INT
+├── created_at      TIMESTAMPTZ
+└── UNIQUE(task_id, user_id)
+```
+
 Relations:
 - `users` 1 ←→ N `memberships` N ←→ 1 `groups`
 - `users` 1 ←→ N `assessment_sessions` 1 ←→ N `assessment_answers`
+- `users` 1 ←→ N `review_cards` N ←→ 1 `words`
+- `users` 1 ←→ N `daily_sets` N ←→ 1 `groups`
+- `daily_sets` 1 ←→ N `tasks` 1 ←→ 1 `task_results`
 - `groups.created_by` → `users.id`
 
 ## Environment Variables

@@ -11,6 +11,7 @@ import (
 
 	"makeMe/internal/domain/assessment"
 	"makeMe/internal/domain/group"
+	"makeMe/internal/domain/task"
 	"makeMe/internal/domain/user"
 )
 
@@ -19,13 +20,15 @@ type Bot struct {
 	userSvc   *user.Service
 	groupSvc  *group.Service
 	assessSvc *assessment.Service
+	taskSvc   *task.Service
 }
 
-func New(token string, userSvc *user.Service, groupSvc *group.Service, assessSvc *assessment.Service, extraOpts ...bot.Option) (*Bot, error) {
+func New(token string, userSvc *user.Service, groupSvc *group.Service, assessSvc *assessment.Service, taskSvc *task.Service, extraOpts ...bot.Option) (*Bot, error) {
 	b := &Bot{
 		userSvc:   userSvc,
 		groupSvc:  groupSvc,
 		assessSvc: assessSvc,
+		taskSvc:   taskSvc,
 	}
 
 	opts := []bot.Option{
@@ -44,7 +47,9 @@ func New(token string, userSvc *user.Service, groupSvc *group.Service, assessSvc
 	tgBot.RegisterHandler(bot.HandlerTypeMessageText, "/newgroup ", bot.MatchTypePrefix, b.handleNewGroup)
 	tgBot.RegisterHandler(bot.HandlerTypeMessageText, "/join ", bot.MatchTypePrefix, b.handleJoin)
 	tgBot.RegisterHandler(bot.HandlerTypeMessageText, "/mygroups", bot.MatchTypeExact, b.handleMyGroups)
+	tgBot.RegisterHandler(bot.HandlerTypeMessageText, "/tasks", bot.MatchTypeExact, b.handleTasks)
 	tgBot.RegisterHandler(bot.HandlerTypeCallbackQueryData, "assess:", bot.MatchTypePrefix, b.handleAssessCallback)
+	tgBot.RegisterHandler(bot.HandlerTypeCallbackQueryData, "task:", bot.MatchTypePrefix, b.handleTaskCallback)
 
 	b.bot = tgBot
 	return b, nil

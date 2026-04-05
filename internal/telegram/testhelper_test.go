@@ -27,6 +27,7 @@ import (
 
 	"makeMe/internal/domain/assessment"
 	"makeMe/internal/domain/group"
+	"makeMe/internal/domain/task"
 	"makeMe/internal/domain/user"
 	"makeMe/internal/storage/postgres"
 	"makeMe/internal/storage/sqlc"
@@ -39,6 +40,7 @@ type testEnv struct {
 	userSvc     *user.Service
 	groupSvc    *group.Service
 	assessSvc   *assessment.Service
+	taskSvc     *task.Service
 	tgBot       *telegram.Bot
 	webhookURL  string
 	wiremockURL string
@@ -100,8 +102,14 @@ func setupTestEnv(t *testing.T) *testEnv {
 	assessRepo := postgres.NewAssessmentRepository(queries)
 	assessSvc := assessment.NewService(assessRepo, userSvc)
 
+	srsRepo := postgres.NewSRSRepository(queries)
+	taskRepo := postgres.NewTaskRepository(queries)
+	vocabGen := task.NewVocabGenerator(srsRepo)
+	grammarGen := task.NewGrammarGenerator()
+	taskSvc := task.NewService(taskRepo, srsRepo, vocabGen, grammarGen)
+
 	// Create bot with WireMock as Telegram API
-	tgBot, err := telegram.New("test-token", userSvc, groupSvc, assessSvc,
+	tgBot, err := telegram.New("test-token", userSvc, groupSvc, assessSvc, taskSvc,
 		bot.WithServerURL(wiremockURL),
 	)
 	require.NoError(t, err)
@@ -120,6 +128,7 @@ func setupTestEnv(t *testing.T) *testEnv {
 		userSvc:     userSvc,
 		groupSvc:    groupSvc,
 		assessSvc:   assessSvc,
+		taskSvc:     taskSvc,
 		tgBot:       tgBot,
 		webhookURL:  srv.URL + "/webhook",
 		wiremockURL: wiremockURL,
