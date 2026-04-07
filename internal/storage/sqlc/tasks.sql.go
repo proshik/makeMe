@@ -165,12 +165,30 @@ func (q *Queries) GetDailySet(ctx context.Context, arg GetDailySetParams) (Daily
 }
 
 const getTaskByID = `-- name: GetTaskByID :one
-SELECT id, daily_set_id, type, level, prompt, options, answer, metadata, position FROM tasks WHERE id = $1
+SELECT t.id, t.daily_set_id, t.type, t.level, t.prompt,
+       t.options, t.answer, t.metadata, t.position,
+       ds.group_id
+FROM tasks t
+JOIN daily_sets ds ON ds.id = t.daily_set_id
+WHERE t.id = $1
 `
 
-func (q *Queries) GetTaskByID(ctx context.Context, id int64) (Task, error) {
+type GetTaskByIDRow struct {
+	ID         int64  `json:"id"`
+	DailySetID int64  `json:"daily_set_id"`
+	Type       string `json:"type"`
+	Level      string `json:"level"`
+	Prompt     string `json:"prompt"`
+	Options    []byte `json:"options"`
+	Answer     string `json:"answer"`
+	Metadata   []byte `json:"metadata"`
+	Position   int32  `json:"position"`
+	GroupID    int64  `json:"group_id"`
+}
+
+func (q *Queries) GetTaskByID(ctx context.Context, id int64) (GetTaskByIDRow, error) {
 	row := q.db.QueryRow(ctx, getTaskByID, id)
-	var i Task
+	var i GetTaskByIDRow
 	err := row.Scan(
 		&i.ID,
 		&i.DailySetID,
@@ -181,6 +199,7 @@ func (q *Queries) GetTaskByID(ctx context.Context, id int64) (Task, error) {
 		&i.Answer,
 		&i.Metadata,
 		&i.Position,
+		&i.GroupID,
 	)
 	return i, err
 }

@@ -82,7 +82,7 @@ func (q *Queries) GetNewWordsForUser(ctx context.Context, arg GetNewWordsForUser
 			&i.Level,
 			&i.Example,
 			&i.Transcription,
-			&i.AudioURL,
+			&i.AudioUrl,
 		); err != nil {
 			return nil, err
 		}
@@ -108,7 +108,7 @@ func (q *Queries) GetWordByID(ctx context.Context, id int64) (Word, error) {
 		&i.Level,
 		&i.Example,
 		&i.Transcription,
-		&i.AudioURL,
+		&i.AudioUrl,
 	)
 	return i, err
 }
@@ -138,7 +138,7 @@ func (q *Queries) GetWordsByLevel(ctx context.Context, arg GetWordsByLevelParams
 			&i.Level,
 			&i.Example,
 			&i.Transcription,
-			&i.AudioURL,
+			&i.AudioUrl,
 		); err != nil {
 			return nil, err
 		}
@@ -157,11 +157,11 @@ UPDATE words SET transcription = $2, audio_url = $3 WHERE id = $1
 type UpdateWordAudioParams struct {
 	ID            int64  `json:"id"`
 	Transcription string `json:"transcription"`
-	AudioURL      string `json:"audio_url"`
+	AudioUrl      string `json:"audio_url"`
 }
 
 func (q *Queries) UpdateWordAudio(ctx context.Context, arg UpdateWordAudioParams) error {
-	_, err := q.db.Exec(ctx, updateWordAudio, arg.ID, arg.Transcription, arg.AudioURL)
+	_, err := q.db.Exec(ctx, updateWordAudio, arg.ID, arg.Transcription, arg.AudioUrl)
 	return err
 }
 

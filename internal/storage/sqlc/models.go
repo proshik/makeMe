@@ -65,6 +65,16 @@ type ReviewCard struct {
 	UpdatedAt      pgtype.Timestamptz `json:"updated_at"`
 }
 
+type Score struct {
+	ID         int64   `json:"id"`
+	UserID     int64   `json:"user_id"`
+	GroupID    int64   `json:"group_id"`
+	Period     string  `json:"period"`
+	PeriodKey  string  `json:"period_key"`
+	Raw        int32   `json:"raw"`
+	Normalized float64 `json:"normalized"`
+}
+
 type Task struct {
 	ID         int64  `json:"id"`
 	DailySetID int64  `json:"daily_set_id"`
@@ -106,5 +116,5 @@ type Word struct {
 	Level         string `json:"level"`
 	Example       string `json:"example"`
 	Transcription string `json:"transcription"`
-	AudioURL      string `json:"audio_url"`
+	AudioUrl      string `json:"audio_url"`
 }

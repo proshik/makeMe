@@ -16,7 +16,12 @@ RETURNING *;
 SELECT * FROM tasks WHERE daily_set_id = $1 ORDER BY position;
 
 -- name: GetTaskByID :one
-SELECT * FROM tasks WHERE id = $1;
+SELECT t.id, t.daily_set_id, t.type, t.level, t.prompt,
+       t.options, t.answer, t.metadata, t.position,
+       ds.group_id
+FROM tasks t
+JOIN daily_sets ds ON ds.id = t.daily_set_id
+WHERE t.id = $1;
 
 -- name: AddTaskResult :one
 INSERT INTO task_results (task_id, user_id, response, correct, score)
