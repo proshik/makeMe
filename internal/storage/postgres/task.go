@@ -92,7 +92,7 @@ func (r *TaskRepository) GetTaskByID(ctx context.Context, taskID int64) (*task.T
 		}
 		return nil, fmt.Errorf("get task: %w", err)
 	}
-	t := toTask(row)
+	t := toTaskWithGroup(row)
 	return &t, nil
 }
 
@@ -164,6 +164,26 @@ func toTask(row sqlc.Task) task.Task {
 		json.Unmarshal(row.Metadata, &t.Metadata)
 	}
 
+	return t
+}
+
+func toTaskWithGroup(row sqlc.GetTaskByIDRow) task.Task {
+	t := task.Task{
+		ID:         row.ID,
+		DailySetID: row.DailySetID,
+		GroupID:    row.GroupID,
+		Type:       task.TaskType(row.Type),
+		Level:      user.Level(row.Level),
+		Prompt:     row.Prompt,
+		Answer:     row.Answer,
+		Position:   int(row.Position),
+	}
+	if row.Options != nil {
+		json.Unmarshal(row.Options, &t.Options)
+	}
+	if row.Metadata != nil {
+		json.Unmarshal(row.Metadata, &t.Metadata)
+	}
 	return t
 }
 

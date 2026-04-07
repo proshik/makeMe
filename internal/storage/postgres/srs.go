@@ -117,7 +117,7 @@ func (r *SRSRepository) UpdateWordAudio(ctx context.Context, wordID int64, trans
 	err := r.q.UpdateWordAudio(ctx, sqlc.UpdateWordAudioParams{
 		ID:            wordID,
 		Transcription: transcription,
-		AudioURL:      audioURL,
+		AudioUrl:      audioURL,
 	})
 	if err != nil {
 		return fmt.Errorf("update word audio: %w", err)
@@ -133,6 +133,6 @@ func toWord(row sqlc.Word) srs.Word {
 		Level:         user.Level(row.Level),
 		Example:       row.Example,
 		Transcription: row.Transcription,
-		AudioURL:      row.AudioURL,
+		AudioURL:      row.AudioUrl,
 	}
 }

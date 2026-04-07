@@ -25,6 +25,7 @@ type DailySet struct {
 type Task struct {
 	ID         int64
 	DailySetID int64
+	GroupID    int64 // populated only when loaded via GetTaskByID
 	Type       TaskType
 	Level      user.Level
 	Prompt     string
