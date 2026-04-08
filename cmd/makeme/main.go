@@ -2,13 +2,18 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/pressly/goose/v3"
 
 	"makeMe/internal/config"
 	"makeMe/internal/dictionary"
@@ -40,6 +45,10 @@ func run(ctx context.Context) error {
 	}
 
 	setupLogger(cfg.LogLevel)
+
+	if err := runMigrations(cfg.DatabaseURL); err != nil {
+		return err
+	}
 
 	pool, err := postgres.NewPool(ctx, cfg.DatabaseURL)
 	if err != nil {
@@ -103,6 +112,20 @@ func run(ctx context.Context) error {
 		return err
 	}
 
+	return nil
+}
+
+func runMigrations(dbURL string) error {
+	db, err := sql.Open("pgx", dbURL)
+	if err != nil {
+		return fmt.Errorf("open db for migrations: %w", err)
+	}
+	defer db.Close()
+
+	if err := goose.Up(db, "migrations"); err != nil {
+		return fmt.Errorf("run migrations: %w", err)
+	}
+	slog.Info("migrations applied")
 	return nil
 }
 

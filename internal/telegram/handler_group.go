@@ -23,7 +23,7 @@ func (b *Bot) handleNewGroup(ctx context.Context, tgBot *bot.Bot, update *models
 		return
 	}
 
-	name := strings.TrimSpace(strings.TrimPrefix(update.Message.Text, "/newgroup "))
+	name := strings.TrimSpace(strings.TrimPrefix(update.Message.Text, "/newgroup"))
 	if name == "" {
 		tgBot.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: update.Message.Chat.ID,
@@ -61,7 +61,7 @@ func (b *Bot) handleJoin(ctx context.Context, tgBot *bot.Bot, update *models.Upd
 		return
 	}
 
-	code := strings.TrimSpace(strings.TrimPrefix(update.Message.Text, "/join "))
+	code := strings.TrimSpace(strings.TrimPrefix(update.Message.Text, "/join"))
 	if code == "" {
 		tgBot.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: update.Message.Chat.ID,

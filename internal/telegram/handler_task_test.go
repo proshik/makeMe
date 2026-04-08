@@ -116,3 +116,60 @@ func TestHandleTasks_FullFlow(t *testing.T) {
 func itoa(n int64) string {
 	return fmt.Sprintf("%d", n)
 }
+
+func TestHandleWordAudio_WithCachedAudio(t *testing.T) {
+	env := setupTestEnv(t)
+
+	// Register user
+	_, err := env.userSvc.Register(context.Background(), 910, "audiouser", "AudioUser")
+	require.NoError(t, err)
+
+	// Get a seeded word and pre-populate its audio URL
+	words, err := env.srsRepo.GetWordsByLevel(context.Background(), "A1", 1)
+	require.NoError(t, err)
+	require.NotEmpty(t, words)
+	word := words[0]
+
+	err = env.srsRepo.UpdateWordAudio(context.Background(), word.ID, "/test/", "https://example.com/audio.mp3")
+	require.NoError(t, err)
+
+	env.resetWireMock(t)
+
+	// Send word_audio callback
+	env.sendUpdate(t, makeCallbackUpdate(910, 910, 910, "audiouser", "AudioUser",
+		fmt.Sprintf("word_audio:%d", word.ID)))
+
+	// Verify sendAudio was called with the cached URL
+	reqs := env.getRequests(t, "/bottest-token/sendAudio")
+	require.NotEmpty(t, reqs)
+	assert.Contains(t, reqs[0].Body, "example.com/audio.mp3")
+}
+
+func TestHandleWordAudio_NoAudioURL(t *testing.T) {
+	env := setupTestEnv(t)
+
+	// Register user
+	_, err := env.userSvc.Register(context.Background(), 911, "noaudio", "NoAudio")
+	require.NoError(t, err)
+
+	// Get a seeded word — it has no audio_url by default
+	words, err := env.srsRepo.GetWordsByLevel(context.Background(), "A1", 1)
+	require.NoError(t, err)
+	require.NotEmpty(t, words)
+	word := words[0]
+	// Ensure no audio URL is set
+	err = env.srsRepo.UpdateWordAudio(context.Background(), word.ID, "", "")
+	require.NoError(t, err)
+
+	env.resetWireMock(t)
+
+	// Send word_audio callback; dictClient may attempt lookup but word has no audio
+	// The handler should send a "not found" message if no audio is available
+	env.sendUpdate(t, makeCallbackUpdate(911, 911, 911, "noaudio", "NoAudio",
+		fmt.Sprintf("word_audio:%d", word.ID)))
+
+	// Either sendAudio (if dictClient fetched audio) or sendMessage with "not found"
+	audioReqs := env.getRequests(t, "/bottest-token/sendAudio")
+	msgReqs := env.getSendMessageRequests(t)
+	assert.True(t, len(audioReqs) > 0 || len(msgReqs) > 0, "handler should respond with audio or not-found message")
+}

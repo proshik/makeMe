@@ -53,8 +53,8 @@ func New(token string, userSvc *user.Service, groupSvc *group.Service, assessSvc
 
 	tgBot.RegisterHandler(bot.HandlerTypeMessageText, "/start", bot.MatchTypeExact, b.handleStart)
 	tgBot.RegisterHandler(bot.HandlerTypeMessageText, "/assess", bot.MatchTypeExact, b.handleAssess)
-	tgBot.RegisterHandler(bot.HandlerTypeMessageText, "/newgroup ", bot.MatchTypePrefix, b.handleNewGroup)
-	tgBot.RegisterHandler(bot.HandlerTypeMessageText, "/join ", bot.MatchTypePrefix, b.handleJoin)
+	tgBot.RegisterHandler(bot.HandlerTypeMessageText, "/newgroup", bot.MatchTypePrefix, b.handleNewGroup)
+	tgBot.RegisterHandler(bot.HandlerTypeMessageText, "/join", bot.MatchTypePrefix, b.handleJoin)
 	tgBot.RegisterHandler(bot.HandlerTypeMessageText, "/mygroups", bot.MatchTypeExact, b.handleMyGroups)
 	tgBot.RegisterHandler(bot.HandlerTypeMessageText, "/tasks", bot.MatchTypeExact, b.handleTasks)
 	tgBot.RegisterHandler(bot.HandlerTypeCallbackQueryData, "assess:", bot.MatchTypePrefix, b.handleAssessCallback)
