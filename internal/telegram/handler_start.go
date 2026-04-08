@@ -28,7 +28,7 @@ func (b *Bot) handleStart(ctx context.Context, tgBot *bot.Bot, update *models.Up
 			"👋 С возвращением, %s! Продолжаем покорять английский 💪\n\n"+
 				"Твой уровень: %s\n\n"+
 				"👉 /tasks — задания на сегодня\n"+
-				"👉 /leaderboard — рейтинг группы\n"+
+				"👉 /leaderboard — рейтинг группы\n\n"+
 				"👉 /help — как всё устроено",
 			u.FirstName, u.Level,
 		)
@@ -82,6 +82,6 @@ func helpText() string {
 		"/join КОД — вступить в группу\n" +
 		"/mygroups — мои группы и инвайт-коды\n" +
 		"/leaderboard — рейтинг группы\n" +
-		"/profile — моя статистика (уровень, баллы, серия, слова)\n" +
+		"/profile — моя статистика (уровень, баллы, серия, слова)\n\n" +
 		"/help — эта справка"
 }
