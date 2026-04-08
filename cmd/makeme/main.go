@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 
@@ -87,7 +88,13 @@ func run(ctx context.Context) error {
 	if err := tgBot.SetWebhook(ctx, cfg.WebhookURL); err != nil {
 		return err
 	}
-	go tgBot.StartWebhook(ctx)
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		tgBot.StartWebhook(ctx)
+	}()
 
 	r := server.New(tgBot)
 
@@ -112,6 +119,7 @@ func run(ctx context.Context) error {
 		return err
 	}
 
+	wg.Wait()
 	return nil
 }
 
