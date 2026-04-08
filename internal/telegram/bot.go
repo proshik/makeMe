@@ -62,6 +62,7 @@ func New(token string, userSvc *user.Service, groupSvc *group.Service, assessSvc
 	tgBot.RegisterHandler(bot.HandlerTypeCallbackQueryData, "word_audio:", bot.MatchTypePrefix, b.handleWordAudioCallback)
 	tgBot.RegisterHandler(bot.HandlerTypeMessageText, "/leaderboard", bot.MatchTypeExact, b.handleLeaderboard)
 	tgBot.RegisterHandler(bot.HandlerTypeCallbackQueryData, "lb:", bot.MatchTypePrefix, b.handleLeaderboardCallback)
+	tgBot.RegisterHandler(bot.HandlerTypeMessageText, "/profile", bot.MatchTypeExact, b.handleProfile)
 
 	b.bot = tgBot
 	return b, nil

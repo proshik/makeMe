@@ -37,6 +37,14 @@ func (s *Service) GetLeaderboard(ctx context.Context, groupID int64, period, per
 	return s.repo.GetLeaderboard(ctx, groupID, period, periodKey)
 }
 
+func (s *Service) GetMonthlyScore(ctx context.Context, userID int64, periodKey string) (float64, error) {
+	return s.repo.GetMonthlyScore(ctx, userID, periodKey)
+}
+
+func (s *Service) GetScoreDays(ctx context.Context, userID int64) ([]string, error) {
+	return s.repo.GetScoreDays(ctx, userID)
+}
+
 func normalizeScore(raw int, level user.Level) float64 {
 	coeff, ok := coefficients[level]
 	if !ok {

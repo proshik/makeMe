@@ -31,6 +31,14 @@ func (f *fakeRepo) GetLeaderboard(_ context.Context, _ int64, _, _ string) ([]Le
 	return nil, nil
 }
 
+func (f *fakeRepo) GetMonthlyScore(_ context.Context, _ int64, _ string) (float64, error) {
+	return 0, nil
+}
+
+func (f *fakeRepo) GetScoreDays(_ context.Context, _ int64) ([]string, error) {
+	return nil, nil
+}
+
 var _ Repository = (*fakeRepo)(nil)
 
 func TestNormalizeScore(t *testing.T) {
