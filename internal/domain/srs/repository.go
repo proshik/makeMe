@@ -13,4 +13,5 @@ type Repository interface {
 	GetWordByID(ctx context.Context, id int64) (*Word, error)
 	GetNewWordsForUser(ctx context.Context, userID int64, level user.Level, limit int) ([]Word, error)
 	UpdateWordAudio(ctx context.Context, wordID int64, transcription, audioURL string) error
+	CountLearnedWords(ctx context.Context, userID int64) (int, error)
 }

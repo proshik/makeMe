@@ -53,3 +53,22 @@ func (r *ScoringRepository) GetLeaderboard(ctx context.Context, groupID int64, p
 	}
 	return entries, nil
 }
+
+func (r *ScoringRepository) GetMonthlyScore(ctx context.Context, userID int64, periodKey string) (float64, error) {
+	score, err := r.q.GetUserMonthlyScore(ctx, sqlc.GetUserMonthlyScoreParams{
+		UserID:    userID,
+		PeriodKey: periodKey,
+	})
+	if err != nil {
+		return 0, fmt.Errorf("get monthly score: %w", err)
+	}
+	return score, nil
+}
+
+func (r *ScoringRepository) GetScoreDays(ctx context.Context, userID int64) ([]string, error) {
+	days, err := r.q.GetUserScoreDays(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("get score days: %w", err)
+	}
+	return days, nil
+}

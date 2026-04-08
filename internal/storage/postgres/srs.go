@@ -136,3 +136,11 @@ func toWord(row sqlc.Word) srs.Word {
 		AudioURL:      row.AudioUrl,
 	}
 }
+
+func (r *SRSRepository) CountLearnedWords(ctx context.Context, userID int64) (int, error) {
+	count, err := r.q.CountLearnedWords(ctx, userID)
+	if err != nil {
+		return 0, fmt.Errorf("count learned words: %w", err)
+	}
+	return int(count), nil
+}
