@@ -24,7 +24,11 @@ func (b *Bot) handleLeaderboard(ctx context.Context, tgBot *bot.Bot, update *mod
 	}
 
 	groups, err := b.groupSvc.ListByUser(ctx, u.ID)
-	if err != nil || len(groups) == 0 {
+	if err != nil {
+		slog.Error("failed to get groups for leaderboard", "user_id", u.ID, "error", err)
+		return
+	}
+	if len(groups) == 0 {
 		tgBot.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: update.Message.Chat.ID,
 			Text:   "У тебя нет групп. Создай группу (/newgroup) или вступи в существующую (/join).",
