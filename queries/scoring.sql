@@ -18,3 +18,14 @@ LEFT JOIN scores s ON s.user_id = m.user_id
     AND s.period_key = $3
 WHERE m.group_id = $1
 ORDER BY normalized DESC;
+
+-- name: GetUserMonthlyScore :one
+SELECT COALESCE(SUM(normalized), 0)::float8 AS normalized
+FROM scores
+WHERE user_id = $1 AND period = 'month' AND period_key = $2;
+
+-- name: GetUserScoreDays :many
+SELECT DISTINCT period_key
+FROM scores
+WHERE user_id = $1 AND period = 'day'
+ORDER BY period_key DESC;

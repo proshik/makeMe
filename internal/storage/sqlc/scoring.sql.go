@@ -61,6 +61,51 @@ func (q *Queries) GetLeaderboard(ctx context.Context, arg GetLeaderboardParams) 
 	return items, nil
 }
 
+const getUserMonthlyScore = `-- name: GetUserMonthlyScore :one
+SELECT COALESCE(SUM(normalized), 0)::float8 AS normalized
+FROM scores
+WHERE user_id = $1 AND period = 'month' AND period_key = $2
+`
+
+type GetUserMonthlyScoreParams struct {
+	UserID    int64  `json:"user_id"`
+	PeriodKey string `json:"period_key"`
+}
+
+func (q *Queries) GetUserMonthlyScore(ctx context.Context, arg GetUserMonthlyScoreParams) (float64, error) {
+	row := q.db.QueryRow(ctx, getUserMonthlyScore, arg.UserID, arg.PeriodKey)
+	var normalized float64
+	err := row.Scan(&normalized)
+	return normalized, err
+}
+
+const getUserScoreDays = `-- name: GetUserScoreDays :many
+SELECT DISTINCT period_key
+FROM scores
+WHERE user_id = $1 AND period = 'day'
+ORDER BY period_key DESC
+`
+
+func (q *Queries) GetUserScoreDays(ctx context.Context, userID int64) ([]string, error) {
+	rows, err := q.db.Query(ctx, getUserScoreDays, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []string{}
+	for rows.Next() {
+		var period_key string
+		if err := rows.Scan(&period_key); err != nil {
+			return nil, err
+		}
+		items = append(items, period_key)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const upsertScore = `-- name: UpsertScore :exec
 INSERT INTO scores (user_id, group_id, period, period_key, raw, normalized)
 VALUES ($1, $2, $3, $4, $5, $6)

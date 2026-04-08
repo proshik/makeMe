@@ -11,6 +11,18 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const countLearnedWords = `-- name: CountLearnedWords :one
+SELECT COUNT(*)::int AS count FROM review_cards
+WHERE user_id = $1 AND repetitions >= 3
+`
+
+func (q *Queries) CountLearnedWords(ctx context.Context, userID int64) (int32, error) {
+	row := q.db.QueryRow(ctx, countLearnedWords, userID)
+	var count int32
+	err := row.Scan(&count)
+	return count, err
+}
+
 const getDueCards = `-- name: GetDueCards :many
 SELECT id, user_id, word_id, ease_factor, interval_days, repetitions, next_review_date, updated_at FROM review_cards
 WHERE user_id = $1 AND next_review_date <= CURRENT_DATE

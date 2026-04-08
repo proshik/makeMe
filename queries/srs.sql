@@ -37,3 +37,7 @@ ON CONFLICT (user_id, word_id) DO UPDATE
         repetitions = EXCLUDED.repetitions,
         next_review_date = EXCLUDED.next_review_date,
         updated_at = now();
+
+-- name: CountLearnedWords :one
+SELECT COUNT(*)::int AS count FROM review_cards
+WHERE user_id = $1 AND repetitions >= 3;
