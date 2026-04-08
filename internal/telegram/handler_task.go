@@ -200,7 +200,6 @@ func sendTaskQuestion(ctx context.Context, tgBot *bot.Bot, chatID int64, t *task
 	tgBot.SendMessage(ctx, &bot.SendMessageParams{
 		ChatID:    chatID,
 		Text:      fmt.Sprintf("%s — Задание %d/%d\n\n%s", typeLabel, current, total, t.Prompt),
-		ParseMode: models.ParseModeMarkdown,
 		ReplyMarkup: &models.InlineKeyboardMarkup{
 			InlineKeyboard: buttons,
 		},

@@ -26,7 +26,7 @@ func (b *Bot) handleAssess(ctx context.Context, tgBot *bot.Bot, update *models.U
 	if u.Onboarded {
 		tgBot.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: update.Message.Chat.ID,
-			Text:   fmt.Sprintf("🎓 Ты уже прошёл оценку! Твой уровень: *%s* — отличный результат!", u.Level),
+			Text:   fmt.Sprintf("🎓 Ты уже прошёл оценку! Твой уровень: %s — отличный результат!", u.Level),
 		})
 		return
 	}
