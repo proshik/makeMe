@@ -13,6 +13,7 @@ type Config struct {
 	TelegramToken string
 	WebhookURL    string
 	LogLevel      string
+	WordsFile     string
 }
 
 func Load() (*Config, error) {
@@ -24,6 +25,7 @@ func Load() (*Config, error) {
 		TelegramToken: os.Getenv("TELEGRAM_TOKEN"),
 		WebhookURL:    os.Getenv("WEBHOOK_URL"),
 		LogLevel:      getEnv("LOG_LEVEL", "info"),
+		WordsFile:     getEnv("WORDS_FILE", "data/words.json"),
 	}
 
 	if cfg.DatabaseURL == "" {

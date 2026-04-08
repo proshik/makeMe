@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -14,6 +15,7 @@ import (
 	"time"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/pressly/goose/v3"
 
 	"makeMe/internal/config"
@@ -49,6 +51,10 @@ func run(ctx context.Context) error {
 
 	if err := runMigrations(cfg.DatabaseURL); err != nil {
 		return err
+	}
+
+	if err := seedWords(ctx, cfg.DatabaseURL, cfg.WordsFile); err != nil {
+		slog.Warn("word seed skipped", "error", err)
 	}
 
 	pool, err := postgres.NewPool(ctx, cfg.DatabaseURL)
@@ -120,6 +126,47 @@ func run(ctx context.Context) error {
 	}
 
 	wg.Wait()
+	return nil
+}
+
+type wordEntry struct {
+	English       string `json:"english"`
+	Russian       string `json:"russian"`
+	Level         string `json:"level"`
+	Example       string `json:"example"`
+	Transcription string `json:"transcription"`
+}
+
+func seedWords(ctx context.Context, dbURL, wordsFile string) error {
+	data, err := os.ReadFile(wordsFile)
+	if err != nil {
+		return fmt.Errorf("read words file: %w", err)
+	}
+
+	var words []wordEntry
+	if err := json.Unmarshal(data, &words); err != nil {
+		return fmt.Errorf("parse words file: %w", err)
+	}
+
+	pool, err := pgxpool.New(ctx, dbURL)
+	if err != nil {
+		return fmt.Errorf("connect for seed: %w", err)
+	}
+	defer pool.Close()
+
+	q := sqlc.New(pool)
+	for _, w := range words {
+		if err := q.UpsertWord(ctx, sqlc.UpsertWordParams{
+			English:       w.English,
+			Russian:       w.Russian,
+			Level:         w.Level,
+			Example:       w.Example,
+			Transcription: w.Transcription,
+		}); err != nil {
+			slog.Warn("failed to upsert word", "word", w.English, "error", err)
+		}
+	}
+	slog.Info("words seeded", "count", len(words))
 	return nil
 }
 

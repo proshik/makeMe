@@ -10,4 +10,5 @@ RUN apk add --no-cache ca-certificates tzdata
 WORKDIR /app
 COPY --from=builder /makeme /makeme
 COPY --from=builder /app/migrations /app/migrations
+COPY --from=builder /app/data /app/data
 CMD ["/makeme"]
