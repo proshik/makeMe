@@ -366,26 +366,31 @@ type Config struct {
 
 ---
 
-### Фаза 6 — Баллы и таблицы лидеров
+### Фаза 6 — Баллы и таблицы лидеров [DONE]
 
 **Цель:** подсчёт баллов с нормализацией и лидерборды по группам.
 
-Что делаем:
-- `migrations/00005_create_scoring.sql` — таблица `scores`
-- `internal/domain/scoring/entity.go` — Score, LeaderboardEntry
-- `internal/domain/scoring/repository.go` — интерфейс: `Upsert`, `GetLeaderboard(groupID, period)`
-- `internal/domain/scoring/service.go`:
+Что сделано:
+- [x] `migrations/00005_create_scoring.sql` — таблица `scores`
+- [x] `internal/domain/scoring/entity.go` — Score, LeaderboardEntry
+- [x] `internal/domain/scoring/repository.go` — интерфейс: `Upsert`, `GetLeaderboard(groupID, period)`
+- [x] `internal/domain/scoring/service.go`:
   - `RecordScore(ctx, userID, groupID, date, rawPoints, level)` — применяет коэффициент, сохраняет
   - `GetLeaderboard(ctx, groupID, period)` — агрегация: day/week/month
   - Таблица коэффициентов: A1=0.6, A2=0.8, B1=1.0, B2=1.15, C1=1.3, C2=1.5
-- `internal/storage/postgres/scoring.go` — реализация
-- `queries/scoring.sql` — SQL-запросы, включая агрегацию по периодам
-- `internal/telegram/handler_leaderboard.go`:
+- [x] `internal/storage/postgres/scoring.go` — реализация
+- [x] `queries/scoring.sql` — SQL-запросы, включая агрегацию по периодам
+- [x] `internal/telegram/handler_leaderboard.go`:
   - `/leaderboard` → показать таблицу за сегодня
   - `/leaderboard week` → за неделю
   - `/leaderboard month` → за месяц
   - Формат: позиция, имя, баллы
-- Интеграция: при завершении задания (`handler_task.go`) → вызов `scoringService.RecordScore`
+- [x] Интеграция: при завершении задания (`handler_task.go`) → вызов `scoringService.RecordScore`
+- [x] `internal/domain/task/entity.go` — добавлен `GroupID` в `Task`
+- [x] `internal/storage/postgres/task.go` — `GetTaskByID` использует JOIN с `daily_sets`, убрано дублирование маппера
+- [x] `internal/storage/postgres/srs.go` — исправлен маппинг поля `AudioUrl` после регенерации sqlc
+- [x] `internal/domain/scoring/service_test.go` — unit-тесты: нормализация всех уровней, два вызова Upsert per RecordScore
+- [x] `internal/telegram/handler_leaderboard_test.go` — integration-тесты: одна группа, несколько групп, callback, переключение day/month
 
 **Проверка:** два пользователя в группе выполняют задания → `/leaderboard` показывает ранжированный список с нормализованными баллами.
 
