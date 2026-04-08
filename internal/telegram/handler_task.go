@@ -146,6 +146,11 @@ func (b *Bot) handleTaskCallback(ctx context.Context, tgBot *bot.Bot, update *mo
 	var feedback string
 	if result.Correct {
 		feedback = "✅ Правильно!"
+		if b.scoringSvc != nil {
+			if err := b.scoringSvc.RecordScore(ctx, u.ID, t.GroupID, t.Level, result.Score); err != nil {
+				slog.Error("failed to record score", "user_id", u.ID, "task_id", taskID, "error", err)
+			}
+		}
 	} else {
 		feedback = fmt.Sprintf("❌ Неправильно. Правильный ответ: %s", t.Answer)
 	}
