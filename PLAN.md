@@ -396,15 +396,15 @@ type Config struct {
 
 ---
 
-### Фаза 7 — Полировка
+### Фаза 7 — Полировка [DONE]
 
 **Цель:** продукт готов для ежедневного использования.
 
-Что делаем:
-- `/profile` — уровень, баллы за месяц, дней подряд (streak по дням с баллами), выучено слов (repetitions ≥ 3)
-- Graceful shutdown: дождаться завершения горутины `StartWebhook` перед выходом (`sync.WaitGroup`)
-- `Dockerfile` + `docker-compose.yml` (app + PostgreSQL, multi-stage build)
-- `.env.example` с документацией всех переменных
+Что сделано:
+- [x] `/profile` — уровень, баллы за месяц, дней подряд (streak по дням с баллами), выучено слов (repetitions ≥ 3)
+- [x] Graceful shutdown: дождаться завершения горутины `StartWebhook` перед выходом (`sync.WaitGroup`)
+- [x] `Dockerfile` + `docker-compose.yml` (app + PostgreSQL, multi-stage build)
+- [x] `.env.example` с документацией всех переменных
 
 ---
 
