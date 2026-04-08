@@ -12,6 +12,7 @@ import (
 	"makeMe/internal/dictionary"
 	"makeMe/internal/domain/assessment"
 	"makeMe/internal/domain/group"
+	"makeMe/internal/domain/scoring"
 	"makeMe/internal/domain/srs"
 	"makeMe/internal/domain/task"
 	"makeMe/internal/domain/user"
@@ -23,16 +24,18 @@ type Bot struct {
 	groupSvc   *group.Service
 	assessSvc  *assessment.Service
 	taskSvc    *task.Service
+	scoringSvc *scoring.Service
 	srsRepo    srs.Repository
 	dictClient *dictionary.Client
 }
 
-func New(token string, userSvc *user.Service, groupSvc *group.Service, assessSvc *assessment.Service, taskSvc *task.Service, srsRepo srs.Repository, dictClient *dictionary.Client, extraOpts ...bot.Option) (*Bot, error) {
+func New(token string, userSvc *user.Service, groupSvc *group.Service, assessSvc *assessment.Service, taskSvc *task.Service, scoringSvc *scoring.Service, srsRepo srs.Repository, dictClient *dictionary.Client, extraOpts ...bot.Option) (*Bot, error) {
 	b := &Bot{
 		userSvc:    userSvc,
 		groupSvc:   groupSvc,
 		assessSvc:  assessSvc,
 		taskSvc:    taskSvc,
+		scoringSvc: scoringSvc,
 		srsRepo:    srsRepo,
 		dictClient: dictClient,
 	}
@@ -57,6 +60,8 @@ func New(token string, userSvc *user.Service, groupSvc *group.Service, assessSvc
 	tgBot.RegisterHandler(bot.HandlerTypeCallbackQueryData, "assess:", bot.MatchTypePrefix, b.handleAssessCallback)
 	tgBot.RegisterHandler(bot.HandlerTypeCallbackQueryData, "task:", bot.MatchTypePrefix, b.handleTaskCallback)
 	tgBot.RegisterHandler(bot.HandlerTypeCallbackQueryData, "word_audio:", bot.MatchTypePrefix, b.handleWordAudioCallback)
+	tgBot.RegisterHandler(bot.HandlerTypeMessageText, "/leaderboard", bot.MatchTypeExact, b.handleLeaderboard)
+	tgBot.RegisterHandler(bot.HandlerTypeCallbackQueryData, "lb:", bot.MatchTypePrefix, b.handleLeaderboardCallback)
 
 	b.bot = tgBot
 	return b, nil

@@ -28,6 +28,7 @@ import (
 	"makeMe/internal/dictionary"
 	"makeMe/internal/domain/assessment"
 	"makeMe/internal/domain/group"
+	"makeMe/internal/domain/scoring"
 	"makeMe/internal/domain/task"
 	"makeMe/internal/domain/user"
 	"makeMe/internal/storage/postgres"
@@ -42,6 +43,8 @@ type testEnv struct {
 	groupSvc    *group.Service
 	assessSvc   *assessment.Service
 	taskSvc     *task.Service
+	scoringSvc  *scoring.Service
+	srsRepo     *postgres.SRSRepository
 	tgBot       *telegram.Bot
 	webhookURL  string
 	wiremockURL string
@@ -90,6 +93,8 @@ func setupTestEnv(t *testing.T) *testEnv {
 	stubSendMessage(t, wiremockURL)
 	// Stub answerCallbackQuery (called by callback handlers)
 	stubAnswerCallbackQuery(t, wiremockURL)
+	// Stub sendAudio (called by word audio handler)
+	stubSendAudio(t, wiremockURL)
 
 	// Create services
 	queries := sqlc.New(pool)
@@ -109,10 +114,13 @@ func setupTestEnv(t *testing.T) *testEnv {
 	grammarGen := task.NewGrammarGenerator()
 	taskSvc := task.NewService(taskRepo, srsRepo, vocabGen, grammarGen)
 
+	scoringRepo := postgres.NewScoringRepository(queries)
+	scoringSvc := scoring.NewService(scoringRepo)
+
 	dictClient := dictionary.NewClient()
 
 	// Create bot with WireMock as Telegram API
-	tgBot, err := telegram.New("test-token", userSvc, groupSvc, assessSvc, taskSvc, srsRepo, dictClient,
+	tgBot, err := telegram.New("test-token", userSvc, groupSvc, assessSvc, taskSvc, scoringSvc, srsRepo, dictClient,
 		bot.WithServerURL(wiremockURL),
 	)
 	require.NoError(t, err)
@@ -132,6 +140,8 @@ func setupTestEnv(t *testing.T) *testEnv {
 		groupSvc:    groupSvc,
 		assessSvc:   assessSvc,
 		taskSvc:     taskSvc,
+		scoringSvc:  scoringSvc,
+		srsRepo:     srsRepo,
 		tgBot:       tgBot,
 		webhookURL:  srv.URL + "/webhook",
 		wiremockURL: wiremockURL,
@@ -177,6 +187,12 @@ func stubAnswerCallbackQuery(t *testing.T, wiremockURL string) {
 	t.Helper()
 	body := `{"ok":true,"result":true}`
 	stubAny(t, wiremockURL, "/bottest-token/answerCallbackQuery", body)
+}
+
+func stubSendAudio(t *testing.T, wiremockURL string) {
+	t.Helper()
+	body := `{"ok":true,"result":{"message_id":2,"date":0,"chat":{"id":0,"type":"private"}}}`
+	stubAny(t, wiremockURL, "/bottest-token/sendAudio", body)
 }
 
 func stubJSON(t *testing.T, wiremockURL, urlPath, responseBody string) {

@@ -14,6 +14,7 @@ import (
 	"makeMe/internal/dictionary"
 	"makeMe/internal/domain/assessment"
 	"makeMe/internal/domain/group"
+	"makeMe/internal/domain/scoring"
 	"makeMe/internal/domain/task"
 	"makeMe/internal/domain/user"
 	"makeMe/internal/server"
@@ -64,9 +65,12 @@ func run(ctx context.Context) error {
 	grammarGen := task.NewGrammarGenerator()
 	taskSvc := task.NewService(taskRepo, srsRepo, vocabGen, grammarGen)
 
+	scoringRepo := postgres.NewScoringRepository(queries)
+	scoringSvc := scoring.NewService(scoringRepo)
+
 	dictClient := dictionary.NewClient()
 
-	tgBot, err := telegram.New(cfg.TelegramToken, userSvc, groupSvc, assessSvc, taskSvc, srsRepo, dictClient)
+	tgBot, err := telegram.New(cfg.TelegramToken, userSvc, groupSvc, assessSvc, taskSvc, scoringSvc, srsRepo, dictClient)
 	if err != nil {
 		return err
 	}
