@@ -39,7 +39,7 @@ func (b *Bot) handleTasks(ctx context.Context, tgBot *bot.Bot, update *models.Up
 	if !u.Onboarded {
 		tgBot.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: update.Message.Chat.ID,
-			Text:   "Сначала пройди тест на определение уровня: /assess",
+			Text:   "🎓 Сначала пройди тест на определение уровня: /assess",
 		})
 		return
 	}
@@ -49,7 +49,7 @@ func (b *Bot) handleTasks(ctx context.Context, tgBot *bot.Bot, update *models.Up
 	if err != nil || len(groups) == 0 {
 		tgBot.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: update.Message.Chat.ID,
-			Text:   "У тебя нет групп. Создай группу (/newgroup) или вступи в существующую (/join).",
+			Text:   "👥 У тебя пока нет групп — позови друзей!\n\nСоздай группу: /newgroup Название\nВступи по коду: /join КОД",
 		})
 		return
 	}
@@ -76,7 +76,7 @@ func (b *Bot) handleTasks(ctx context.Context, tgBot *bot.Bot, update *models.Up
 		answered, total, _ := b.taskSvc.GetProgress(ctx, ds.ID, u.ID)
 		tgBot.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: update.Message.Chat.ID,
-			Text:   fmt.Sprintf("Все задания на сегодня выполнены! (%d/%d)\nВозвращайся завтра за новыми.", answered, total),
+			Text:   fmt.Sprintf("🎉 Все задания на сегодня выполнены! (%d/%d)\nОтличная работа! Возвращайся завтра за новыми 💪", answered, total),
 		})
 		return
 	}
@@ -144,8 +144,9 @@ func (b *Bot) handleTaskCallback(ctx context.Context, tgBot *bot.Bot, update *mo
 
 	// Feedback
 	var feedback string
+	correctPhrases := []string{"✅ Правильно!", "✅ Отлично!", "✅ Молодец!", "✅ В точку!", "✅ Супер!"}
 	if result.Correct {
-		feedback = "✅ Правильно!"
+		feedback = correctPhrases[taskID%int64(len(correctPhrases))]
 		if b.scoringSvc != nil {
 			if err := b.scoringSvc.RecordScore(ctx, u.ID, t.GroupID, t.Level, result.Score); err != nil {
 				slog.Error("failed to record score", "user_id", u.ID, "task_id", taskID, "error", err)
@@ -165,7 +166,7 @@ func (b *Bot) handleTaskCallback(ctx context.Context, tgBot *bot.Bot, update *mo
 		answered, total, _ := b.taskSvc.GetProgress(ctx, t.DailySetID, u.ID)
 		tgBot.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: chatID,
-			Text:   fmt.Sprintf("Все задания выполнены! (%d/%d)\nВозвращайся завтра!", answered, total),
+			Text:   fmt.Sprintf("🏆 Все задания выполнены! (%d/%d)\nТы огонь! Загляни в /leaderboard — посмотри, где ты в рейтинге 🔥", answered, total),
 		})
 		return
 	}

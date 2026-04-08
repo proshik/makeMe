@@ -31,7 +31,7 @@ func (b *Bot) handleLeaderboard(ctx context.Context, tgBot *bot.Bot, update *mod
 	if len(groups) == 0 {
 		tgBot.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: update.Message.Chat.ID,
-			Text:   "У тебя нет групп. Создай группу (/newgroup) или вступи в существующую (/join).",
+			Text:   "👥 У тебя пока нет групп — позови друзей!\n\nСоздай группу: /newgroup Название\nВступи по коду: /join КОД",
 		})
 		return
 	}
@@ -120,13 +120,20 @@ func (b *Bot) sendLeaderboard(ctx context.Context, tgBot *bot.Bot, chatID int64,
 		periodLabel = fmt.Sprintf("месяц %s", periodKey)
 	}
 
+	medals := []string{"🥇", "🥈", "🥉"}
 	var sb strings.Builder
 	sb.WriteString(fmt.Sprintf("🏆 Группа «%s» — %s\n\n", g.Name, periodLabel))
 	if len(entries) == 0 {
-		sb.WriteString("Пока нет результатов.")
+		sb.WriteString("Пока нет результатов. Начните соревноваться: /tasks 🚀")
 	} else {
 		for _, e := range entries {
-			sb.WriteString(fmt.Sprintf("%d. %s — %.1f очков\n", e.Rank, e.FirstName, e.Normalized))
+			medal := ""
+			if e.Rank-1 < len(medals) {
+				medal = medals[e.Rank-1] + " "
+			} else {
+				medal = fmt.Sprintf("%d. ", e.Rank)
+			}
+			sb.WriteString(fmt.Sprintf("%s%s — %.1f очков\n", medal, e.FirstName, e.Normalized))
 		}
 	}
 

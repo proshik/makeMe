@@ -26,7 +26,7 @@ func (b *Bot) handleAssess(ctx context.Context, tgBot *bot.Bot, update *models.U
 	if u.Onboarded {
 		tgBot.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: update.Message.Chat.ID,
-			Text:   fmt.Sprintf("Ты уже прошёл оценку! Твой уровень: %s.", u.Level),
+			Text:   fmt.Sprintf("🎓 Ты уже прошёл оценку! Твой уровень: *%s* — отличный результат!", u.Level),
 		})
 		return
 	}
@@ -36,7 +36,7 @@ func (b *Bot) handleAssess(ctx context.Context, tgBot *bot.Bot, update *models.U
 		slog.Error("failed to start assessment", "user_id", u.ID, "error", err)
 		tgBot.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: update.Message.Chat.ID,
-			Text:   "Не удалось начать тест. Попробуй позже.",
+			Text:   "😔 Не удалось начать тест. Попробуй позже.",
 		})
 		return
 	}
@@ -79,7 +79,7 @@ func (b *Bot) handleAssessCallback(ctx context.Context, tgBot *bot.Bot, update *
 		slog.Error("failed to submit assessment answer", "user_id", u.ID, "error", err)
 		tgBot.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: chatID,
-			Text:   "Произошла ошибка. Попробуй /assess ещё раз.",
+			Text:   "😔 Произошла ошибка. Попробуй /assess ещё раз.",
 		})
 		return
 	}
@@ -89,8 +89,11 @@ func (b *Bot) handleAssessCallback(ctx context.Context, tgBot *bot.Bot, update *
 		tgBot.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: chatID,
 			Text: fmt.Sprintf(
-				"Тест завершён! Твой уровень: %s\n\n"+
-					"Теперь ты можешь создать группу (/newgroup) или вступить в существующую (/join).",
+				"🎉 Тест завершён! Твой уровень: *%s* 🏅\n\n"+
+					"Теперь создай группу с друзьями и начните соревноваться:\n"+
+					"👥 /newgroup Название — создать группу\n"+
+					"🔗 /join КОД — вступить в существующую\n\n"+
+					"Первые задания ждут тебя: /tasks",
 				session.DeterminedLevel,
 			),
 		})
@@ -111,7 +114,7 @@ func sendQuestion(ctx context.Context, tgBot *bot.Bot, chatID int64, q *assessme
 
 	tgBot.SendMessage(ctx, &bot.SendMessageParams{
 		ChatID: chatID,
-		Text:   fmt.Sprintf("Вопрос %d/10:\n\n%s", questionNum, q.Text),
+		Text:   fmt.Sprintf("🧠 Вопрос %d/10:\n\n%s", questionNum, q.Text),
 		ReplyMarkup: &models.InlineKeyboardMarkup{
 			InlineKeyboard: buttons,
 		},

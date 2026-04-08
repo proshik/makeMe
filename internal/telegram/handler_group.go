@@ -45,7 +45,10 @@ func (b *Bot) handleNewGroup(ctx context.Context, tgBot *bot.Bot, update *models
 	tgBot.SendMessage(ctx, &bot.SendMessageParams{
 		ChatID: update.Message.Chat.ID,
 		Text: fmt.Sprintf(
-			"Группа «%s» создана!\n\nИнвайт-код: %s\nОтправь его друзьям — они смогут вступить командой:\n/join %s",
+			"🎉 Группа «%s» создана!\n\n"+
+				"📨 Инвайт-код: `%s`\n"+
+				"Отправь его друзьям — они вступят командой:\n/join %s\n\n"+
+				"Когда все соберутся, начинайте: /tasks 💪",
 			g.Name, g.InviteCode, g.InviteCode,
 		),
 	})
@@ -91,7 +94,7 @@ func (b *Bot) handleJoin(ctx context.Context, tgBot *bot.Bot, update *models.Upd
 
 	tgBot.SendMessage(ctx, &bot.SendMessageParams{
 		ChatID: update.Message.Chat.ID,
-		Text:   fmt.Sprintf("Ты вступил в группу «%s»!", g.Name),
+		Text:   fmt.Sprintf("🙌 Ты вступил в группу «%s»! Добро пожаловать в команду!\n\nНачинай соревноваться: /tasks 🚀", g.Name),
 	})
 }
 
@@ -118,7 +121,7 @@ func (b *Bot) handleMyGroups(ctx context.Context, tgBot *bot.Bot, update *models
 	if len(groups) == 0 {
 		tgBot.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: update.Message.Chat.ID,
-			Text:   "У тебя пока нет групп.\nСоздай новую: /newgroup Название\nИли вступи по коду: /join КОД",
+			Text:   "👥 У тебя пока нет групп — позови друзей!\n\nСоздай новую: /newgroup Название\nВступи по коду: /join КОД",
 		})
 		return
 	}
