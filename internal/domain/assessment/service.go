@@ -7,6 +7,7 @@ import (
 	"math/rand/v2"
 
 	"makeMe/internal/domain/srs"
+	"makeMe/internal/domain/task"
 	"makeMe/internal/domain/user"
 )
 
@@ -24,13 +25,14 @@ var (
 var levels = []user.Level{user.A1, user.A2, user.B1, user.B2, user.C1, user.C2}
 
 type Service struct {
-	repo    Repository
-	userSvc *user.Service
-	srsRepo srs.Repository
+	repo        Repository
+	userSvc     *user.Service
+	srsRepo     srs.Repository
+	grammarRepo task.GrammarRepository
 }
 
-func NewService(repo Repository, userSvc *user.Service, srsRepo srs.Repository) *Service {
-	return &Service{repo: repo, userSvc: userSvc, srsRepo: srsRepo}
+func NewService(repo Repository, userSvc *user.Service, srsRepo srs.Repository, grammarRepo task.GrammarRepository) *Service {
+	return &Service{repo: repo, userSvc: userSvc, srsRepo: srsRepo, grammarRepo: grammarRepo}
 }
 
 // Start creates a new assessment session starting at B1, or resumes an existing one.
@@ -190,21 +192,69 @@ func (s *Service) pickQuestion(ctx context.Context, level user.Level, exclude ma
 		}
 		// fall through to grammar on any error
 	}
-	return s.pickGrammarQuestion(level, exclude), nil
+	return s.pickGrammarQuestion(ctx, level, exclude), nil
 }
 
-func (s *Service) pickGrammarQuestion(level user.Level, exclude map[string]bool) *Question {
+func (s *Service) pickGrammarQuestion(ctx context.Context, level user.Level, exclude map[string]bool) *Question {
+	if s.grammarRepo != nil {
+		if q := s.pickGrammarFromDB(ctx, level, exclude); q != nil {
+			return q
+		}
+	}
+	// Fallback to hardcoded bank (used in tests or if DB is empty).
 	questions := questionBank[level]
 	if len(questions) == 0 {
 		questions = questionBank[user.B1]
 	}
-
 	available := filterExcluded(questions, exclude)
 	if len(available) == 0 {
-		available = questions // all asked — allow repeats rather than blocking
+		available = questions
 	}
 	q := available[rand.IntN(len(available))]
 	return &q
+}
+
+func (s *Service) pickGrammarFromDB(ctx context.Context, level user.Level, exclude map[string]bool) *Question {
+	rows, err := s.grammarRepo.GetByLevel(ctx, level)
+	if err != nil || len(rows) == 0 {
+		// Try fallback level B1.
+		if level != user.B1 {
+			rows, err = s.grammarRepo.GetByLevel(ctx, user.B1)
+		}
+		if err != nil || len(rows) == 0 {
+			return nil
+		}
+	}
+
+	questions := make([]Question, 0, len(rows))
+	for _, gq := range rows {
+		questions = append(questions, dbGrammarToQuestion(gq))
+	}
+
+	available := filterExcluded(questions, exclude)
+	if len(available) == 0 {
+		available = questions
+	}
+	q := available[rand.IntN(len(available))]
+	return &q
+}
+
+// dbGrammarToQuestion converts a DB grammar row to an assessment Question.
+// The Answer field holds the correct option text; we find its index in Options.
+func dbGrammarToQuestion(gq task.GrammarQuestion) Question {
+	correctIdx := 0
+	for i, opt := range gq.Options {
+		if opt == gq.Answer {
+			correctIdx = i
+			break
+		}
+	}
+	return Question{
+		Level:         gq.Level,
+		Text:          gq.Prompt,
+		Options:       gq.Options,
+		CorrectOption: correctIdx,
+	}
 }
 
 // generateVocabQuestion builds a "translate the word" question from the SRS words table.

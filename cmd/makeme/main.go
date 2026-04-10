@@ -74,12 +74,13 @@ func run(ctx context.Context) error {
 
 	srsRepo := postgres.NewSRSRepository(queries)
 
+	grammarRepo := postgres.NewGrammarRepository(queries)
+
 	assessRepo := postgres.NewAssessmentRepository(queries)
-	assessSvc := assessment.NewService(assessRepo, userSvc, srsRepo)
+	assessSvc := assessment.NewService(assessRepo, userSvc, srsRepo, grammarRepo)
 
 	taskRepo := postgres.NewTaskRepository(queries)
 	vocabGen := task.NewVocabGenerator(srsRepo)
-	grammarRepo := postgres.NewGrammarRepository(queries)
 	grammarGen := task.NewGrammarGenerator(grammarRepo)
 	taskSvc := task.NewService(taskRepo, srsRepo, vocabGen, grammarGen)
 

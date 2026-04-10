@@ -102,7 +102,7 @@ func (r *mockRepo) GetSessionAnswers(_ context.Context, sessionID int64) ([]*Ans
 func TestSubmitAnswer_UsesShownQuestion(t *testing.T) {
 	ctx := context.Background()
 	repo := newMockRepo()
-	svc := NewService(repo, nil, nil)
+	svc := NewService(repo, nil, nil, nil)
 
 	// Start session — picks and returns the first question Q1.
 	session, shownQ, err := svc.Start(ctx, 1)
@@ -135,7 +135,7 @@ func TestSubmitAnswer_UsesShownQuestion(t *testing.T) {
 func TestSubmitAnswer_WrongAnswerRecordedCorrectly(t *testing.T) {
 	ctx := context.Background()
 	repo := newMockRepo()
-	svc := NewService(repo, nil, nil)
+	svc := NewService(repo, nil, nil, nil)
 
 	session, shownQ, err := svc.Start(ctx, 2)
 	require.NoError(t, err)
@@ -157,7 +157,7 @@ func TestSubmitAnswer_WrongAnswerRecordedCorrectly(t *testing.T) {
 func TestSubmitAnswer_SkipIsNotAnError(t *testing.T) {
 	ctx := context.Background()
 	repo := newMockRepo()
-	svc := NewService(repo, nil, nil)
+	svc := NewService(repo, nil, nil, nil)
 
 	session, _, err := svc.Start(ctx, 3)
 	require.NoError(t, err)
