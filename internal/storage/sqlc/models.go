@@ -18,6 +18,7 @@ type AssessmentAnswer struct {
 	UserOption    int32              `json:"user_option"`
 	Correct       bool               `json:"correct"`
 	CreatedAt     pgtype.Timestamptz `json:"created_at"`
+	Skipped       bool               `json:"skipped"`
 }
 
 type AssessmentSession struct {
@@ -28,6 +29,7 @@ type AssessmentSession struct {
 	DeterminedLevel pgtype.Text        `json:"determined_level"`
 	CreatedAt       pgtype.Timestamptz `json:"created_at"`
 	CompletedAt     pgtype.Timestamptz `json:"completed_at"`
+	PendingQuestion []byte             `json:"pending_question"`
 }
 
 type DailySet struct {
@@ -36,6 +38,15 @@ type DailySet struct {
 	GroupID   int64              `json:"group_id"`
 	Date      pgtype.Date        `json:"date"`
 	CreatedAt pgtype.Timestamptz `json:"created_at"`
+}
+
+type GrammarQuestion struct {
+	ID       int64  `json:"id"`
+	Level    string `json:"level"`
+	Category string `json:"category"`
+	Prompt   string `json:"prompt"`
+	Options  []byte `json:"options"`
+	Answer   string `json:"answer"`
 }
 
 type Group struct {

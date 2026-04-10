@@ -12,8 +12,8 @@ import (
 )
 
 const addAssessmentAnswer = `-- name: AddAssessmentAnswer :exec
-INSERT INTO assessment_answers (session_id, question_level, question_text, options, correct_option, user_option, correct)
-VALUES ($1, $2, $3, $4, $5, $6, $7)
+INSERT INTO assessment_answers (session_id, question_level, question_text, options, correct_option, user_option, correct, skipped)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 `
 
 type AddAssessmentAnswerParams struct {
@@ -24,6 +24,7 @@ type AddAssessmentAnswerParams struct {
 	CorrectOption int32  `json:"correct_option"`
 	UserOption    int32  `json:"user_option"`
 	Correct       bool   `json:"correct"`
+	Skipped       bool   `json:"skipped"`
 }
 
 func (q *Queries) AddAssessmentAnswer(ctx context.Context, arg AddAssessmentAnswerParams) error {
@@ -35,6 +36,7 @@ func (q *Queries) AddAssessmentAnswer(ctx context.Context, arg AddAssessmentAnsw
 		arg.CorrectOption,
 		arg.UserOption,
 		arg.Correct,
+		arg.Skipped,
 	)
 	return err
 }
@@ -52,8 +54,8 @@ func (q *Queries) CountAssessmentAnswers(ctx context.Context, sessionID int64) (
 
 const countCorrectByLevel = `-- name: CountCorrectByLevel :many
 SELECT question_level,
-       COUNT(*) AS total,
-       COUNT(*) FILTER (WHERE correct) AS correct_count
+       COUNT(*) FILTER (WHERE NOT skipped) AS total,
+       COUNT(*) FILTER (WHERE correct AND NOT skipped) AS correct_count
 FROM assessment_answers
 WHERE session_id = $1
 GROUP BY question_level
@@ -88,18 +90,30 @@ func (q *Queries) CountCorrectByLevel(ctx context.Context, sessionID int64) ([]C
 const createAssessmentSession = `-- name: CreateAssessmentSession :one
 INSERT INTO assessment_sessions (user_id)
 VALUES ($1)
-RETURNING id, user_id, status, current_level, determined_level, created_at, completed_at
+RETURNING id, user_id, status, current_level, determined_level, pending_question, created_at, completed_at
 `
 
-func (q *Queries) CreateAssessmentSession(ctx context.Context, userID int64) (AssessmentSession, error) {
+type CreateAssessmentSessionRow struct {
+	ID              int64              `json:"id"`
+	UserID          int64              `json:"user_id"`
+	Status          string             `json:"status"`
+	CurrentLevel    string             `json:"current_level"`
+	DeterminedLevel pgtype.Text        `json:"determined_level"`
+	PendingQuestion []byte             `json:"pending_question"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+	CompletedAt     pgtype.Timestamptz `json:"completed_at"`
+}
+
+func (q *Queries) CreateAssessmentSession(ctx context.Context, userID int64) (CreateAssessmentSessionRow, error) {
 	row := q.db.QueryRow(ctx, createAssessmentSession, userID)
-	var i AssessmentSession
+	var i CreateAssessmentSessionRow
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
 		&i.Status,
 		&i.CurrentLevel,
 		&i.DeterminedLevel,
+		&i.PendingQuestion,
 		&i.CreatedAt,
 		&i.CompletedAt,
 	)
@@ -107,30 +121,118 @@ func (q *Queries) CreateAssessmentSession(ctx context.Context, userID int64) (As
 }
 
 const getActiveAssessmentSession = `-- name: GetActiveAssessmentSession :one
-SELECT id, user_id, status, current_level, determined_level, created_at, completed_at FROM assessment_sessions
+SELECT id, user_id, status, current_level, determined_level, pending_question, created_at, completed_at
+FROM assessment_sessions
 WHERE user_id = $1 AND status = 'in_progress'
 ORDER BY created_at DESC
 LIMIT 1
 `
 
-func (q *Queries) GetActiveAssessmentSession(ctx context.Context, userID int64) (AssessmentSession, error) {
+type GetActiveAssessmentSessionRow struct {
+	ID              int64              `json:"id"`
+	UserID          int64              `json:"user_id"`
+	Status          string             `json:"status"`
+	CurrentLevel    string             `json:"current_level"`
+	DeterminedLevel pgtype.Text        `json:"determined_level"`
+	PendingQuestion []byte             `json:"pending_question"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+	CompletedAt     pgtype.Timestamptz `json:"completed_at"`
+}
+
+func (q *Queries) GetActiveAssessmentSession(ctx context.Context, userID int64) (GetActiveAssessmentSessionRow, error) {
 	row := q.db.QueryRow(ctx, getActiveAssessmentSession, userID)
-	var i AssessmentSession
+	var i GetActiveAssessmentSessionRow
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
 		&i.Status,
 		&i.CurrentLevel,
 		&i.DeterminedLevel,
+		&i.PendingQuestion,
 		&i.CreatedAt,
 		&i.CompletedAt,
 	)
 	return i, err
 }
 
+const getAnsweredTexts = `-- name: GetAnsweredTexts :many
+SELECT question_text FROM assessment_answers WHERE session_id = $1
+`
+
+func (q *Queries) GetAnsweredTexts(ctx context.Context, sessionID int64) ([]string, error) {
+	rows, err := q.db.Query(ctx, getAnsweredTexts, sessionID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []string{}
+	for rows.Next() {
+		var question_text string
+		if err := rows.Scan(&question_text); err != nil {
+			return nil, err
+		}
+		items = append(items, question_text)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getSessionAnswers = `-- name: GetSessionAnswers :many
+SELECT id, session_id, question_level, question_text, options, correct_option, user_option, correct, skipped, created_at
+FROM assessment_answers
+WHERE session_id = $1
+ORDER BY id
+`
+
+type GetSessionAnswersRow struct {
+	ID            int64              `json:"id"`
+	SessionID     int64              `json:"session_id"`
+	QuestionLevel string             `json:"question_level"`
+	QuestionText  string             `json:"question_text"`
+	Options       []byte             `json:"options"`
+	CorrectOption int32              `json:"correct_option"`
+	UserOption    int32              `json:"user_option"`
+	Correct       bool               `json:"correct"`
+	Skipped       bool               `json:"skipped"`
+	CreatedAt     pgtype.Timestamptz `json:"created_at"`
+}
+
+func (q *Queries) GetSessionAnswers(ctx context.Context, sessionID int64) ([]GetSessionAnswersRow, error) {
+	rows, err := q.db.Query(ctx, getSessionAnswers, sessionID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetSessionAnswersRow{}
+	for rows.Next() {
+		var i GetSessionAnswersRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.SessionID,
+			&i.QuestionLevel,
+			&i.QuestionText,
+			&i.Options,
+			&i.CorrectOption,
+			&i.UserOption,
+			&i.Correct,
+			&i.Skipped,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateAssessmentSession = `-- name: UpdateAssessmentSession :exec
 UPDATE assessment_sessions
-SET status = $2, current_level = $3, determined_level = $4, completed_at = $5
+SET status = $2, current_level = $3, determined_level = $4, completed_at = $5, pending_question = $6
 WHERE id = $1
 `
 
@@ -140,6 +242,7 @@ type UpdateAssessmentSessionParams struct {
 	CurrentLevel    string             `json:"current_level"`
 	DeterminedLevel pgtype.Text        `json:"determined_level"`
 	CompletedAt     pgtype.Timestamptz `json:"completed_at"`
+	PendingQuestion []byte             `json:"pending_question"`
 }
 
 func (q *Queries) UpdateAssessmentSession(ctx context.Context, arg UpdateAssessmentSessionParams) error {
@@ -149,6 +252,7 @@ func (q *Queries) UpdateAssessmentSession(ctx context.Context, arg UpdateAssessm
 		arg.CurrentLevel,
 		arg.DeterminedLevel,
 		arg.CompletedAt,
+		arg.PendingQuestion,
 	)
 	return err
 }

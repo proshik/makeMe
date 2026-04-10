@@ -6,10 +6,14 @@ import (
 	"fmt"
 	"math/rand/v2"
 
+	"makeMe/internal/domain/srs"
 	"makeMe/internal/domain/user"
 )
 
 const totalQuestions = 10
+
+// SkipOption is the sentinel value for userOption meaning "I don't know".
+const SkipOption = -1
 
 var (
 	ErrNoActiveSession = errors.New("no active assessment session")
@@ -22,21 +26,31 @@ var levels = []user.Level{user.A1, user.A2, user.B1, user.B2, user.C1, user.C2}
 type Service struct {
 	repo    Repository
 	userSvc *user.Service
+	srsRepo srs.Repository
 }
 
-func NewService(repo Repository, userSvc *user.Service) *Service {
-	return &Service{repo: repo, userSvc: userSvc}
+func NewService(repo Repository, userSvc *user.Service, srsRepo srs.Repository) *Service {
+	return &Service{repo: repo, userSvc: userSvc, srsRepo: srsRepo}
 }
 
-// Start creates a new assessment session starting at B1.
+// Start creates a new assessment session starting at B1, or resumes an existing one.
+// The picked question is stored as PendingQuestion so SubmitAnswer can verify the answer
+// against the exact question that was shown to the user.
 func (s *Service) Start(ctx context.Context, userID int64) (*Session, *Question, error) {
-	// Check for existing active session
 	existing, err := s.repo.GetActiveSession(ctx, userID)
 	if err != nil && !errors.Is(err, ErrNoActiveSession) {
 		return nil, nil, fmt.Errorf("check active session: %w", err)
 	}
 	if existing != nil {
-		q := s.pickQuestion(existing.CurrentLevel)
+		exclude, _ := s.buildExcludeSet(ctx, existing.ID)
+		q, err := s.pickQuestion(ctx, existing.CurrentLevel, exclude)
+		if err != nil {
+			return nil, nil, err
+		}
+		existing.PendingQuestion = q
+		if err := s.repo.UpdateSession(ctx, existing); err != nil {
+			return nil, nil, fmt.Errorf("store pending question: %w", err)
+		}
 		return existing, q, nil
 	}
 
@@ -45,24 +59,36 @@ func (s *Service) Start(ctx context.Context, userID int64) (*Session, *Question,
 		return nil, nil, fmt.Errorf("create session: %w", err)
 	}
 
-	q := s.pickQuestion(user.B1)
+	q, err := s.pickQuestion(ctx, user.B1, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+	session.PendingQuestion = q
+	if err := s.repo.UpdateSession(ctx, session); err != nil {
+		return nil, nil, fmt.Errorf("store pending question: %w", err)
+	}
 	return session, q, nil
 }
 
-// SubmitAnswer records the user's answer, adjusts difficulty, and returns the next question or nil if done.
-func (s *Service) SubmitAnswer(ctx context.Context, userID int64, userOption int) (*Session, *Question, error) {
+// SubmitAnswer records the user's answer, adjusts difficulty, and returns
+// the next question (nil if done) and the full answer list (non-nil only when done).
+func (s *Service) SubmitAnswer(ctx context.Context, userID int64, userOption int) (*Session, *Question, []*Answer, error) {
 	session, err := s.repo.GetActiveSession(ctx, userID)
 	if err != nil {
-		return nil, nil, fmt.Errorf("get active session: %w", err)
+		return nil, nil, nil, fmt.Errorf("get active session: %w", err)
 	}
 	if session.Status == StatusCompleted {
-		return session, nil, ErrSessionComplete
+		return session, nil, nil, ErrSessionComplete
 	}
 
-	// Get current question for this session level
-	q := s.pickQuestion(session.CurrentLevel)
+	// Use the question that was stored when the question was shown to the user.
+	q := session.PendingQuestion
+	if q == nil {
+		return nil, nil, nil, fmt.Errorf("no pending question for session %d", session.ID)
+	}
 
-	correct := userOption == q.CorrectOption
+	skipped := userOption == SkipOption
+	correct := !skipped && userOption == q.CorrectOption
 	answer := &Answer{
 		SessionID:     session.ID,
 		QuestionLevel: session.CurrentLevel,
@@ -71,30 +97,37 @@ func (s *Service) SubmitAnswer(ctx context.Context, userID int64, userOption int
 		CorrectOption: q.CorrectOption,
 		UserOption:    userOption,
 		Correct:       correct,
+		Skipped:       skipped,
 	}
 	if err := s.repo.AddAnswer(ctx, answer); err != nil {
-		return nil, nil, fmt.Errorf("add answer: %w", err)
+		return nil, nil, nil, fmt.Errorf("add answer: %w", err)
 	}
 
 	count, err := s.repo.CountAnswers(ctx, session.ID)
 	if err != nil {
-		return nil, nil, fmt.Errorf("count answers: %w", err)
+		return nil, nil, nil, fmt.Errorf("count answers: %w", err)
 	}
 
-	// Assessment complete?
 	if count >= totalQuestions {
-		return s.completeSession(ctx, session)
+		session, answers, err := s.completeSession(ctx, session)
+		return session, nil, answers, err
 	}
 
-	// Adjust level for next question
+	// Treat skipped as incorrect for adaptive level adjustment.
 	nextLevel := adjustLevel(session.CurrentLevel, correct)
-	session.CurrentLevel = nextLevel
-	if err := s.repo.UpdateSession(ctx, session); err != nil {
-		return nil, nil, fmt.Errorf("update session level: %w", err)
+	exclude, _ := s.buildExcludeSet(ctx, session.ID)
+	nextQ, err := s.pickQuestion(ctx, nextLevel, exclude)
+	if err != nil {
+		return nil, nil, nil, err
 	}
 
-	nextQ := s.pickQuestion(nextLevel)
-	return session, nextQ, nil
+	session.CurrentLevel = nextLevel
+	session.PendingQuestion = nextQ
+	if err := s.repo.UpdateSession(ctx, session); err != nil {
+		return nil, nil, nil, fmt.Errorf("update session: %w", err)
+	}
+
+	return session, nextQ, nil, nil
 }
 
 // GetActiveSession returns the current in-progress session or ErrNoActiveSession.
@@ -102,17 +135,12 @@ func (s *Service) GetActiveSession(ctx context.Context, userID int64) (*Session,
 	return s.repo.GetActiveSession(ctx, userID)
 }
 
-// GetCurrentQuestion returns the question for the session's current level.
-func (s *Service) GetCurrentQuestion(ctx context.Context, session *Session) *Question {
-	return s.pickQuestion(session.CurrentLevel)
-}
-
 // AnswerCount returns how many answers have been recorded for the session.
 func (s *Service) AnswerCount(ctx context.Context, sessionID int64) (int, error) {
 	return s.repo.CountAnswers(ctx, sessionID)
 }
 
-func (s *Service) completeSession(ctx context.Context, session *Session) (*Session, *Question, error) {
+func (s *Service) completeSession(ctx context.Context, session *Session) (*Session, []*Answer, error) {
 	stats, err := s.repo.CountCorrectByLevel(ctx, session.ID)
 	if err != nil {
 		return nil, nil, fmt.Errorf("count correct by level: %w", err)
@@ -130,16 +158,151 @@ func (s *Service) completeSession(ctx context.Context, session *Session) (*Sessi
 		return nil, nil, fmt.Errorf("update user level: %w", err)
 	}
 
-	return session, nil, nil
+	answers, err := s.repo.GetSessionAnswers(ctx, session.ID)
+	if err != nil {
+		return nil, nil, fmt.Errorf("get session answers: %w", err)
+	}
+
+	return session, answers, nil
 }
 
-func (s *Service) pickQuestion(level user.Level) *Question {
+// buildExcludeSet returns a set of question texts already answered in the session.
+func (s *Service) buildExcludeSet(ctx context.Context, sessionID int64) (map[string]bool, error) {
+	texts, err := s.repo.GetAnsweredTexts(ctx, sessionID)
+	if err != nil {
+		return nil, err
+	}
+	set := make(map[string]bool, len(texts))
+	for _, t := range texts {
+		set[t] = true
+	}
+	return set, nil
+}
+
+// pickQuestion selects a question at the given level not already in exclude.
+// Falls back to the full bank if all questions at the level were already asked.
+// 50% chance of a vocab question, 50% grammar (falls back to grammar if no words available).
+func (s *Service) pickQuestion(ctx context.Context, level user.Level, exclude map[string]bool) (*Question, error) {
+	if s.srsRepo != nil && rand.IntN(2) == 0 {
+		q, err := s.generateVocabQuestion(ctx, level, exclude)
+		if err == nil && q != nil {
+			return q, nil
+		}
+		// fall through to grammar on any error
+	}
+	return s.pickGrammarQuestion(level, exclude), nil
+}
+
+func (s *Service) pickGrammarQuestion(level user.Level, exclude map[string]bool) *Question {
 	questions := questionBank[level]
 	if len(questions) == 0 {
 		questions = questionBank[user.B1]
 	}
-	q := questions[rand.IntN(len(questions))]
+
+	available := filterExcluded(questions, exclude)
+	if len(available) == 0 {
+		available = questions // all asked — allow repeats rather than blocking
+	}
+	q := available[rand.IntN(len(available))]
 	return &q
+}
+
+// generateVocabQuestion builds a "translate the word" question from the SRS words table.
+func (s *Service) generateVocabQuestion(ctx context.Context, level user.Level, exclude map[string]bool) (*Question, error) {
+	words, err := s.srsRepo.GetWordsByLevel(ctx, level, 20)
+	if err != nil || len(words) == 0 {
+		return nil, fmt.Errorf("no words for level %s", level)
+	}
+
+	// Pick a word whose question text is not already in exclude
+	rand.Shuffle(len(words), func(i, j int) { words[i], words[j] = words[j], words[i] })
+
+	var targetIdx int = -1
+	for i, w := range words {
+		text := "Как переводится: «" + w.English + "»?"
+		if !exclude[text] {
+			targetIdx = i
+			break
+		}
+	}
+	if targetIdx == -1 {
+		return nil, fmt.Errorf("all vocab questions at level %s already asked", level)
+	}
+
+	target := words[targetIdx]
+	questionText := "Как переводится: «" + target.English + "»?"
+
+	// Build distractors: 3 other Russian translations from the same level
+	distractors := make([]string, 0, 3)
+	for i, w := range words {
+		if i == targetIdx {
+			continue
+		}
+		if w.Russian != target.Russian {
+			distractors = append(distractors, w.Russian)
+		}
+		if len(distractors) == 3 {
+			break
+		}
+	}
+
+	// If not enough distractors from this level, pad from adjacent level
+	if len(distractors) < 3 {
+		adjacent := adjacentLevel(level)
+		extras, _ := s.srsRepo.GetWordsByLevel(ctx, adjacent, 10)
+		for _, w := range extras {
+			if w.Russian != target.Russian {
+				distractors = append(distractors, w.Russian)
+			}
+			if len(distractors) == 3 {
+				break
+			}
+		}
+	}
+
+	if len(distractors) < 3 {
+		return nil, fmt.Errorf("not enough distractors for vocab question")
+	}
+
+	// Shuffle options and record correct index
+	options := append([]string{target.Russian}, distractors[:3]...)
+	rand.Shuffle(len(options), func(i, j int) { options[i], options[j] = options[j], options[i] })
+
+	correctIdx := 0
+	for i, o := range options {
+		if o == target.Russian {
+			correctIdx = i
+			break
+		}
+	}
+
+	return &Question{
+		Level:         level,
+		Text:          questionText,
+		Options:       options,
+		CorrectOption: correctIdx,
+	}, nil
+}
+
+func adjacentLevel(l user.Level) user.Level {
+	idx := levelIndex(l)
+	if idx > 0 {
+		return levels[idx-1]
+	}
+	return levels[1] // A2
+}
+
+func filterExcluded(questions []Question, exclude map[string]bool) []Question {
+	if len(exclude) == 0 {
+		return questions
+	}
+	out := make([]Question, 0, len(questions))
+	for _, q := range questions {
+		if !exclude[q.Text] {
+			out = append(out, q)
+		}
+	}
+	return out
 }
 
 // adjustLevel moves one step up on correct, one step down on incorrect.
@@ -163,8 +326,8 @@ func levelIndex(l user.Level) int {
 	return 2 // default B1
 }
 
-// determineLevel picks the highest level where the user got >= 50% correct,
-// falling back to A1 if none qualifies.
+// determineLevel picks the highest level where the user got >= 50% correct
+// (skipped answers are already excluded from the stats).
 func determineLevel(stats map[string]LevelStats) user.Level {
 	best := user.A1
 	for i, lv := range levels {

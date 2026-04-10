@@ -28,7 +28,8 @@ func (r *AssessmentRepository) CreateSession(ctx context.Context, userID int64) 
 	if err != nil {
 		return nil, fmt.Errorf("create assessment session: %w", err)
 	}
-	return toSession(row), nil
+	return sessionFromFields(row.ID, row.UserID, row.Status, row.CurrentLevel,
+		row.DeterminedLevel, row.PendingQuestion, row.CreatedAt, row.CompletedAt), nil
 }
 
 func (r *AssessmentRepository) GetActiveSession(ctx context.Context, userID int64) (*assessment.Session, error) {
@@ -39,7 +40,8 @@ func (r *AssessmentRepository) GetActiveSession(ctx context.Context, userID int6
 		}
 		return nil, fmt.Errorf("get active session: %w", err)
 	}
-	return toSession(row), nil
+	return sessionFromFields(row.ID, row.UserID, row.Status, row.CurrentLevel,
+		row.DeterminedLevel, row.PendingQuestion, row.CreatedAt, row.CompletedAt), nil
 }
 
 func (r *AssessmentRepository) UpdateSession(ctx context.Context, s *assessment.Session) error {
@@ -57,6 +59,14 @@ func (r *AssessmentRepository) UpdateSession(ctx context.Context, s *assessment.
 		params.CompletedAt = pgtype.Timestamptz{Time: time.Now(), Valid: true}
 	}
 
+	if s.PendingQuestion != nil {
+		pqJSON, err := json.Marshal(s.PendingQuestion)
+		if err != nil {
+			return fmt.Errorf("marshal pending question: %w", err)
+		}
+		params.PendingQuestion = pqJSON
+	}
+
 	if err := r.q.UpdateAssessmentSession(ctx, params); err != nil {
 		return fmt.Errorf("update assessment session: %w", err)
 	}
@@ -69,14 +79,20 @@ func (r *AssessmentRepository) AddAnswer(ctx context.Context, a *assessment.Answ
 		return fmt.Errorf("marshal options: %w", err)
 	}
 
+	userOption := int32(a.UserOption)
+	if a.Skipped {
+		userOption = int32(assessment.SkipOption)
+	}
+
 	params := sqlc.AddAssessmentAnswerParams{
 		SessionID:     a.SessionID,
 		QuestionLevel: string(a.QuestionLevel),
 		QuestionText:  a.QuestionText,
 		Options:       optionsJSON,
 		CorrectOption: int32(a.CorrectOption),
-		UserOption:    int32(a.UserOption),
+		UserOption:    userOption,
 		Correct:       a.Correct,
+		Skipped:       a.Skipped,
 	}
 
 	if err := r.q.AddAssessmentAnswer(ctx, params); err != nil {
@@ -109,19 +125,69 @@ func (r *AssessmentRepository) CountCorrectByLevel(ctx context.Context, sessionI
 	return result, nil
 }
 
-func toSession(row sqlc.AssessmentSession) *assessment.Session {
+func (r *AssessmentRepository) GetAnsweredTexts(ctx context.Context, sessionID int64) ([]string, error) {
+	texts, err := r.q.GetAnsweredTexts(ctx, sessionID)
+	if err != nil {
+		return nil, fmt.Errorf("get answered texts: %w", err)
+	}
+	return texts, nil
+}
+
+func (r *AssessmentRepository) GetSessionAnswers(ctx context.Context, sessionID int64) ([]*assessment.Answer, error) {
+	rows, err := r.q.GetSessionAnswers(ctx, sessionID)
+	if err != nil {
+		return nil, fmt.Errorf("get session answers: %w", err)
+	}
+
+	answers := make([]*assessment.Answer, 0, len(rows))
+	for _, row := range rows {
+		var options []string
+		if err := json.Unmarshal(row.Options, &options); err != nil {
+			return nil, fmt.Errorf("unmarshal answer options: %w", err)
+		}
+		answers = append(answers, &assessment.Answer{
+			ID:            row.ID,
+			SessionID:     row.SessionID,
+			QuestionLevel: user.Level(row.QuestionLevel),
+			QuestionText:  row.QuestionText,
+			Options:       options,
+			CorrectOption: int(row.CorrectOption),
+			UserOption:    int(row.UserOption),
+			Correct:       row.Correct,
+			Skipped:       row.Skipped,
+			CreatedAt:     row.CreatedAt.Time,
+		})
+	}
+	return answers, nil
+}
+
+// sessionFromFields constructs a domain Session from raw sqlc column values.
+// Used by both CreateSession and GetActiveSession which return identically-shaped rows.
+func sessionFromFields(
+	id, userID int64,
+	status, currentLevel string,
+	determinedLevel pgtype.Text,
+	pendingQuestionJSON []byte,
+	createdAt, completedAt pgtype.Timestamptz,
+) *assessment.Session {
 	s := &assessment.Session{
-		ID:           row.ID,
-		UserID:       row.UserID,
-		Status:       assessment.SessionStatus(row.Status),
-		CurrentLevel: user.Level(row.CurrentLevel),
-		CreatedAt:    row.CreatedAt.Time,
+		ID:           id,
+		UserID:       userID,
+		Status:       assessment.SessionStatus(status),
+		CurrentLevel: user.Level(currentLevel),
+		CreatedAt:    createdAt.Time,
 	}
-	if row.DeterminedLevel.Valid {
-		s.DeterminedLevel = user.Level(row.DeterminedLevel.String)
+	if determinedLevel.Valid {
+		s.DeterminedLevel = user.Level(determinedLevel.String)
 	}
-	if row.CompletedAt.Valid {
-		s.CompletedAt = row.CompletedAt.Time
+	if completedAt.Valid {
+		s.CompletedAt = completedAt.Time
+	}
+	if len(pendingQuestionJSON) > 0 {
+		var q assessment.Question
+		if err := json.Unmarshal(pendingQuestionJSON, &q); err == nil {
+			s.PendingQuestion = &q
+		}
 	}
 	return s
 }

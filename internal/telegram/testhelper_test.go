@@ -105,13 +105,15 @@ func setupTestEnv(t *testing.T) *testEnv {
 	groupRepo := postgres.NewGroupRepository(queries)
 	groupSvc := group.NewService(groupRepo)
 
-	assessRepo := postgres.NewAssessmentRepository(queries)
-	assessSvc := assessment.NewService(assessRepo, userSvc)
-
 	srsRepo := postgres.NewSRSRepository(queries)
+
+	assessRepo := postgres.NewAssessmentRepository(queries)
+	assessSvc := assessment.NewService(assessRepo, userSvc, srsRepo)
+
 	taskRepo := postgres.NewTaskRepository(queries)
 	vocabGen := task.NewVocabGenerator(srsRepo)
-	grammarGen := task.NewGrammarGenerator()
+	grammarRepo := postgres.NewGrammarRepository(queries)
+	grammarGen := task.NewGrammarGenerator(grammarRepo)
 	taskSvc := task.NewService(taskRepo, srsRepo, vocabGen, grammarGen)
 
 	scoringRepo := postgres.NewScoringRepository(queries)

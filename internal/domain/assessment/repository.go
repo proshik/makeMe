@@ -9,6 +9,8 @@ type Repository interface {
 	AddAnswer(ctx context.Context, answer *Answer) error
 	CountAnswers(ctx context.Context, sessionID int64) (int, error)
 	CountCorrectByLevel(ctx context.Context, sessionID int64) (map[string]LevelStats, error)
+	GetAnsweredTexts(ctx context.Context, sessionID int64) ([]string, error)
+	GetSessionAnswers(ctx context.Context, sessionID int64) ([]*Answer, error)
 }
 
 // LevelStats holds correct/total counts for a single level within a session.

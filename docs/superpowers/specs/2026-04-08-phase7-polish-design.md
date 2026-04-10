@@ -30,14 +30,14 @@ tgBot.RegisterHandler(bot.HandlerTypeMessageText, "/profile", bot.MatchTypeExact
 👤 Твой профиль
 
 Уровень: B1
-Баллы за месяц: 142.5 очков
-Дней подряд: 5
+Баллы за месяц: 142.5 баллов
+Дней подряд занимаешься: 5
 Выучено слов: 47 (слово считается выученным после 3 повторений)
 ```
 
 If the user is not onboarded (no level), show:
 ```
-Сначала пройди оценку уровня: /assess
+Сначала пройди оценку уровня, команда: /assess
 ```
 
 ### Data sources
