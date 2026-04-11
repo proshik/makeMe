@@ -65,6 +65,18 @@ func (r *UserRepository) UpdateLevel(ctx context.Context, id int64, level user.L
 	return nil
 }
 
+func (r *UserRepository) ListAll(ctx context.Context) ([]user.User, error) {
+	rows, err := r.q.ListAllUsers(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("list all users: %w", err)
+	}
+	users := make([]user.User, 0, len(rows))
+	for _, row := range rows {
+		users = append(users, *toUser(row))
+	}
+	return users, nil
+}
+
 func toUser(row sqlc.User) *user.User {
 	return &user.User{
 		ID:         row.ID,

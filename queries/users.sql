@@ -15,3 +15,6 @@ SELECT * FROM users WHERE id = $1;
 
 -- name: UpdateUserLevel :exec
 UPDATE users SET level = $2, onboarded = true, updated_at = now() WHERE id = $1;
+
+-- name: ListAllUsers :many
+SELECT id, telegram_id, username, first_name, level, onboarded, created_at, updated_at FROM users ORDER BY id;

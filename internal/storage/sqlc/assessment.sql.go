@@ -230,6 +230,41 @@ func (q *Queries) GetSessionAnswers(ctx context.Context, sessionID int64) ([]Get
 	return items, nil
 }
 
+const getLastCompletedAssessment = `-- name: GetLastCompletedAssessment :one
+SELECT id, user_id, status, current_level, determined_level, pending_question, created_at, completed_at
+FROM assessment_sessions
+WHERE user_id = $1 AND status = 'completed'
+ORDER BY completed_at DESC
+LIMIT 1
+`
+
+type GetLastCompletedAssessmentRow struct {
+	ID              int64              `json:"id"`
+	UserID          int64              `json:"user_id"`
+	Status          string             `json:"status"`
+	CurrentLevel    string             `json:"current_level"`
+	DeterminedLevel pgtype.Text        `json:"determined_level"`
+	PendingQuestion []byte             `json:"pending_question"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+	CompletedAt     pgtype.Timestamptz `json:"completed_at"`
+}
+
+func (q *Queries) GetLastCompletedAssessment(ctx context.Context, userID int64) (GetLastCompletedAssessmentRow, error) {
+	row := q.db.QueryRow(ctx, getLastCompletedAssessment, userID)
+	var i GetLastCompletedAssessmentRow
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Status,
+		&i.CurrentLevel,
+		&i.DeterminedLevel,
+		&i.PendingQuestion,
+		&i.CreatedAt,
+		&i.CompletedAt,
+	)
+	return i, err
+}
+
 const updateAssessmentSession = `-- name: UpdateAssessmentSession :exec
 UPDATE assessment_sessions
 SET status = $2, current_level = $3, determined_level = $4, completed_at = $5, pending_question = $6

@@ -96,3 +96,33 @@ func (q *Queries) UpdateUserLevel(ctx context.Context, arg UpdateUserLevelParams
 	_, err := q.db.Exec(ctx, updateUserLevel, arg.ID, arg.Level)
 	return err
 }
+
+const listAllUsers = `-- name: ListAllUsers :many
+SELECT id, telegram_id, username, first_name, level, onboarded, created_at, updated_at FROM users ORDER BY id
+`
+
+func (q *Queries) ListAllUsers(ctx context.Context) ([]User, error) {
+	rows, err := q.db.Query(ctx, listAllUsers)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.TelegramID,
+			&i.Username,
+			&i.FirstName,
+			&i.Level,
+			&i.Onboarded,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	return items, rows.Err()
+}

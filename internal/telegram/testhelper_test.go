@@ -39,6 +39,8 @@ import (
 type testEnv struct {
 	pool        *pgxpool.Pool
 	queries     *sqlc.Queries
+	userRepo    *postgres.UserRepository
+	assessRepo  *postgres.AssessmentRepository
 	userSvc     *user.Service
 	groupSvc    *group.Service
 	assessSvc   *assessment.Service
@@ -102,6 +104,7 @@ func setupTestEnv(t *testing.T) *testEnv {
 	userRepo := postgres.NewUserRepository(queries)
 	userSvc := user.NewService(userRepo)
 
+
 	groupRepo := postgres.NewGroupRepository(queries)
 	groupSvc := group.NewService(groupRepo)
 
@@ -139,6 +142,8 @@ func setupTestEnv(t *testing.T) *testEnv {
 	return &testEnv{
 		pool:        pool,
 		queries:     queries,
+		userRepo:    userRepo,
+		assessRepo:  assessRepo,
 		userSvc:     userSvc,
 		groupSvc:    groupSvc,
 		assessSvc:   assessSvc,

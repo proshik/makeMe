@@ -14,6 +14,8 @@ type Config struct {
 	WebhookURL    string
 	LogLevel      string
 	WordsFile     string
+	SchedulerTime string // daily summary send time, format "HH:MM"
+	Timezone      string // IANA timezone name
 }
 
 func Load() (*Config, error) {
@@ -26,6 +28,8 @@ func Load() (*Config, error) {
 		WebhookURL:    os.Getenv("WEBHOOK_URL"),
 		LogLevel:      getEnv("LOG_LEVEL", "info"),
 		WordsFile:     getEnv("WORDS_FILE", "data/words.json"),
+		SchedulerTime: getEnv("SCHEDULER_TIME", "21:00"),
+		Timezone:      getEnv("TIMEZONE", "Europe/Moscow"),
 	}
 
 	if cfg.DatabaseURL == "" {

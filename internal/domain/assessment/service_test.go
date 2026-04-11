@@ -97,6 +97,10 @@ func (r *mockRepo) GetSessionAnswers(_ context.Context, sessionID int64) ([]*Ans
 	return answers, nil
 }
 
+func (r *mockRepo) GetLastCompleted(_ context.Context, userID int64) (*Session, error) {
+	return nil, ErrNoActiveSession
+}
+
 // TestSubmitAnswer_UsesShownQuestion verifies that SubmitAnswer records the answer
 // against the question that was actually shown to the user, not a randomly picked new one.
 func TestSubmitAnswer_UsesShownQuestion(t *testing.T) {

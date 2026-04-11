@@ -38,3 +38,10 @@ SELECT id, session_id, question_level, question_text, options, correct_option, u
 FROM assessment_answers
 WHERE session_id = $1
 ORDER BY id;
+
+-- name: GetLastCompletedAssessment :one
+SELECT id, user_id, status, current_level, determined_level, pending_question, created_at, completed_at
+FROM assessment_sessions
+WHERE user_id = $1 AND status = 'completed'
+ORDER BY completed_at DESC
+LIMIT 1;

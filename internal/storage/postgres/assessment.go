@@ -161,6 +161,18 @@ func (r *AssessmentRepository) GetSessionAnswers(ctx context.Context, sessionID 
 	return answers, nil
 }
 
+func (r *AssessmentRepository) GetLastCompleted(ctx context.Context, userID int64) (*assessment.Session, error) {
+	row, err := r.q.GetLastCompletedAssessment(ctx, userID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, assessment.ErrNoActiveSession
+		}
+		return nil, fmt.Errorf("get last completed assessment: %w", err)
+	}
+	return sessionFromFields(row.ID, row.UserID, row.Status, row.CurrentLevel,
+		row.DeterminedLevel, row.PendingQuestion, row.CreatedAt, row.CompletedAt), nil
+}
+
 // sessionFromFields constructs a domain Session from raw sqlc column values.
 // Used by both CreateSession and GetActiveSession which return identically-shaped rows.
 func sessionFromFields(

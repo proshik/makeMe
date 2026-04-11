@@ -91,6 +91,15 @@ func (b *Bot) StartWebhook(ctx context.Context) {
 	b.bot.StartWebhook(ctx)
 }
 
+// SendMessage sends a proactive message to a chat (e.g. from the scheduler).
+func (b *Bot) SendMessage(ctx context.Context, chatID int64, text string) error {
+	_, err := b.bot.SendMessage(ctx, &bot.SendMessageParams{
+		ChatID: chatID,
+		Text:   text,
+	})
+	return err
+}
+
 func (b *Bot) defaultHandler(ctx context.Context, tgBot *bot.Bot, update *models.Update) {
 	if update.Message == nil {
 		return

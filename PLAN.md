@@ -426,15 +426,20 @@ type Config struct {
 
 ---
 
-### Фаза 8 — Проактивные сообщения (scheduler)
+### Фаза 8 — Проактивные сообщения (scheduler) [DONE]
 
 **Цель:** бот сам напоминает об итогах дня и мотивирует участников.
 
-Что делаем (отложено — требует отдельного дизайна):
-- Scheduler: бот присылает итоги дня/месяца участникам в личку
-- Выбор канала: личка каждого участника (не групповой чат — бот работает в private mode)
-- Время отправки: настраиваемое через конфиг (по умолчанию 21:00 по московскому времени)
-- Переассесмент: повторная оценка уровня с cooldown (не чаще раза в 30 дней)
+Что сделано:
+- [x] `internal/scheduler/` — пакет Scheduler с методами `Run`, `RunDailySummary`, `RunReassessReminder`
+- [x] `Run()` — бесконечный цикл, стреляет каждый день в настроенное время (default 21:00 MSK)
+- [x] `RunDailySummary()` — итоги дня для каждого участника хотя бы одной группы
+- [x] `RunReassessReminder()` — напоминание переоценить уровень если прошло > 30 дней
+- [x] `user.Repository.ListAll` + `assessment.Repository.GetLastCompleted` — новые методы
+- [x] `Bot.SendMessage(ctx, chatID, text)` — проактивная отправка сообщений
+- [x] Конфиг: `SCHEDULER_TIME` (default "21:00"), `TIMEZONE` (default "Europe/Moscow")
+- [x] Unit-тесты: nextRunTime (4 cases), formatDailySummary, formatReassessReminder
+- [x] Интеграционный тест: RunDailySummary через TestContainers + WireMock
 
 ---
 

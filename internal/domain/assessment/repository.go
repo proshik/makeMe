@@ -11,6 +11,7 @@ type Repository interface {
 	CountCorrectByLevel(ctx context.Context, sessionID int64) (map[string]LevelStats, error)
 	GetAnsweredTexts(ctx context.Context, sessionID int64) ([]string, error)
 	GetSessionAnswers(ctx context.Context, sessionID int64) ([]*Answer, error)
+	GetLastCompleted(ctx context.Context, userID int64) (*Session, error)
 }
 
 // LevelStats holds correct/total counts for a single level within a session.

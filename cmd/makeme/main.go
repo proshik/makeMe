@@ -25,6 +25,7 @@ import (
 	"makeMe/internal/domain/scoring"
 	"makeMe/internal/domain/task"
 	"makeMe/internal/domain/user"
+	"makeMe/internal/scheduler"
 	"makeMe/internal/server"
 	"makeMe/internal/storage/postgres"
 	"makeMe/internal/storage/sqlc"
@@ -98,11 +99,25 @@ func run(ctx context.Context) error {
 		return err
 	}
 
+	loc, err := time.LoadLocation(cfg.Timezone)
+	if err != nil {
+		slog.Warn("unknown timezone, falling back to UTC", "timezone", cfg.Timezone)
+		loc = time.UTC
+	}
+
+	sched := scheduler.New(userRepo, groupSvc, scoringSvc, assessRepo, tgBot.SendMessage, loc, cfg.SchedulerTime)
+
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		tgBot.StartWebhook(ctx)
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		sched.Run(ctx)
 	}()
 
 	r := server.New(tgBot)
