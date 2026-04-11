@@ -8,14 +8,16 @@ import (
 )
 
 type Config struct {
-	Port          string
-	DatabaseURL   string
-	TelegramToken string
-	WebhookURL    string
-	LogLevel      string
-	WordsFile     string
-	SchedulerTime string // daily summary send time, format "HH:MM"
-	Timezone      string // IANA timezone name
+	Port                 string
+	DatabaseURL          string
+	TelegramToken        string
+	WebhookURL           string
+	LogLevel             string
+	WordsFile            string
+	GrammarQuestionsFile string
+	GrammarCategoriesFile string
+	SchedulerTime        string // daily summary send time, format "HH:MM"
+	Timezone             string // IANA timezone name
 }
 
 func Load() (*Config, error) {
@@ -27,7 +29,9 @@ func Load() (*Config, error) {
 		TelegramToken: os.Getenv("TELEGRAM_TOKEN"),
 		WebhookURL:    os.Getenv("WEBHOOK_URL"),
 		LogLevel:      getEnv("LOG_LEVEL", "info"),
-		WordsFile:     getEnv("WORDS_FILE", "data/words.json"),
+		WordsFile:             getEnv("WORDS_FILE", "data/words.json"),
+		GrammarQuestionsFile:  getEnv("GRAMMAR_QUESTIONS_FILE", "data/grammar_questions.json"),
+		GrammarCategoriesFile: getEnv("GRAMMAR_CATEGORIES_FILE", "data/grammar_categories.json"),
 		SchedulerTime: getEnv("SCHEDULER_TIME", "21:00"),
 		Timezone:      getEnv("TIMEZONE", "Europe/Moscow"),
 	}

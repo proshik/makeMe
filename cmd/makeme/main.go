@@ -58,6 +58,13 @@ func run(ctx context.Context) error {
 		slog.Warn("word seed skipped", "error", err)
 	}
 
+	if err := seedGrammarCategories(ctx, cfg.DatabaseURL, cfg.GrammarCategoriesFile); err != nil {
+		slog.Warn("grammar categories seed skipped", "error", err)
+	}
+	if err := seedGrammarQuestions(ctx, cfg.DatabaseURL, cfg.GrammarQuestionsFile); err != nil {
+		slog.Warn("grammar questions seed skipped", "error", err)
+	}
+
 	pool, err := postgres.NewPool(ctx, cfg.DatabaseURL)
 	if err != nil {
 		return err
@@ -199,6 +206,87 @@ func runMigrations(dbURL string) error {
 		return fmt.Errorf("run migrations: %w", err)
 	}
 	slog.Info("migrations applied")
+	return nil
+}
+
+type grammarCategoryEntry struct {
+	Name        string `json:"name"`
+	Explanation string `json:"explanation"`
+}
+
+type grammarQuestionEntry struct {
+	Level    string   `json:"level"`
+	Category string   `json:"category"`
+	Prompt   string   `json:"prompt"`
+	Options  []string `json:"options"`
+	Answer   string   `json:"answer"`
+}
+
+func seedGrammarCategories(ctx context.Context, dbURL, file string) error {
+	data, err := os.ReadFile(file)
+	if err != nil {
+		return fmt.Errorf("read grammar categories file: %w", err)
+	}
+
+	var entries []grammarCategoryEntry
+	if err := json.Unmarshal(data, &entries); err != nil {
+		return fmt.Errorf("parse grammar categories file: %w", err)
+	}
+
+	pool, err := pgxpool.New(ctx, dbURL)
+	if err != nil {
+		return fmt.Errorf("connect for seed: %w", err)
+	}
+	defer pool.Close()
+
+	q := sqlc.New(pool)
+	for _, e := range entries {
+		if err := q.UpsertGrammarCategory(ctx, sqlc.UpsertGrammarCategoryParams{
+			Name:        e.Name,
+			Explanation: e.Explanation,
+		}); err != nil {
+			slog.Warn("failed to upsert grammar category", "name", e.Name, "error", err)
+		}
+	}
+	slog.Info("grammar categories seeded", "count", len(entries))
+	return nil
+}
+
+func seedGrammarQuestions(ctx context.Context, dbURL, file string) error {
+	data, err := os.ReadFile(file)
+	if err != nil {
+		return fmt.Errorf("read grammar questions file: %w", err)
+	}
+
+	var entries []grammarQuestionEntry
+	if err := json.Unmarshal(data, &entries); err != nil {
+		return fmt.Errorf("parse grammar questions file: %w", err)
+	}
+
+	pool, err := pgxpool.New(ctx, dbURL)
+	if err != nil {
+		return fmt.Errorf("connect for seed: %w", err)
+	}
+	defer pool.Close()
+
+	q := sqlc.New(pool)
+	for _, e := range entries {
+		optJSON, err := json.Marshal(e.Options)
+		if err != nil {
+			slog.Warn("failed to marshal options", "prompt", e.Prompt, "error", err)
+			continue
+		}
+		if err := q.UpsertGrammarQuestion(ctx, sqlc.UpsertGrammarQuestionParams{
+			Level:    e.Level,
+			Category: e.Category,
+			Prompt:   e.Prompt,
+			Options:  optJSON,
+			Answer:   e.Answer,
+		}); err != nil {
+			slog.Warn("failed to upsert grammar question", "prompt", e.Prompt, "error", err)
+		}
+	}
+	slog.Info("grammar questions seeded", "count", len(entries))
 	return nil
 }
 

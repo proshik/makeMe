@@ -10,21 +10,33 @@ import (
 )
 
 const getGrammarByLevel = `-- name: GetGrammarByLevel :many
-SELECT id, level, category, prompt, options, answer, explanation
-FROM grammar_questions
-WHERE level = $1
-ORDER BY id
+SELECT q.id, q.level, q.category, q.prompt, q.options, q.answer,
+       COALESCE(c.explanation, '') AS explanation
+FROM grammar_questions q
+LEFT JOIN grammar_categories c ON c.name = q.category
+WHERE q.level = $1
+ORDER BY q.id
 `
 
-func (q *Queries) GetGrammarByLevel(ctx context.Context, level string) ([]GrammarQuestion, error) {
+type GetGrammarByLevelRow struct {
+	ID          int64  `json:"id"`
+	Level       string `json:"level"`
+	Category    string `json:"category"`
+	Prompt      string `json:"prompt"`
+	Options     []byte `json:"options"`
+	Answer      string `json:"answer"`
+	Explanation string `json:"explanation"`
+}
+
+func (q *Queries) GetGrammarByLevel(ctx context.Context, level string) ([]GetGrammarByLevelRow, error) {
 	rows, err := q.db.Query(ctx, getGrammarByLevel, level)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []GrammarQuestion{}
+	items := []GetGrammarByLevelRow{}
 	for rows.Next() {
-		var i GrammarQuestion
+		var i GetGrammarByLevelRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Level,
@@ -42,4 +54,49 @@ func (q *Queries) GetGrammarByLevel(ctx context.Context, level string) ([]Gramma
 		return nil, err
 	}
 	return items, nil
+}
+
+const upsertGrammarCategory = `-- name: UpsertGrammarCategory :exec
+INSERT INTO grammar_categories (name, explanation)
+VALUES ($1, $2)
+ON CONFLICT (name) DO UPDATE
+SET explanation = EXCLUDED.explanation
+`
+
+type UpsertGrammarCategoryParams struct {
+	Name        string `json:"name"`
+	Explanation string `json:"explanation"`
+}
+
+func (q *Queries) UpsertGrammarCategory(ctx context.Context, arg UpsertGrammarCategoryParams) error {
+	_, err := q.db.Exec(ctx, upsertGrammarCategory, arg.Name, arg.Explanation)
+	return err
+}
+
+const upsertGrammarQuestion = `-- name: UpsertGrammarQuestion :exec
+INSERT INTO grammar_questions (level, category, prompt, options, answer)
+VALUES ($1, $2, $3, $4, $5)
+ON CONFLICT (level, prompt) DO UPDATE
+SET category = EXCLUDED.category,
+    options  = EXCLUDED.options,
+    answer   = EXCLUDED.answer
+`
+
+type UpsertGrammarQuestionParams struct {
+	Level    string `json:"level"`
+	Category string `json:"category"`
+	Prompt   string `json:"prompt"`
+	Options  []byte `json:"options"`
+	Answer   string `json:"answer"`
+}
+
+func (q *Queries) UpsertGrammarQuestion(ctx context.Context, arg UpsertGrammarQuestionParams) error {
+	_, err := q.db.Exec(ctx, upsertGrammarQuestion,
+		arg.Level,
+		arg.Category,
+		arg.Prompt,
+		arg.Options,
+		arg.Answer,
+	)
+	return err
 }

@@ -37,7 +37,7 @@ func (r *GrammarRepository) GetByLevel(ctx context.Context, level user.Level) ([
 			Prompt:      row.Prompt,
 			Options:     options,
 			Answer:      row.Answer,
-			Explanation: row.Explanation,
+			Explanation: row.Explanation, // from LEFT JOIN grammar_categories
 		})
 	}
 	return questions, nil

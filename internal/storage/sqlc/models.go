@@ -40,14 +40,18 @@ type DailySet struct {
 	CreatedAt pgtype.Timestamptz `json:"created_at"`
 }
 
-type GrammarQuestion struct {
-	ID          int64  `json:"id"`
-	Level       string `json:"level"`
-	Category    string `json:"category"`
-	Prompt      string `json:"prompt"`
-	Options     []byte `json:"options"`
-	Answer      string `json:"answer"`
+type GrammarCategory struct {
+	Name        string `json:"name"`
 	Explanation string `json:"explanation"`
+}
+
+type GrammarQuestion struct {
+	ID       int64  `json:"id"`
+	Level    string `json:"level"`
+	Category string `json:"category"`
+	Prompt   string `json:"prompt"`
+	Options  []byte `json:"options"`
+	Answer   string `json:"answer"`
 }
 
 type Group struct {
