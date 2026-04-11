@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math/rand/v2"
+	"strings"
 
 	"makeMe/internal/domain/srs"
 	"makeMe/internal/domain/user"
@@ -71,22 +72,27 @@ func (g *VocabGenerator) wordToTask(ctx context.Context, word *srs.Word, level u
 		return Task{}, fmt.Errorf("get distractors: %w", err)
 	}
 
-	options := []string{word.Russian}
-	for _, d := range distractors {
-		if d.ID == word.ID || d.Russian == word.Russian {
-			continue
-		}
-		options = append(options, d.Russian)
-		if len(options) >= 4 {
-			break
-		}
+	// Randomly pick a subtype; fill_blank requires an example sentence
+	subtypes := []string{VocabSubtypeEnRu, VocabSubtypeRuEn, VocabSubtypeFillBlank}
+	subtype := subtypes[rand.IntN(len(subtypes))]
+
+	var t Task
+	switch subtype {
+	case VocabSubtypeRuEn:
+		t = buildVocabRuEn(word, distractors)
+	case VocabSubtypeFillBlank:
+		t = buildVocabFillBlank(word, distractors)
+	default:
+		t = buildVocabEnRu(word, distractors)
 	}
 
-	// Shuffle options
-	rand.Shuffle(len(options), func(i, j int) {
-		options[i], options[j] = options[j], options[i]
-	})
+	t.Metadata["word_id"] = word.ID
+	t.Metadata["audio_url"] = word.AudioURL
+	return t, nil
+}
 
+// buildVocabEnRu builds an EN→RU task: English prompt, Russian options.
+func buildVocabEnRu(word *srs.Word, distractors []srs.Word) Task {
 	prompt := word.English
 	if word.Transcription != "" {
 		prompt = fmt.Sprintf("%s  %s", word.English, word.Transcription)
@@ -95,6 +101,8 @@ func (g *VocabGenerator) wordToTask(ctx context.Context, word *srs.Word, level u
 		prompt = fmt.Sprintf("%s\n\n_%s_", prompt, word.Example)
 	}
 
+	options := buildOptions(word.Russian, distractors, func(d srs.Word) string { return d.Russian })
+
 	return Task{
 		Type:    TypeVocab,
 		Level:   word.Level,
@@ -102,8 +110,81 @@ func (g *VocabGenerator) wordToTask(ctx context.Context, word *srs.Word, level u
 		Options: options,
 		Answer:  word.Russian,
 		Metadata: map[string]any{
-			"word_id":   word.ID,
-			"audio_url": word.AudioURL,
+			"subtype": VocabSubtypeEnRu,
 		},
-	}, nil
+	}
+}
+
+// buildVocabRuEn builds an RU→EN task: Russian prompt, English options.
+func buildVocabRuEn(word *srs.Word, distractors []srs.Word) Task {
+	options := buildOptions(word.English, distractors, func(d srs.Word) string { return d.English })
+
+	return Task{
+		Type:    TypeVocab,
+		Level:   word.Level,
+		Prompt:  word.Russian,
+		Options: options,
+		Answer:  word.English,
+		Metadata: map[string]any{
+			"subtype": VocabSubtypeRuEn,
+		},
+	}
+}
+
+// buildVocabFillBlank builds a fill-in-the-blank task using the example sentence.
+// Falls back to en_ru if the word is not present in the example.
+func buildVocabFillBlank(word *srs.Word, distractors []srs.Word) Task {
+	blanked, ok := blankWord(word.Example, word.English)
+	if !ok {
+		return buildVocabEnRu(word, distractors)
+	}
+
+	options := buildOptions(word.English, distractors, func(d srs.Word) string { return d.English })
+
+	return Task{
+		Type:    TypeVocab,
+		Level:   word.Level,
+		Prompt:  blanked,
+		Options: options,
+		Answer:  word.English,
+		Metadata: map[string]any{
+			"subtype": VocabSubtypeFillBlank,
+		},
+	}
+}
+
+// blankWord replaces the first occurrence of word (case-insensitive) in sentence
+// with "___". Returns the modified sentence and true if found.
+func blankWord(sentence, word string) (string, bool) {
+	if sentence == "" || word == "" {
+		return "", false
+	}
+	lower := strings.ToLower(sentence)
+	target := strings.ToLower(word)
+	idx := strings.Index(lower, target)
+	if idx < 0 {
+		return "", false
+	}
+	return sentence[:idx] + "___" + sentence[idx+len(word):], true
+}
+
+// buildOptions assembles 4 shuffled answer choices: the correct answer plus up to 3
+// distractors drawn from distractor words, excluding any duplicate of the correct answer.
+func buildOptions(correct string, distractors []srs.Word, pick func(srs.Word) string) []string {
+	options := []string{correct}
+	for _, d := range distractors {
+		v := pick(d)
+		if v == correct {
+			continue
+		}
+		options = append(options, v)
+		if len(options) >= 4 {
+			break
+		}
+	}
+
+	rand.Shuffle(len(options), func(i, j int) {
+		options[i], options[j] = options[j], options[i]
+	})
+	return options
 }

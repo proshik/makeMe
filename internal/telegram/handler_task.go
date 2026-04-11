@@ -175,8 +175,25 @@ func (b *Bot) handleTaskCallback(ctx context.Context, tgBot *bot.Bot, update *mo
 	sendTaskQuestion(ctx, tgBot, chatID, nextTask, answered+1, total)
 }
 
+// vocabTaskLabel returns a display label for a vocab task based on its subtype.
+func vocabTaskLabel(t *task.Task) string {
+	if t.Metadata == nil {
+		return "📖 Словарь"
+	}
+	switch t.Metadata["subtype"] {
+	case task.VocabSubtypeRuEn:
+		return "📖 Словарь (RU→EN)"
+	case task.VocabSubtypeFillBlank:
+		return "📝 Заполни пропуск"
+	case task.VocabSubtypeEnRu:
+		return "📖 Словарь (EN→RU)"
+	default:
+		return "📖 Словарь"
+	}
+}
+
 func sendTaskQuestion(ctx context.Context, tgBot *bot.Bot, chatID int64, t *task.Task, current, total int) {
-	typeLabel := "📖 Словарь"
+	typeLabel := vocabTaskLabel(t)
 	if t.Type == task.TypeGrammar {
 		typeLabel = "📝 Грамматика"
 	}
@@ -198,8 +215,8 @@ func sendTaskQuestion(ctx context.Context, tgBot *bot.Bot, chatID int64, t *task
 	}
 
 	tgBot.SendMessage(ctx, &bot.SendMessageParams{
-		ChatID:    chatID,
-		Text:      fmt.Sprintf("%s — Задание %d/%d\n\n%s", typeLabel, current, total, t.Prompt),
+		ChatID: chatID,
+		Text:   fmt.Sprintf("%s — Задание %d/%d\n\n%s", typeLabel, current, total, t.Prompt),
 		ReplyMarkup: &models.InlineKeyboardMarkup{
 			InlineKeyboard: buttons,
 		},

@@ -13,6 +13,13 @@ const (
 	TypeGrammar TaskType = "grammar"
 )
 
+// Vocab subtype constants stored in Task.Metadata["subtype"].
+const (
+	VocabSubtypeEnRu      = "en_ru"
+	VocabSubtypeRuEn      = "ru_en"
+	VocabSubtypeFillBlank = "fill_blank"
+)
+
 type DailySet struct {
 	ID        int64
 	UserID    int64
