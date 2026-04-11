@@ -83,20 +83,6 @@ func (q *Queries) GetUserByTelegramID(ctx context.Context, telegramID int64) (Us
 	return i, err
 }
 
-const updateUserLevel = `-- name: UpdateUserLevel :exec
-UPDATE users SET level = $2, onboarded = true, updated_at = now() WHERE id = $1
-`
-
-type UpdateUserLevelParams struct {
-	ID    int64  `json:"id"`
-	Level string `json:"level"`
-}
-
-func (q *Queries) UpdateUserLevel(ctx context.Context, arg UpdateUserLevelParams) error {
-	_, err := q.db.Exec(ctx, updateUserLevel, arg.ID, arg.Level)
-	return err
-}
-
 const listAllUsers = `-- name: ListAllUsers :many
 SELECT id, telegram_id, username, first_name, level, onboarded, created_at, updated_at FROM users ORDER BY id
 `
@@ -107,7 +93,7 @@ func (q *Queries) ListAllUsers(ctx context.Context) ([]User, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []User
+	items := []User{}
 	for rows.Next() {
 		var i User
 		if err := rows.Scan(
@@ -124,5 +110,22 @@ func (q *Queries) ListAllUsers(ctx context.Context) ([]User, error) {
 		}
 		items = append(items, i)
 	}
-	return items, rows.Err()
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const updateUserLevel = `-- name: UpdateUserLevel :exec
+UPDATE users SET level = $2, onboarded = true, updated_at = now() WHERE id = $1
+`
+
+type UpdateUserLevelParams struct {
+	ID    int64  `json:"id"`
+	Level string `json:"level"`
+}
+
+func (q *Queries) UpdateUserLevel(ctx context.Context, arg UpdateUserLevelParams) error {
+	_, err := q.db.Exec(ctx, updateUserLevel, arg.ID, arg.Level)
+	return err
 }

@@ -179,6 +179,41 @@ func (q *Queries) GetAnsweredTexts(ctx context.Context, sessionID int64) ([]stri
 	return items, nil
 }
 
+const getLastCompletedAssessment = `-- name: GetLastCompletedAssessment :one
+SELECT id, user_id, status, current_level, determined_level, pending_question, created_at, completed_at
+FROM assessment_sessions
+WHERE user_id = $1 AND status = 'completed'
+ORDER BY completed_at DESC
+LIMIT 1
+`
+
+type GetLastCompletedAssessmentRow struct {
+	ID              int64              `json:"id"`
+	UserID          int64              `json:"user_id"`
+	Status          string             `json:"status"`
+	CurrentLevel    string             `json:"current_level"`
+	DeterminedLevel pgtype.Text        `json:"determined_level"`
+	PendingQuestion []byte             `json:"pending_question"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+	CompletedAt     pgtype.Timestamptz `json:"completed_at"`
+}
+
+func (q *Queries) GetLastCompletedAssessment(ctx context.Context, userID int64) (GetLastCompletedAssessmentRow, error) {
+	row := q.db.QueryRow(ctx, getLastCompletedAssessment, userID)
+	var i GetLastCompletedAssessmentRow
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Status,
+		&i.CurrentLevel,
+		&i.DeterminedLevel,
+		&i.PendingQuestion,
+		&i.CreatedAt,
+		&i.CompletedAt,
+	)
+	return i, err
+}
+
 const getSessionAnswers = `-- name: GetSessionAnswers :many
 SELECT id, session_id, question_level, question_text, options, correct_option, user_option, correct, skipped, created_at
 FROM assessment_answers
@@ -228,41 +263,6 @@ func (q *Queries) GetSessionAnswers(ctx context.Context, sessionID int64) ([]Get
 		return nil, err
 	}
 	return items, nil
-}
-
-const getLastCompletedAssessment = `-- name: GetLastCompletedAssessment :one
-SELECT id, user_id, status, current_level, determined_level, pending_question, created_at, completed_at
-FROM assessment_sessions
-WHERE user_id = $1 AND status = 'completed'
-ORDER BY completed_at DESC
-LIMIT 1
-`
-
-type GetLastCompletedAssessmentRow struct {
-	ID              int64              `json:"id"`
-	UserID          int64              `json:"user_id"`
-	Status          string             `json:"status"`
-	CurrentLevel    string             `json:"current_level"`
-	DeterminedLevel pgtype.Text        `json:"determined_level"`
-	PendingQuestion []byte             `json:"pending_question"`
-	CreatedAt       pgtype.Timestamptz `json:"created_at"`
-	CompletedAt     pgtype.Timestamptz `json:"completed_at"`
-}
-
-func (q *Queries) GetLastCompletedAssessment(ctx context.Context, userID int64) (GetLastCompletedAssessmentRow, error) {
-	row := q.db.QueryRow(ctx, getLastCompletedAssessment, userID)
-	var i GetLastCompletedAssessmentRow
-	err := row.Scan(
-		&i.ID,
-		&i.UserID,
-		&i.Status,
-		&i.CurrentLevel,
-		&i.DeterminedLevel,
-		&i.PendingQuestion,
-		&i.CreatedAt,
-		&i.CompletedAt,
-	)
-	return i, err
 }
 
 const updateAssessmentSession = `-- name: UpdateAssessmentSession :exec
