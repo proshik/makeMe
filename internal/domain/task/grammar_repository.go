@@ -8,12 +8,13 @@ import (
 
 // GrammarQuestion is a grammar exercise stored in the database.
 type GrammarQuestion struct {
-	ID       int64
-	Level    user.Level
-	Category string
-	Prompt   string
-	Options  []string
-	Answer   string
+	ID          int64
+	Level       user.Level
+	Category    string
+	Prompt      string
+	Options     []string
+	Answer      string
+	Explanation string
 }
 
 // GrammarRepository provides access to grammar questions.

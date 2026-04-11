@@ -10,7 +10,7 @@ import (
 )
 
 const getGrammarByLevel = `-- name: GetGrammarByLevel :many
-SELECT id, level, category, prompt, options, answer
+SELECT id, level, category, prompt, options, answer, explanation
 FROM grammar_questions
 WHERE level = $1
 ORDER BY id
@@ -32,6 +32,7 @@ func (q *Queries) GetGrammarByLevel(ctx context.Context, level string) ([]Gramma
 			&i.Prompt,
 			&i.Options,
 			&i.Answer,
+			&i.Explanation,
 		); err != nil {
 			return nil, err
 		}

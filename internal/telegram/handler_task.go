@@ -153,7 +153,7 @@ func (b *Bot) handleTaskCallback(ctx context.Context, tgBot *bot.Bot, update *mo
 			}
 		}
 	} else {
-		feedback = fmt.Sprintf("❌ Неправильно. Правильный ответ: %s", t.Answer)
+		feedback = buildIncorrectFeedback(t)
 	}
 	tgBot.SendMessage(ctx, &bot.SendMessageParams{
 		ChatID: chatID,
@@ -275,4 +275,18 @@ func (b *Bot) handleWordAudioCallback(ctx context.Context, tgBot *bot.Bot, updat
 		Audio:   &models.InputFileString{Data: word.AudioURL},
 		Caption: fmt.Sprintf("%s — %s", word.English, word.Russian),
 	})
+}
+
+// buildIncorrectFeedback returns the wrong-answer message for a task.
+// For grammar tasks with a non-empty explanation in metadata, appends it after the answer.
+func buildIncorrectFeedback(t *task.Task) string {
+	base := fmt.Sprintf("❌ Неправильно. Правильный ответ: %s", t.Answer)
+	if t.Type != task.TypeGrammar || t.Metadata == nil {
+		return base
+	}
+	explanation, _ := t.Metadata["explanation"].(string)
+	if explanation == "" {
+		return base
+	}
+	return base + "\n\n💡 " + explanation
 }

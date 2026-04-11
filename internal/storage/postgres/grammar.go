@@ -31,12 +31,13 @@ func (r *GrammarRepository) GetByLevel(ctx context.Context, level user.Level) ([
 			return nil, fmt.Errorf("unmarshal grammar options: %w", err)
 		}
 		questions = append(questions, task.GrammarQuestion{
-			ID:       row.ID,
-			Level:    user.Level(row.Level),
-			Category: row.Category,
-			Prompt:   row.Prompt,
-			Options:  options,
-			Answer:   row.Answer,
+			ID:          row.ID,
+			Level:       user.Level(row.Level),
+			Category:    row.Category,
+			Prompt:      row.Prompt,
+			Options:     options,
+			Answer:      row.Answer,
+			Explanation: row.Explanation,
 		})
 	}
 	return questions, nil

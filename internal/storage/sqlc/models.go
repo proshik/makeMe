@@ -41,12 +41,13 @@ type DailySet struct {
 }
 
 type GrammarQuestion struct {
-	ID       int64  `json:"id"`
-	Level    string `json:"level"`
-	Category string `json:"category"`
-	Prompt   string `json:"prompt"`
-	Options  []byte `json:"options"`
-	Answer   string `json:"answer"`
+	ID          int64  `json:"id"`
+	Level       string `json:"level"`
+	Category    string `json:"category"`
+	Prompt      string `json:"prompt"`
+	Options     []byte `json:"options"`
+	Answer      string `json:"answer"`
+	Explanation string `json:"explanation"`
 }
 
 type Group struct {

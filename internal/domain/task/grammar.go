@@ -44,6 +44,9 @@ func (g *GrammarGenerator) Generate(ctx context.Context, _ int64, level user.Lev
 			Prompt:  q.Prompt,
 			Options: q.Options,
 			Answer:  q.Answer,
+			Metadata: map[string]any{
+				"explanation": q.Explanation,
+			},
 		})
 	}
 
