@@ -8,6 +8,8 @@ bin/
 # IDE
 .idea/
 .vscode/
+*.iml
+seed
 
 # OS
 .DS_Store
