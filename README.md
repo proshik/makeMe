@@ -6,30 +6,46 @@ Gamified English learning platform via Telegram bot. Users join groups and compe
 
 Go, PostgreSQL (pgx/sqlc/goose), chi, [go-telegram/bot](https://github.com/go-telegram/bot)
 
+## Features
+
+- **Adaptive assessment** — 10 adaptive questions (A1–C2) determine the user's level; includes vocabulary questions, deduplication, "I don't know" button, and a full summary with level justification
+- **Daily tasks** — 3 vocabulary + 2 grammar tasks per day per group; idempotent generation, resumes where you left off
+- **Spaced repetition (SM-2)** — vocabulary cards follow the SM-2 algorithm; new words appear when reviews are caught up
+- **Word bank** — ~900 words across A1–C2 with IPA transcription and audio pronunciation (fetched on demand from Free Dictionary API, cached in DB)
+- **Grammar questions** — stored in DB with Murphy's Essential/English Grammar in Use categories; ~100 questions per A1–B1 level
+- **Groups & leaderboards** — users join groups by invite code; daily/weekly/monthly leaderboards with normalized scores so different levels compete fairly
+- **Fair scoring** — raw points multiplied by a level coefficient (A1=0.6 … C2=1.5) so a perfect A1 score ≈ a perfect C2 score
+- **Profile** — current level, monthly points, daily streak, number of learned words
+- **Proactive scheduler** — daily summary sent at 21:00 MSK; reassessment reminder after 30 days of inactivity
+- **Docker support** — multi-stage `Dockerfile` + `docker-compose.yml` (app + PostgreSQL)
+
 ## Bot Commands
 
 | Command | Description |
 |---|---|
 | `/start` | Register and see available commands. Returning users see their current level. |
-| `/assess` | Take the level assessment test (10 questions, adaptive difficulty A1–C2). |
+| `/assess` | Take the level assessment test (adaptive, A1–C2, with "I don't know" button and final summary). |
 | `/newgroup Название` | Create a new group. Returns an invite code to share with friends. |
 | `/join КОД` | Join a group by invite code. |
 | `/mygroups` | List all groups you belong to. |
 | `/tasks` | Get today's tasks (3 vocab + 2 grammar). Generates if needed, resumes where you left off. |
+| `/leaderboard` | Today's group leaderboard. Add `week` or `month` for other periods. |
+| `/profile` | Your level, monthly score, daily streak, and number of learned words. |
 
 ## Typical Flow
 
 ```
-User A                              User B
+User A (B2)                         User B (B1)
   │                                   │
   ├─ /start                           ├─ /start
   │  "Привет, Alice! ..."             │  "Привет, Bob! ..."
   │                                   │
   ├─ /assess                          ├─ /assess
-  │  "Вопрос 1/10: She ___ a student" │  (10 adaptive questions)
-  │  [is] [are] [am] [be]             │  ...
+  │  "Вопрос 1/10: She ___ a student" │  (10 adaptive questions, "Не знаю" button)
+  │  [is] [are] [am] [be] [Не знаю]  │  ...
   │  ...10 questions...               │  "Тест завершён! Уровень: B1"
-  │  "Тест завершён! Уровень: B2"     │
+  │  "Тест завершён! Уровень: B2"     │  (full summary with correct/wrong per question)
+  │  (level justification shown)      │
   │                                   │
   ├─ /newgroup English Club           │
   │  "Группа «English Club» создана!" │
@@ -37,20 +53,31 @@ User A                              User B
   │                                   │
   │  ── shares code with Bob ──►      │
   │                                   ├─ /join a1b2c3d4
-  │                                   │  "Ты вступил в группу
-  │                                   │   «English Club»!"
-  │                                   │
-  ├─ /mygroups                        ├─ /mygroups
-  │  "1. English Club (код: a1b2c3d4)"│  "1. English Club (код: a1b2c3d4)"
+  │                                   │  "Ты вступил в группу «English Club»!"
   │                                   │
   ├─ /tasks                           ├─ /tasks
   │  "📖 Словарь — Задание 1/5"       │  "📝 Грамматика — Задание 1/5"
   │  "ephemeral  /ɪˈfem.ər.əl/"        │  "She ___ a teacher."
   │  [эфемерный] [вездесущий] ...     │  [is] [are] [am] [be]
   │  [🔊 Послушать]                   │
-  │  "✅ Правильно!"                  │  "❌ Неправильно. Ответ: is"
+  │  "✅ Правильно! +10 баллов"       │  "❌ Неправильно. Ответ: is"
   │  ... (5 tasks) ...                │  ... (5 tasks) ...
   │  "Все задания выполнены! (5/5)"   │  "Все задания выполнены! (5/5)"
+  │                                   │
+  ├─ /leaderboard                     ├─ /leaderboard week
+  │  "🏆 English Club — сегодня"      │  "🏆 English Club — неделя"
+  │  "1. Alice  18.4 pts"             │  "1. Bob  62 pts"
+  │  "2. Bob    12.0 pts"             │  "2. Alice  58 pts"
+  │                                   │
+  ├─ /profile                         │
+  │  "Уровень: B2"                    │
+  │  "Баллы за месяц: 186"            │
+  │  "Серия: 7 дней подряд 🔥"        │
+  │  "Выучено слов: 43"               │
+  │                                   │
+  ── 21:00 MSK — scheduler fires ──►  │
+  │  "Итоги дня: 5/5 заданий ✅"      │  "Итоги дня: 3/5 заданий"
+  │  "Ты на 1-м месте в English Club" │  "Ты на 2-м месте в English Club"
 ```
 
 ## Database Schema
@@ -151,7 +178,29 @@ task_results
 ├── duration_ms     INT
 ├── created_at      TIMESTAMPTZ
 └── UNIQUE(task_id, user_id)
+
+scores
+├── id              BIGSERIAL PK
+├── user_id         BIGINT FK → users(id)
+├── group_id        BIGINT FK → groups(id)
+├── date            DATE NOT NULL
+├── raw             INT NOT NULL   (sum of task scores)
+├── normalized      REAL NOT NULL  (raw × level coefficient)
+├── created_at      TIMESTAMPTZ
+├── updated_at      TIMESTAMPTZ
+└── UNIQUE(user_id, group_id, date)
+
+grammar_questions
+├── id              BIGSERIAL PK
+├── level           TEXT NOT NULL  (A1–C2)
+├── category        TEXT NOT NULL  (Murphy topic, e.g. "Present Simple")
+├── question        TEXT NOT NULL
+├── options         JSONB NOT NULL (array of 4 strings)
+├── answer          INT NOT NULL   (0-based index)
+└── created_at      TIMESTAMPTZ
 ```
+
+Level coefficients for normalized scores: A1=0.6, A2=0.8, B1=1.0, B2=1.15, C1=1.3, C2=1.5
 
 Relations:
 - `users` 1 ←→ N `memberships` N ←→ 1 `groups`
@@ -172,6 +221,8 @@ Copy `.env.example` to `.env` and fill in the values:
 | `TELEGRAM_TOKEN` | `123456:ABC-DEF...` | Bot token from [@BotFather](https://t.me/BotFather) |
 | `WEBHOOK_URL` | `https://example.com/webhook` | Public URL where Telegram sends updates. For local development use [ngrok](https://ngrok.com): `ngrok http 8080`, then set the resulting `https://xxxx.ngrok-free.app/webhook` |
 | `LOG_LEVEL` | `info` | Log level: `debug`, `info`, `warn`, `error` |
+| `SCHEDULER_TIME` | `21:00` | Time to send daily summaries (HH:MM, 24h) |
+| `TIMEZONE` | `Europe/Moscow` | Timezone for the scheduler |
 
 ## Development
 
