@@ -443,7 +443,7 @@ type Config struct {
 
 ---
 
-### Фаза 9 — Разнообразие словарных заданий (приоритет #1)
+### Фаза 9 — Разнообразие словарных заданий (приоритет #1) [PARTIAL]
 
 **Цель:** уйти от единственного формата «переведи слово EN→RU» — добавить несколько типов упражнений, чтобы слово прорабатывалось с разных сторон и не приедалось.
 
@@ -461,12 +461,13 @@ type Config struct {
 **Приоритет реализации:** en→ru, ru→en, fill_blank (используют уже имеющиеся поля). definition, spelling, context — следующим шагом.
 
 **Что нужно сделать:**
-- [ ] Добавить константы типов в `internal/domain/task/entity.go` (`TypeVocabEnRu`, `TypeVocabRuEn`, `TypeVocabFillBlank`, `TypeVocabDefinition`, `TypeVocabSpelling`)
-- [ ] `internal/domain/task/vocab.go` — рефакторинг: `VocabGenerator` случайно выбирает тип задания для каждого слова; для каждого типа отдельная функция-генератор
-- [ ] `internal/domain/words/definition.go` — простая статическая база коротких английских определений для слов (или генерация шаблона «a thing/action that...» из `example`)
-- [ ] `internal/telegram/handler_task.go` — поддержка свободного ввода (текстовый ответ вместо inline-кнопок) для `vocab_spelling` и `vocab_context`; нечёткое сравнение (trim + lowercase, опционально Levenshtein расстояние ≤ 1 для опечаток)
+- [x] Добавить константы подтипов в `internal/domain/task/entity.go` (`VocabSubtypeEnRu`, `VocabSubtypeRuEn`, `VocabSubtypeFillBlank`) — хранятся в `Metadata["subtype"]`
+- [x] `internal/domain/task/vocab.go` — рефакторинг: `buildVocabEnRu`, `buildVocabRuEn`, `buildVocabFillBlank`; `VocabGenerator` случайно выбирает тип для каждого слова
+- [x] `internal/telegram/handler_task.go` — `vocabTaskLabel()` показывает разные метки для каждого подтипа
+- [x] Unit-тесты: 18 тестов для трёх билдеров + 5 тестов для меток
+- [ ] `vocab_definition` — определение на английском → выбрать слово
+- [ ] `internal/telegram/handler_task.go` — поддержка свободного ввода для `vocab_spelling` и `vocab_context`; нечёткое сравнение
 - [ ] Обновить `tasks` таблицу: CHECK constraint для новых типов (migration)
-- [ ] Unit-тесты: каждый генератор, нечёткое сравнение
 - [ ] Integration-тесты: full flow для каждого нового типа задания
 
 **Проверка:** `/tasks` → за день встречаются разные типы словарных заданий; для `fill_blank` подсвечивается слово в примере; для `spelling` можно написать текстом; ошибки на 1 символ засчитываются как правильно.
