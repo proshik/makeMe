@@ -237,9 +237,12 @@ func stubAny(t *testing.T, wiremockURL, urlPath, responseBody string) {
 	require.Equal(t, http.StatusCreated, resp.StatusCode)
 }
 
-// sendUpdate sends a Telegram update to the webhook and waits for processing.
+// sendUpdate sends a Telegram update to the webhook and waits for the bot
+// to process it by polling WireMock until a new request appears.
 func (e *testEnv) sendUpdate(t *testing.T, update models.Update) {
 	t.Helper()
+
+	initialCount := e.countAllWireMockRequests(t)
 
 	body, err := json.Marshal(update)
 	require.NoError(t, err)
@@ -249,8 +252,28 @@ func (e *testEnv) sendUpdate(t *testing.T, update models.Update) {
 	resp.Body.Close()
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 
-	// Give the bot time to process the update asynchronously
-	time.Sleep(500 * time.Millisecond)
+	// Poll until WireMock records at least one new Telegram API call from the bot.
+	require.Eventually(t, func() bool {
+		return e.countAllWireMockRequests(t) > initialCount
+	}, 10*time.Second, 50*time.Millisecond, "timeout waiting for bot to process the update")
+}
+
+// countAllWireMockRequests returns the total number of requests recorded by WireMock.
+func (e *testEnv) countAllWireMockRequests(t *testing.T) int {
+	t.Helper()
+
+	req, err := http.NewRequest("GET", e.wiremockURL+"/__admin/requests", nil)
+	require.NoError(t, err)
+
+	resp, err := http.DefaultClient.Do(req)
+	require.NoError(t, err)
+	defer resp.Body.Close()
+
+	var result struct {
+		Total int `json:"total"`
+	}
+	require.NoError(t, json.NewDecoder(resp.Body).Decode(&result))
+	return result.Total
 }
 
 // getSendMessageRequests returns all sendMessage calls captured by WireMock.
