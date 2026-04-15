@@ -25,7 +25,6 @@ import (
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 
-	"makeMe/internal/dictionary"
 	"makeMe/internal/domain/assessment"
 	"makeMe/internal/domain/group"
 	"makeMe/internal/domain/scoring"
@@ -123,10 +122,10 @@ func setupTestEnv(t *testing.T) *testEnv {
 	scoringRepo := postgres.NewScoringRepository(queries)
 	scoringSvc := scoring.NewService(scoringRepo)
 
-	dictClient := dictionary.NewClient()
-
+	// Use nil dictClient so tests never call the real external dictionary API.
+	// The handler already guards on dictClient != nil and falls back to "not found".
 	// Create bot with WireMock as Telegram API
-	tgBot, err := telegram.New("test-token", userSvc, groupSvc, assessSvc, taskSvc, scoringSvc, srsRepo, dictClient,
+	tgBot, err := telegram.New("test-token", userSvc, groupSvc, assessSvc, taskSvc, scoringSvc, srsRepo, nil,
 		bot.WithServerURL(wiremockURL),
 	)
 	require.NoError(t, err)
@@ -238,9 +237,17 @@ func stubAny(t *testing.T, wiremockURL, urlPath, responseBody string) {
 }
 
 // sendUpdate sends a Telegram update to the webhook and waits for the bot
-// to process it by polling WireMock until a new request appears.
+// to fully process it. Handlers often make multiple sequential Telegram API
+// calls (e.g. answerCallbackQuery + sendMessage), so we wait until the
+// WireMock request count stops growing rather than just increasing once.
 func (e *testEnv) sendUpdate(t *testing.T, update models.Update) {
 	t.Helper()
+
+	const (
+		pollInterval  = 50 * time.Millisecond
+		stableNeeded  = 3 // consecutive stable polls before we consider processing done
+		totalTimeout  = 10 * time.Second
+	)
 
 	initialCount := e.countAllWireMockRequests(t)
 
@@ -252,10 +259,27 @@ func (e *testEnv) sendUpdate(t *testing.T, update models.Update) {
 	resp.Body.Close()
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 
-	// Poll until WireMock records at least one new Telegram API call from the bot.
+	// Poll until the request count has risen above initialCount AND remained
+	// stable for stableNeeded consecutive polls (~150 ms). This ensures all
+	// API calls made by the handler (answerCallbackQuery, sendMessage, etc.)
+	// are recorded in WireMock before we return.
+	stableRuns := 0
+	prevCount := initialCount
 	require.Eventually(t, func() bool {
-		return e.countAllWireMockRequests(t) > initialCount
-	}, 10*time.Second, 50*time.Millisecond, "timeout waiting for bot to process the update")
+		current := e.countAllWireMockRequests(t)
+		if current <= initialCount {
+			stableRuns = 0
+			prevCount = current
+			return false
+		}
+		if current != prevCount {
+			stableRuns = 1
+			prevCount = current
+			return false
+		}
+		stableRuns++
+		return stableRuns >= stableNeeded
+	}, totalTimeout, pollInterval, "timeout waiting for bot to finish processing the update")
 }
 
 // countAllWireMockRequests returns the number of requests recorded by WireMock
