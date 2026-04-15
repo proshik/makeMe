@@ -258,7 +258,8 @@ func (e *testEnv) sendUpdate(t *testing.T, update models.Update) {
 	}, 10*time.Second, 50*time.Millisecond, "timeout waiting for bot to process the update")
 }
 
-// countAllWireMockRequests returns the total number of requests recorded by WireMock.
+// countAllWireMockRequests returns the number of requests recorded by WireMock
+// by counting the entries in the requests array.
 func (e *testEnv) countAllWireMockRequests(t *testing.T) int {
 	t.Helper()
 
@@ -270,10 +271,10 @@ func (e *testEnv) countAllWireMockRequests(t *testing.T) int {
 	defer resp.Body.Close()
 
 	var result struct {
-		Total int `json:"total"`
+		Requests []json.RawMessage `json:"requests"`
 	}
 	require.NoError(t, json.NewDecoder(resp.Body).Decode(&result))
-	return result.Total
+	return len(result.Requests)
 }
 
 // getSendMessageRequests returns all sendMessage calls captured by WireMock.

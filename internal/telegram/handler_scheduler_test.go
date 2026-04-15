@@ -2,7 +2,6 @@ package telegram_test
 
 import (
 	"context"
-	"encoding/json"
 	"testing"
 	"time"
 
@@ -31,13 +30,15 @@ func TestScheduler_RunDailySummary_NoGroups(t *testing.T) {
 
 	// Register user but do NOT join any group
 	e.sendUpdate(t, makeTextUpdate(1, 111, 111, "loner", "Loner", "/start"))
-	e.resetWireMock(t)
+
+	// Record baseline — any requests from setup must not be counted as scheduler output
+	baseline := len(e.getSendMessageRequests(t))
 
 	err := newSched(e).RunDailySummary(ctx)
 	require.NoError(t, err)
 
-	msgs := e.getSendMessageRequests(t)
-	assert.Empty(t, msgs, "user without groups should not receive a daily summary")
+	newMsgs := e.getSendMessageRequests(t)[baseline:]
+	assert.Empty(t, newMsgs, "user without groups should not receive a daily summary")
 }
 
 // TestScheduler_RunDailySummary_WithNoScoresToday verifies that a user in a group
@@ -49,18 +50,19 @@ func TestScheduler_RunDailySummary_WithNoScoresToday(t *testing.T) {
 	// Register user and create a group
 	e.sendUpdate(t, makeTextUpdate(2, 222, 222, "user2", "Alexei", "/start"))
 	e.sendUpdate(t, makeTextUpdate(3, 222, 222, "user2", "Alexei", "/newgroup TestGroup"))
-	e.resetWireMock(t)
+
+	// Record baseline — any requests from setup must not be counted as scheduler output
+	baseline := len(e.getSendMessageRequests(t))
 
 	err := newSched(e).RunDailySummary(ctx)
 	require.NoError(t, err)
 
 	// User should receive a "no tasks today" message
-	msgs := e.getSendMessageRequests(t)
-	require.Len(t, msgs, 1, "user in a group should receive a daily summary")
+	newMsgs := e.getSendMessageRequests(t)[baseline:]
+	require.Len(t, newMsgs, 1, "user in a group should receive a daily summary")
 
-	var body map[string]any
-	require.NoError(t, json.Unmarshal([]byte(msgs[0].Body), &body))
-	text, _ := body["text"].(string)
-	assert.Contains(t, text, "Alexei")
-	assert.Contains(t, text, "/tasks")
+	// The bot sends multipart form-data; use Contains instead of JSON unmarshaling
+	body := newMsgs[0].Body
+	assert.Contains(t, body, "Alexei")
+	assert.Contains(t, body, "/tasks")
 }

@@ -98,7 +98,7 @@ func (s *Scheduler) RunDailySummary(ctx context.Context) error {
 				continue
 			}
 			for _, e := range entries {
-				if e.UserID == u.ID {
+				if e.UserID == u.ID && e.Raw > 0 {
 					summaries = append(summaries, groupSummary{
 						GroupName:  g.Name,
 						Raw:        e.Raw,
