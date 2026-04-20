@@ -66,6 +66,12 @@ Tasks are generated daily and differ each day.
 - After completing any work, always update `README.md` — add new commands, update the database schema, update the typical flow diagram
 - If there is no plan file, mention this to the user and suggest creating one
 
+### Seed Data — NEVER use migrations for content
+- **Words** (`data/words.json`) — run `make seed-words` to upsert into DB.
+- **Grammar questions** (`data/grammar.json`) — run `make seed-grammar` to upsert into DB.
+- Migrations are for **schema changes only** (CREATE TABLE, ALTER TABLE, indexes).
+- Adding or editing words/grammar questions = edit the JSON file, then run the seed command. Never put INSERT rows for these tables into a migration file.
+
 ### Git & Commits
 - Always suggest committing after completing a logical unit of work (phase, feature, fix)
 - If git is not initialized — remind the user and offer to initialize

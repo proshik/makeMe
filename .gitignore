@@ -10,6 +10,7 @@ bin/
 .vscode/
 *.iml
 seed
+!cmd/seed/
 
 # OS
 .DS_Store

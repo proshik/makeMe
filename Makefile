@@ -26,6 +26,9 @@ sqlc:
 seed-words:
 	go run ./cmd/seed data/words.json
 
+seed-grammar:
+	go run ./cmd/seed data/grammar.json
+
 # Install development tools using the public proxy (not the corporate one)
 install-tools:
 	GOPROXY=$(GOPROXY_PUBLIC) go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
