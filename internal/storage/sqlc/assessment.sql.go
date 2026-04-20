@@ -54,7 +54,7 @@ func (q *Queries) CountAssessmentAnswers(ctx context.Context, sessionID int64) (
 
 const countCorrectByLevel = `-- name: CountCorrectByLevel :many
 SELECT question_level,
-       COUNT(*) FILTER (WHERE NOT skipped) AS total,
+       COUNT(*) AS total,
        COUNT(*) FILTER (WHERE correct AND NOT skipped) AS correct_count
 FROM assessment_answers
 WHERE session_id = $1
@@ -90,18 +90,19 @@ func (q *Queries) CountCorrectByLevel(ctx context.Context, sessionID int64) ([]C
 const createAssessmentSession = `-- name: CreateAssessmentSession :one
 INSERT INTO assessment_sessions (user_id)
 VALUES ($1)
-RETURNING id, user_id, status, current_level, determined_level, pending_question, created_at, completed_at
+RETURNING id, user_id, status, current_level, determined_level, pending_question, created_at, completed_at, consecutive_correct
 `
 
 type CreateAssessmentSessionRow struct {
-	ID              int64              `json:"id"`
-	UserID          int64              `json:"user_id"`
-	Status          string             `json:"status"`
-	CurrentLevel    string             `json:"current_level"`
-	DeterminedLevel pgtype.Text        `json:"determined_level"`
-	PendingQuestion []byte             `json:"pending_question"`
-	CreatedAt       pgtype.Timestamptz `json:"created_at"`
-	CompletedAt     pgtype.Timestamptz `json:"completed_at"`
+	ID                 int64              `json:"id"`
+	UserID             int64              `json:"user_id"`
+	Status             string             `json:"status"`
+	CurrentLevel       string             `json:"current_level"`
+	DeterminedLevel    pgtype.Text        `json:"determined_level"`
+	PendingQuestion    []byte             `json:"pending_question"`
+	CreatedAt          pgtype.Timestamptz `json:"created_at"`
+	CompletedAt        pgtype.Timestamptz `json:"completed_at"`
+	ConsecutiveCorrect int32              `json:"consecutive_correct"`
 }
 
 func (q *Queries) CreateAssessmentSession(ctx context.Context, userID int64) (CreateAssessmentSessionRow, error) {
@@ -116,12 +117,13 @@ func (q *Queries) CreateAssessmentSession(ctx context.Context, userID int64) (Cr
 		&i.PendingQuestion,
 		&i.CreatedAt,
 		&i.CompletedAt,
+		&i.ConsecutiveCorrect,
 	)
 	return i, err
 }
 
 const getActiveAssessmentSession = `-- name: GetActiveAssessmentSession :one
-SELECT id, user_id, status, current_level, determined_level, pending_question, created_at, completed_at
+SELECT id, user_id, status, current_level, determined_level, pending_question, created_at, completed_at, consecutive_correct
 FROM assessment_sessions
 WHERE user_id = $1 AND status = 'in_progress'
 ORDER BY created_at DESC
@@ -129,14 +131,15 @@ LIMIT 1
 `
 
 type GetActiveAssessmentSessionRow struct {
-	ID              int64              `json:"id"`
-	UserID          int64              `json:"user_id"`
-	Status          string             `json:"status"`
-	CurrentLevel    string             `json:"current_level"`
-	DeterminedLevel pgtype.Text        `json:"determined_level"`
-	PendingQuestion []byte             `json:"pending_question"`
-	CreatedAt       pgtype.Timestamptz `json:"created_at"`
-	CompletedAt     pgtype.Timestamptz `json:"completed_at"`
+	ID                 int64              `json:"id"`
+	UserID             int64              `json:"user_id"`
+	Status             string             `json:"status"`
+	CurrentLevel       string             `json:"current_level"`
+	DeterminedLevel    pgtype.Text        `json:"determined_level"`
+	PendingQuestion    []byte             `json:"pending_question"`
+	CreatedAt          pgtype.Timestamptz `json:"created_at"`
+	CompletedAt        pgtype.Timestamptz `json:"completed_at"`
+	ConsecutiveCorrect int32              `json:"consecutive_correct"`
 }
 
 func (q *Queries) GetActiveAssessmentSession(ctx context.Context, userID int64) (GetActiveAssessmentSessionRow, error) {
@@ -151,6 +154,7 @@ func (q *Queries) GetActiveAssessmentSession(ctx context.Context, userID int64) 
 		&i.PendingQuestion,
 		&i.CreatedAt,
 		&i.CompletedAt,
+		&i.ConsecutiveCorrect,
 	)
 	return i, err
 }
@@ -180,7 +184,7 @@ func (q *Queries) GetAnsweredTexts(ctx context.Context, sessionID int64) ([]stri
 }
 
 const getLastCompletedAssessment = `-- name: GetLastCompletedAssessment :one
-SELECT id, user_id, status, current_level, determined_level, pending_question, created_at, completed_at
+SELECT id, user_id, status, current_level, determined_level, pending_question, created_at, completed_at, consecutive_correct
 FROM assessment_sessions
 WHERE user_id = $1 AND status = 'completed'
 ORDER BY completed_at DESC
@@ -188,14 +192,15 @@ LIMIT 1
 `
 
 type GetLastCompletedAssessmentRow struct {
-	ID              int64              `json:"id"`
-	UserID          int64              `json:"user_id"`
-	Status          string             `json:"status"`
-	CurrentLevel    string             `json:"current_level"`
-	DeterminedLevel pgtype.Text        `json:"determined_level"`
-	PendingQuestion []byte             `json:"pending_question"`
-	CreatedAt       pgtype.Timestamptz `json:"created_at"`
-	CompletedAt     pgtype.Timestamptz `json:"completed_at"`
+	ID                 int64              `json:"id"`
+	UserID             int64              `json:"user_id"`
+	Status             string             `json:"status"`
+	CurrentLevel       string             `json:"current_level"`
+	DeterminedLevel    pgtype.Text        `json:"determined_level"`
+	PendingQuestion    []byte             `json:"pending_question"`
+	CreatedAt          pgtype.Timestamptz `json:"created_at"`
+	CompletedAt        pgtype.Timestamptz `json:"completed_at"`
+	ConsecutiveCorrect int32              `json:"consecutive_correct"`
 }
 
 func (q *Queries) GetLastCompletedAssessment(ctx context.Context, userID int64) (GetLastCompletedAssessmentRow, error) {
@@ -210,6 +215,7 @@ func (q *Queries) GetLastCompletedAssessment(ctx context.Context, userID int64) 
 		&i.PendingQuestion,
 		&i.CreatedAt,
 		&i.CompletedAt,
+		&i.ConsecutiveCorrect,
 	)
 	return i, err
 }
@@ -267,17 +273,18 @@ func (q *Queries) GetSessionAnswers(ctx context.Context, sessionID int64) ([]Get
 
 const updateAssessmentSession = `-- name: UpdateAssessmentSession :exec
 UPDATE assessment_sessions
-SET status = $2, current_level = $3, determined_level = $4, completed_at = $5, pending_question = $6
+SET status = $2, current_level = $3, determined_level = $4, completed_at = $5, pending_question = $6, consecutive_correct = $7
 WHERE id = $1
 `
 
 type UpdateAssessmentSessionParams struct {
-	ID              int64              `json:"id"`
-	Status          string             `json:"status"`
-	CurrentLevel    string             `json:"current_level"`
-	DeterminedLevel pgtype.Text        `json:"determined_level"`
-	CompletedAt     pgtype.Timestamptz `json:"completed_at"`
-	PendingQuestion []byte             `json:"pending_question"`
+	ID                 int64              `json:"id"`
+	Status             string             `json:"status"`
+	CurrentLevel       string             `json:"current_level"`
+	DeterminedLevel    pgtype.Text        `json:"determined_level"`
+	CompletedAt        pgtype.Timestamptz `json:"completed_at"`
+	PendingQuestion    []byte             `json:"pending_question"`
+	ConsecutiveCorrect int32              `json:"consecutive_correct"`
 }
 
 func (q *Queries) UpdateAssessmentSession(ctx context.Context, arg UpdateAssessmentSessionParams) error {
@@ -288,6 +295,7 @@ func (q *Queries) UpdateAssessmentSession(ctx context.Context, arg UpdateAssessm
 		arg.DeterminedLevel,
 		arg.CompletedAt,
 		arg.PendingQuestion,
+		arg.ConsecutiveCorrect,
 	)
 	return err
 }

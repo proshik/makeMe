@@ -12,7 +12,7 @@ LIMIT 1;
 
 -- name: UpdateAssessmentSession :exec
 UPDATE assessment_sessions
-SET status = $2, current_level = $3, determined_level = $4, completed_at = $5, pending_question = $6
+SET status = $2, current_level = $3, determined_level = $4, completed_at = $5, pending_question = $6, consecutive_correct = $7
 WHERE id = $1;
 
 -- name: AddAssessmentAnswer :exec
@@ -24,7 +24,7 @@ SELECT COUNT(*) FROM assessment_answers WHERE session_id = $1;
 
 -- name: CountCorrectByLevel :many
 SELECT question_level,
-       COUNT(*) FILTER (WHERE NOT skipped) AS total,
+       COUNT(*) AS total,
        COUNT(*) FILTER (WHERE correct AND NOT skipped) AS correct_count
 FROM assessment_answers
 WHERE session_id = $1

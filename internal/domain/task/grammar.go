@@ -3,6 +3,7 @@ package task
 import (
 	"context"
 	"fmt"
+	"html"
 	"math/rand/v2"
 
 	"makeMe/internal/domain/user"
@@ -41,7 +42,7 @@ func (g *GrammarGenerator) Generate(ctx context.Context, _ int64, level user.Lev
 		tasks = append(tasks, Task{
 			Type:    TypeGrammar,
 			Level:   q.Level,
-			Prompt:  q.Prompt,
+			Prompt:  html.EscapeString(q.Prompt),
 			Options: q.Options,
 			Answer:  q.Answer,
 			Metadata: map[string]any{

@@ -26,6 +26,7 @@ type DailySet struct {
 	GroupID   int64
 	Date      time.Time
 	CreatedAt time.Time
+	Round     int
 	Tasks     []Task
 }
 

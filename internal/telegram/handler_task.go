@@ -44,14 +44,23 @@ func (b *Bot) handleTasks(ctx context.Context, tgBot *bot.Bot, update *models.Up
 		return
 	}
 
-	// Get user's groups
+	// Get user's groups — auto-create a solo group if none exist
 	groups, err := b.groupSvc.ListByUser(ctx, u.ID)
-	if err != nil || len(groups) == 0 {
-		tgBot.SendMessage(ctx, &bot.SendMessageParams{
-			ChatID: update.Message.Chat.ID,
-			Text:   "👥 У тебя пока нет групп — позови друзей!\n\nСоздай группу: /newgroup Название\nВступи по коду: /join КОД",
-		})
+	if err != nil {
+		slog.Error("failed to list groups", "user_id", u.ID, "error", err)
 		return
+	}
+	if len(groups) == 0 {
+		g, err := b.groupSvc.Create(ctx, "Соло", u.ID)
+		if err != nil {
+			slog.Error("failed to create solo group", "user_id", u.ID, "error", err)
+			tgBot.SendMessage(ctx, &bot.SendMessageParams{
+				ChatID: update.Message.Chat.ID,
+				Text:   "Не удалось создать группу. Попробуй позже.",
+			})
+			return
+		}
+		groups = append(groups, *g)
 	}
 
 	// Generate/get tasks for first group (MVP: single group)
@@ -73,10 +82,11 @@ func (b *Bot) handleTasks(ctx context.Context, tgBot *bot.Bot, update *models.Up
 	}
 
 	if nextTask == nil {
-		answered, total, _ := b.taskSvc.GetProgress(ctx, ds.ID, u.ID)
+		_, total, _ := b.taskSvc.GetProgress(ctx, ds.ID, u.ID)
+		correct, _ := b.taskSvc.GetCorrectCount(ctx, ds.ID, u.ID)
 		tgBot.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: update.Message.Chat.ID,
-			Text:   fmt.Sprintf("🎉 Все задания на сегодня выполнены! (%d/%d)\nОтличная работа! Возвращайся завтра за новыми 💪", answered, total),
+			Text:   fmt.Sprintf("🎉 Все задания на сегодня выполнены!\n\n✅ Правильных ответов: %d из %d\n\nОтличная работа! Возвращайся завтра за новыми 💪", correct, total),
 		})
 		return
 	}
@@ -155,18 +165,31 @@ func (b *Bot) handleTaskCallback(ctx context.Context, tgBot *bot.Bot, update *mo
 	} else {
 		feedback = buildIncorrectFeedback(t)
 	}
-	tgBot.SendMessage(ctx, &bot.SendMessageParams{
+	feedbackParams := &bot.SendMessageParams{
 		ChatID: chatID,
 		Text:   feedback,
-	})
+	}
+	if t.Type == task.TypeVocab && t.Metadata != nil {
+		if audioURL, _ := t.Metadata["audio_url"].(string); audioURL != "" {
+			if wordID := toInt64(t.Metadata["word_id"]); wordID > 0 {
+				feedbackParams.ReplyMarkup = &models.InlineKeyboardMarkup{
+					InlineKeyboard: [][]models.InlineKeyboardButton{
+						{{Text: "🔊 Послушать", CallbackData: fmt.Sprintf("word_audio:%d", wordID)}},
+					},
+				}
+			}
+		}
+	}
+	tgBot.SendMessage(ctx, feedbackParams)
 
 	// Show next task or summary
 	nextTask, _ := b.taskSvc.GetNextUnanswered(ctx, t.DailySetID, u.ID)
 	if nextTask == nil {
-		answered, total, _ := b.taskSvc.GetProgress(ctx, t.DailySetID, u.ID)
+		_, total, _ := b.taskSvc.GetProgress(ctx, t.DailySetID, u.ID)
+		correct, _ := b.taskSvc.GetCorrectCount(ctx, t.DailySetID, u.ID)
 		tgBot.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: chatID,
-			Text:   fmt.Sprintf("🏆 Все задания выполнены! (%d/%d)\nТы огонь! Загляни в /leaderboard — посмотри, где ты в рейтинге 🔥", answered, total),
+			Text:   fmt.Sprintf("🏆 Все задания выполнены!\n\n✅ Правильных ответов: %d из %d\n\nТы огонь! Загляни в /leaderboard — посмотри, где ты в рейтинге 🔥", correct, total),
 		})
 		return
 	}
@@ -205,18 +228,10 @@ func sendTaskQuestion(ctx context.Context, tgBot *bot.Bot, chatID int64, t *task
 		}
 	}
 
-	// For vocab tasks, add a Listen button if we have a word_id
-	if t.Type == task.TypeVocab && t.Metadata != nil {
-		if wordID := toInt64(t.Metadata["word_id"]); wordID > 0 {
-			buttons = append(buttons, []models.InlineKeyboardButton{
-				{Text: "🔊 Послушать", CallbackData: fmt.Sprintf("word_audio:%d", wordID)},
-			})
-		}
-	}
-
 	tgBot.SendMessage(ctx, &bot.SendMessageParams{
-		ChatID: chatID,
-		Text:   fmt.Sprintf("%s — Задание %d/%d\n\n%s", typeLabel, current, total, t.Prompt),
+		ChatID:    chatID,
+		Text:      fmt.Sprintf("%s — Задание %d/%d\n\n%s", typeLabel, current, total, t.Prompt),
+		ParseMode: models.ParseModeHTML,
 		ReplyMarkup: &models.InlineKeyboardMarkup{
 			InlineKeyboard: buttons,
 		},

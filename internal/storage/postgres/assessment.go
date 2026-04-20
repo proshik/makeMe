@@ -29,7 +29,7 @@ func (r *AssessmentRepository) CreateSession(ctx context.Context, userID int64) 
 		return nil, fmt.Errorf("create assessment session: %w", err)
 	}
 	return sessionFromFields(row.ID, row.UserID, row.Status, row.CurrentLevel,
-		row.DeterminedLevel, row.PendingQuestion, row.CreatedAt, row.CompletedAt), nil
+		row.DeterminedLevel, row.PendingQuestion, row.CreatedAt, row.CompletedAt, row.ConsecutiveCorrect), nil
 }
 
 func (r *AssessmentRepository) GetActiveSession(ctx context.Context, userID int64) (*assessment.Session, error) {
@@ -41,14 +41,15 @@ func (r *AssessmentRepository) GetActiveSession(ctx context.Context, userID int6
 		return nil, fmt.Errorf("get active session: %w", err)
 	}
 	return sessionFromFields(row.ID, row.UserID, row.Status, row.CurrentLevel,
-		row.DeterminedLevel, row.PendingQuestion, row.CreatedAt, row.CompletedAt), nil
+		row.DeterminedLevel, row.PendingQuestion, row.CreatedAt, row.CompletedAt, row.ConsecutiveCorrect), nil
 }
 
 func (r *AssessmentRepository) UpdateSession(ctx context.Context, s *assessment.Session) error {
 	params := sqlc.UpdateAssessmentSessionParams{
-		ID:           s.ID,
-		Status:       string(s.Status),
-		CurrentLevel: string(s.CurrentLevel),
+		ID:                 s.ID,
+		Status:             string(s.Status),
+		CurrentLevel:       string(s.CurrentLevel),
+		ConsecutiveCorrect: int32(s.ConsecutiveCorrect),
 	}
 
 	if s.DeterminedLevel != "" {
@@ -170,7 +171,7 @@ func (r *AssessmentRepository) GetLastCompleted(ctx context.Context, userID int6
 		return nil, fmt.Errorf("get last completed assessment: %w", err)
 	}
 	return sessionFromFields(row.ID, row.UserID, row.Status, row.CurrentLevel,
-		row.DeterminedLevel, row.PendingQuestion, row.CreatedAt, row.CompletedAt), nil
+		row.DeterminedLevel, row.PendingQuestion, row.CreatedAt, row.CompletedAt, row.ConsecutiveCorrect), nil
 }
 
 // sessionFromFields constructs a domain Session from raw sqlc column values.
@@ -181,13 +182,15 @@ func sessionFromFields(
 	determinedLevel pgtype.Text,
 	pendingQuestionJSON []byte,
 	createdAt, completedAt pgtype.Timestamptz,
+	consecutiveCorrect int32,
 ) *assessment.Session {
 	s := &assessment.Session{
-		ID:           id,
-		UserID:       userID,
-		Status:       assessment.SessionStatus(status),
-		CurrentLevel: user.Level(currentLevel),
-		CreatedAt:    createdAt.Time,
+		ID:                 id,
+		UserID:             userID,
+		Status:             assessment.SessionStatus(status),
+		CurrentLevel:       user.Level(currentLevel),
+		ConsecutiveCorrect: int(consecutiveCorrect),
+		CreatedAt:          createdAt.Time,
 	}
 	if determinedLevel.Valid {
 		s.DeterminedLevel = user.Level(determinedLevel.String)

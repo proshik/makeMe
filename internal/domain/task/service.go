@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	vocabCount   = 3
-	grammarCount = 2
+	vocabCount    = 5
+	grammarCount  = 5
 	pointsPerTask = 10
 )
 
@@ -36,12 +36,12 @@ func NewService(repo Repository, srsRepo srs.Repository, generators ...TaskGener
 	}
 }
 
-// GenerateDaily creates a daily set of tasks for a user in a group.
-// Returns existing set if already generated for today.
+// GenerateDaily returns the current in-progress daily set, or creates a new one.
+// If the latest set for today is fully answered, a new round is created.
 func (s *Service) GenerateDaily(ctx context.Context, userID, groupID int64, level user.Level) (*DailySet, error) {
 	today := time.Now().Truncate(24 * time.Hour)
 
-	// Check if already exists
+	nextRound := 0
 	existing, err := s.repo.GetDailySet(ctx, userID, groupID, today)
 	if err == nil && existing != nil {
 		tasks, err := s.repo.GetTasksByDailySet(ctx, existing.ID)
@@ -49,10 +49,16 @@ func (s *Service) GenerateDaily(ctx context.Context, userID, groupID int64, leve
 			return nil, fmt.Errorf("get tasks: %w", err)
 		}
 		existing.Tasks = tasks
-		return existing, nil
+		// If not all tasks answered yet, return in-progress set
+		answered, total, _ := s.repo.CountResults(ctx, existing.ID, userID)
+		if total == 0 || answered < total {
+			return existing, nil
+		}
+		// All answered — start a new round
+		nextRound = existing.Round + 1
 	}
 
-	ds, err := s.repo.CreateDailySet(ctx, userID, groupID, today)
+	ds, err := s.repo.CreateDailySet(ctx, userID, groupID, today, nextRound)
 	if err != nil {
 		return nil, fmt.Errorf("create daily set: %w", err)
 	}
@@ -166,6 +172,11 @@ func (s *Service) GetNextUnanswered(ctx context.Context, dailySetID, userID int6
 // GetProgress returns (answered, total) for a daily set.
 func (s *Service) GetProgress(ctx context.Context, dailySetID, userID int64) (int, int, error) {
 	return s.repo.CountResults(ctx, dailySetID, userID)
+}
+
+// GetCorrectCount returns the number of correctly answered tasks in a daily set.
+func (s *Service) GetCorrectCount(ctx context.Context, dailySetID, userID int64) (int, error) {
+	return s.repo.CountCorrectResults(ctx, dailySetID, userID)
 }
 
 func (s *Service) updateSRS(ctx context.Context, userID, wordID int64, correct bool) {

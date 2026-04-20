@@ -22,7 +22,7 @@ func TestHandleAssess_StartsAssessment(t *testing.T) {
 	require.NotEmpty(t, reqs)
 
 	lastReq := reqs[len(reqs)-1].Body
-	assert.Contains(t, lastReq, "Вопрос 1/10")
+	assert.Contains(t, lastReq, "Вопрос 1/15")
 	assert.Contains(t, lastReq, "inline_keyboard")
 }
 
@@ -56,8 +56,8 @@ func TestHandleAssess_FullFlow(t *testing.T) {
 	// Start assessment
 	env.sendUpdate(t, makeTextUpdate(2, 702, 702, "charlie", "Charlie", "/assess"))
 
-	// Submit 10 answers via callback queries (always pick option 0)
-	for i := 0; i < 10; i++ {
+	// Submit 30 answers via callback queries (always pick option 0)
+	for i := 0; i < 30; i++ {
 		env.sendUpdate(t, makeCallbackUpdate(int64(100+i), 702, 702, "charlie", "Charlie", "assess:0"))
 	}
 
@@ -99,6 +99,6 @@ func TestHandleAssess_ResumeSession(t *testing.T) {
 	require.NotEmpty(t, reqs)
 
 	lastReq := reqs[len(reqs)-1].Body
-	// Should show question 4 (resuming after 3 answered)
-	assert.Contains(t, lastReq, "Вопрос 4/10")
+	// Should show question 4 (resuming after 3 answered, still in vocab phase)
+	assert.Contains(t, lastReq, "Вопрос 4/15")
 }

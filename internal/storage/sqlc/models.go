@@ -22,14 +22,15 @@ type AssessmentAnswer struct {
 }
 
 type AssessmentSession struct {
-	ID              int64              `json:"id"`
-	UserID          int64              `json:"user_id"`
-	Status          string             `json:"status"`
-	CurrentLevel    string             `json:"current_level"`
-	DeterminedLevel pgtype.Text        `json:"determined_level"`
-	CreatedAt       pgtype.Timestamptz `json:"created_at"`
-	CompletedAt     pgtype.Timestamptz `json:"completed_at"`
-	PendingQuestion []byte             `json:"pending_question"`
+	ID                 int64              `json:"id"`
+	UserID             int64              `json:"user_id"`
+	Status             string             `json:"status"`
+	CurrentLevel       string             `json:"current_level"`
+	DeterminedLevel    pgtype.Text        `json:"determined_level"`
+	CreatedAt          pgtype.Timestamptz `json:"created_at"`
+	CompletedAt        pgtype.Timestamptz `json:"completed_at"`
+	PendingQuestion    []byte             `json:"pending_question"`
+	ConsecutiveCorrect int32              `json:"consecutive_correct"`
 }
 
 type DailySet struct {
@@ -38,6 +39,7 @@ type DailySet struct {
 	GroupID   int64              `json:"group_id"`
 	Date      pgtype.Date        `json:"date"`
 	CreatedAt pgtype.Timestamptz `json:"created_at"`
+	Round     int32              `json:"round"`
 }
 
 type GrammarCategory struct {

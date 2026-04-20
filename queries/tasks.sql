@@ -1,11 +1,13 @@
 -- name: CreateDailySet :one
-INSERT INTO daily_sets (user_id, group_id, date)
-VALUES ($1, $2, $3)
+INSERT INTO daily_sets (user_id, group_id, date, round)
+VALUES ($1, $2, $3, $4)
 RETURNING *;
 
--- name: GetDailySet :one
+-- name: GetLatestDailySet :one
 SELECT * FROM daily_sets
-WHERE user_id = $1 AND group_id = $2 AND date = $3;
+WHERE user_id = $1 AND group_id = $2 AND date = $3
+ORDER BY round DESC
+LIMIT 1;
 
 -- name: AddTask :one
 INSERT INTO tasks (daily_set_id, type, level, prompt, options, answer, metadata, position)
@@ -37,3 +39,8 @@ SELECT
      JOIN tasks t ON t.id = tr.task_id
      WHERE t.daily_set_id = $1 AND tr.user_id = $2) AS answered,
     (SELECT COUNT(*) FROM tasks WHERE daily_set_id = $1) AS total;
+
+-- name: CountCorrectTaskResults :one
+SELECT COUNT(*) FROM task_results tr
+JOIN tasks t ON t.id = tr.task_id
+WHERE t.daily_set_id = $1 AND tr.user_id = $2 AND tr.correct = true;

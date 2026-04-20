@@ -115,20 +115,39 @@ func (q *Queries) CountTaskResults(ctx context.Context, arg CountTaskResultsPara
 	return i, err
 }
 
+const countCorrectTaskResults = `-- name: CountCorrectTaskResults :one
+SELECT COUNT(*) FROM task_results tr
+JOIN tasks t ON t.id = tr.task_id
+WHERE t.daily_set_id = $1 AND tr.user_id = $2 AND tr.correct = true
+`
+
+type CountCorrectTaskResultsParams struct {
+	DailySetID int64 `json:"daily_set_id"`
+	UserID     int64 `json:"user_id"`
+}
+
+func (q *Queries) CountCorrectTaskResults(ctx context.Context, arg CountCorrectTaskResultsParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countCorrectTaskResults, arg.DailySetID, arg.UserID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createDailySet = `-- name: CreateDailySet :one
-INSERT INTO daily_sets (user_id, group_id, date)
-VALUES ($1, $2, $3)
-RETURNING id, user_id, group_id, date, created_at
+INSERT INTO daily_sets (user_id, group_id, date, round)
+VALUES ($1, $2, $3, $4)
+RETURNING id, user_id, group_id, date, created_at, round
 `
 
 type CreateDailySetParams struct {
 	UserID  int64       `json:"user_id"`
 	GroupID int64       `json:"group_id"`
 	Date    pgtype.Date `json:"date"`
+	Round   int32       `json:"round"`
 }
 
 func (q *Queries) CreateDailySet(ctx context.Context, arg CreateDailySetParams) (DailySet, error) {
-	row := q.db.QueryRow(ctx, createDailySet, arg.UserID, arg.GroupID, arg.Date)
+	row := q.db.QueryRow(ctx, createDailySet, arg.UserID, arg.GroupID, arg.Date, arg.Round)
 	var i DailySet
 	err := row.Scan(
 		&i.ID,
@@ -136,23 +155,26 @@ func (q *Queries) CreateDailySet(ctx context.Context, arg CreateDailySetParams) 
 		&i.GroupID,
 		&i.Date,
 		&i.CreatedAt,
+		&i.Round,
 	)
 	return i, err
 }
 
-const getDailySet = `-- name: GetDailySet :one
-SELECT id, user_id, group_id, date, created_at FROM daily_sets
+const getLatestDailySet = `-- name: GetLatestDailySet :one
+SELECT id, user_id, group_id, date, created_at, round FROM daily_sets
 WHERE user_id = $1 AND group_id = $2 AND date = $3
+ORDER BY round DESC
+LIMIT 1
 `
 
-type GetDailySetParams struct {
+type GetLatestDailySetParams struct {
 	UserID  int64       `json:"user_id"`
 	GroupID int64       `json:"group_id"`
 	Date    pgtype.Date `json:"date"`
 }
 
-func (q *Queries) GetDailySet(ctx context.Context, arg GetDailySetParams) (DailySet, error) {
-	row := q.db.QueryRow(ctx, getDailySet, arg.UserID, arg.GroupID, arg.Date)
+func (q *Queries) GetLatestDailySet(ctx context.Context, arg GetLatestDailySetParams) (DailySet, error) {
+	row := q.db.QueryRow(ctx, getLatestDailySet, arg.UserID, arg.GroupID, arg.Date)
 	var i DailySet
 	err := row.Scan(
 		&i.ID,
@@ -160,6 +182,7 @@ func (q *Queries) GetDailySet(ctx context.Context, arg GetDailySetParams) (Daily
 		&i.GroupID,
 		&i.Date,
 		&i.CreatedAt,
+		&i.Round,
 	)
 	return i, err
 }

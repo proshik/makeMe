@@ -11,7 +11,11 @@ import (
 	"makeMe/internal/domain/user"
 )
 
-const totalQuestions = 10
+const (
+	totalQuestions    = 30
+	vocabPhaseCount   = 15 // questions 1–15: vocabulary
+	grammarPhaseCount = 15 // questions 16–30: grammar
+)
 
 // SkipOption is the sentinel value for userOption meaning "I don't know".
 const SkipOption = -1
@@ -44,8 +48,9 @@ func (s *Service) Start(ctx context.Context, userID int64) (*Session, *Question,
 		return nil, nil, fmt.Errorf("check active session: %w", err)
 	}
 	if existing != nil {
+		answered, _ := s.repo.CountAnswers(ctx, existing.ID)
 		exclude, _ := s.buildExcludeSet(ctx, existing.ID)
-		q, err := s.pickQuestion(ctx, existing.CurrentLevel, exclude)
+		q, err := s.pickQuestion(ctx, existing.CurrentLevel, exclude, answered)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -61,7 +66,7 @@ func (s *Service) Start(ctx context.Context, userID int64) (*Session, *Question,
 		return nil, nil, fmt.Errorf("create session: %w", err)
 	}
 
-	q, err := s.pickQuestion(ctx, user.B1, nil)
+	q, err := s.pickQuestion(ctx, user.A1, nil, 0)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -116,14 +121,22 @@ func (s *Service) SubmitAnswer(ctx context.Context, userID int64, userOption int
 	}
 
 	// Treat skipped as incorrect for adaptive level adjustment.
-	nextLevel := adjustLevel(session.CurrentLevel, correct)
+	nextLevel, nextConsecutive := adjustLevel(session.CurrentLevel, correct, session.ConsecutiveCorrect)
+
+	// Reset level to A1 at the grammar phase boundary.
+	if int(count) == vocabPhaseCount {
+		nextLevel = user.A1
+		nextConsecutive = 0
+	}
+
 	exclude, _ := s.buildExcludeSet(ctx, session.ID)
-	nextQ, err := s.pickQuestion(ctx, nextLevel, exclude)
+	nextQ, err := s.pickQuestion(ctx, nextLevel, exclude, int(count))
 	if err != nil {
 		return nil, nil, nil, err
 	}
 
 	session.CurrentLevel = nextLevel
+	session.ConsecutiveCorrect = nextConsecutive
 	session.PendingQuestion = nextQ
 	if err := s.repo.UpdateSession(ctx, session); err != nil {
 		return nil, nil, nil, fmt.Errorf("update session: %w", err)
@@ -181,16 +194,18 @@ func (s *Service) buildExcludeSet(ctx context.Context, sessionID int64) (map[str
 	return set, nil
 }
 
-// pickQuestion selects a question at the given level not already in exclude.
-// Falls back to the full bank if all questions at the level were already asked.
-// 50% chance of a vocab question, 50% grammar (falls back to grammar if no words available).
-func (s *Service) pickQuestion(ctx context.Context, level user.Level, exclude map[string]bool) (*Question, error) {
-	if s.srsRepo != nil && rand.IntN(2) == 0 {
-		q, err := s.generateVocabQuestion(ctx, level, exclude)
-		if err == nil && q != nil {
-			return q, nil
+// pickQuestion selects a question based on the current phase.
+// Phase 1 (answered < vocabPhaseCount): vocabulary only.
+// Phase 2 (answered >= vocabPhaseCount): grammar only.
+func (s *Service) pickQuestion(ctx context.Context, level user.Level, exclude map[string]bool, answeredSoFar int) (*Question, error) {
+	if answeredSoFar < vocabPhaseCount {
+		if s.srsRepo != nil {
+			q, err := s.generateVocabQuestion(ctx, level, exclude)
+			if err == nil && q != nil {
+				return q, nil
+			}
 		}
-		// fall through to grammar on any error
+		// Fall back to grammar if no vocab available
 	}
 	return s.pickGrammarQuestion(ctx, level, exclude), nil
 }
@@ -355,16 +370,26 @@ func filterExcluded(questions []Question, exclude map[string]bool) []Question {
 	return out
 }
 
-// adjustLevel moves one step up on correct, one step down on incorrect.
-func adjustLevel(current user.Level, correct bool) user.Level {
-	idx := levelIndex(current)
-	if correct && idx < len(levels)-1 {
-		return levels[idx+1]
+// adjustLevel moves one step up after 2 consecutive correct answers, one step down on incorrect.
+// Returns the new level and new consecutive-correct counter.
+func adjustLevel(current user.Level, correct bool, consecutive int) (user.Level, int) {
+	if !correct {
+		idx := levelIndex(current)
+		if idx > 0 {
+			return levels[idx-1], 0
+		}
+		return current, 0
 	}
-	if !correct && idx > 0 {
-		return levels[idx-1]
+	// Correct answer
+	newConsecutive := consecutive + 1
+	if newConsecutive >= 2 {
+		idx := levelIndex(current)
+		if idx < len(levels)-1 {
+			return levels[idx+1], 0
+		}
+		return current, 0
 	}
-	return current
+	return current, newConsecutive
 }
 
 func levelIndex(l user.Level) int {
@@ -376,18 +401,25 @@ func levelIndex(l user.Level) int {
 	return 2 // default B1
 }
 
-// determineLevel picks the highest level where the user got >= 50% correct
-// (skipped answers are already excluded from the stats).
+// determineLevel picks the highest consecutive level (starting from A1) where
+// the user got >= 50% correct. Stops at the first failing level that was tested.
+// Levels with no questions are skipped without breaking the chain.
 func determineLevel(stats map[string]LevelStats) user.Level {
 	best := user.A1
-	for i, lv := range levels {
+	for _, lv := range levels {
 		s, ok := stats[string(lv)]
 		if !ok {
+			// No questions asked at this level — skip without penalising.
 			continue
 		}
-		if s.Total > 0 && float64(s.Correct)/float64(s.Total) >= 0.5 {
-			best = levels[i]
+		if s.Total == 0 {
+			continue
 		}
+		if float64(s.Correct)/float64(s.Total) < 0.5 {
+			// Failed this level — stop here.
+			break
+		}
+		best = lv
 	}
 	return best
 }

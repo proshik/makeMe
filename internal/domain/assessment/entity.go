@@ -21,9 +21,10 @@ type Session struct {
 	DeterminedLevel user.Level
 	// PendingQuestion holds the question currently shown to the user so that
 	// SubmitAnswer can check correctness against the right question.
-	PendingQuestion *Question
-	CreatedAt       time.Time
-	CompletedAt     time.Time
+	PendingQuestion    *Question
+	ConsecutiveCorrect int
+	CreatedAt          time.Time
+	CompletedAt        time.Time
 }
 
 type Answer struct {

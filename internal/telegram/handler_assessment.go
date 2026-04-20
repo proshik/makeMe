@@ -132,9 +132,22 @@ func sendQuestion(ctx context.Context, tgBot *bot.Bot, chatID int64, q *assessme
 		{Text: "🤷 Не знаю", CallbackData: "assess:idk"},
 	})
 
+	const vocabPhase = 15
+	var phaseLabel string
+	var localNum, phaseTotal int
+	if questionNum <= vocabPhase {
+		phaseLabel = "📚 Словарный запас"
+		localNum = questionNum
+		phaseTotal = vocabPhase
+	} else {
+		phaseLabel = "✍️ Грамматика"
+		localNum = questionNum - vocabPhase
+		phaseTotal = 15
+	}
+
 	tgBot.SendMessage(ctx, &bot.SendMessageParams{
 		ChatID: chatID,
-		Text:   fmt.Sprintf("🧠 Вопрос %d/10:\n\n%s", questionNum, q.Text),
+		Text:   fmt.Sprintf("%s — Вопрос %d/%d:\n\n%s", phaseLabel, localNum, phaseTotal, q.Text),
 		ReplyMarkup: &models.InlineKeyboardMarkup{
 			InlineKeyboard: buttons,
 		},

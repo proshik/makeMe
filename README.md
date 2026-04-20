@@ -8,8 +8,8 @@ Go, PostgreSQL (pgx/sqlc/goose), chi, [go-telegram/bot](https://github.com/go-te
 
 ## Features
 
-- **Adaptive assessment** — 10 adaptive questions (A1–C2) determine the user's level; includes vocabulary questions, deduplication, "I don't know" button, and a full summary with level justification
-- **Daily tasks** — 3 vocabulary + 2 grammar tasks per day per group; idempotent generation, resumes where you left off
+- **Adaptive assessment** — 30 adaptive questions in two phases: vocabulary (1–15) then grammar (16–30); starts at A1, requires 2 consecutive correct answers to promote a level; includes "I don't know" button and a full summary with level justification
+- **Daily tasks** — 5 vocabulary + 5 grammar tasks per set; multiple sets per day (new round after completing the current one); solo mode — no group required, one is auto-created; resumes where you left off
 - **Spaced repetition (SM-2)** — vocabulary cards follow the SM-2 algorithm; new words appear when reviews are caught up
 - **Word bank** — ~900 words across A1–C2 with IPA transcription and audio pronunciation (fetched on demand from Free Dictionary API, cached in DB)
 - **Grammar questions** — stored in DB with Murphy's Essential/English Grammar in Use categories; ~100 questions per A1–B1 level
@@ -109,13 +109,15 @@ memberships
 └── UNIQUE(group_id, user_id)
 
 assessment_sessions
-├── id              BIGSERIAL PK
-├── user_id         BIGINT FK → users(id)
-├── status          TEXT NOT NULL  (in_progress/completed)
-├── current_level   TEXT NOT NULL  (A1–C2)
-├── determined_level TEXT          (A1–C2, NULL until completed)
-├── created_at      TIMESTAMPTZ
-└── completed_at    TIMESTAMPTZ
+├── id                  BIGSERIAL PK
+├── user_id             BIGINT FK → users(id)
+├── status              TEXT NOT NULL  (in_progress/completed)
+├── current_level       TEXT NOT NULL  (A1–C2)
+├── determined_level    TEXT           (A1–C2, NULL until completed)
+├── pending_question    JSONB          (question shown to user, used to verify answer)
+├── consecutive_correct INT NOT NULL   (correct answers in a row; 2 needed to promote level)
+├── created_at          TIMESTAMPTZ
+└── completed_at        TIMESTAMPTZ
 
 assessment_answers
 ├── id              BIGSERIAL PK
@@ -154,8 +156,9 @@ daily_sets
 ├── user_id         BIGINT FK → users(id)
 ├── group_id        BIGINT FK → groups(id)
 ├── date            DATE NOT NULL
+├── round           INT NOT NULL   (0-based; increments when current set is fully answered)
 ├── created_at      TIMESTAMPTZ
-└── UNIQUE(user_id, group_id, date)
+└── UNIQUE(user_id, group_id, date, round)
 
 tasks
 ├── id              BIGSERIAL PK

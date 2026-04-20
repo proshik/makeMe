@@ -3,6 +3,7 @@ package task
 import (
 	"context"
 	"fmt"
+	"html"
 	"math/rand/v2"
 	"strings"
 
@@ -93,12 +94,12 @@ func (g *VocabGenerator) wordToTask(ctx context.Context, word *srs.Word, level u
 
 // buildVocabEnRu builds an EN→RU task: English prompt, Russian options.
 func buildVocabEnRu(word *srs.Word, distractors []srs.Word) Task {
-	prompt := word.English
+	prompt := html.EscapeString(word.English)
 	if word.Transcription != "" {
-		prompt = fmt.Sprintf("%s  %s", word.English, word.Transcription)
+		prompt = fmt.Sprintf("%s  %s", prompt, html.EscapeString(word.Transcription))
 	}
 	if word.Example != "" {
-		prompt = fmt.Sprintf("%s\n\n_%s_", prompt, word.Example)
+		prompt = fmt.Sprintf("%s\n\n<i>%s</i>", prompt, html.EscapeString(word.Example))
 	}
 
 	options := buildOptions(word.Russian, distractors, func(d srs.Word) string { return d.Russian })
@@ -122,7 +123,7 @@ func buildVocabRuEn(word *srs.Word, distractors []srs.Word) Task {
 	return Task{
 		Type:    TypeVocab,
 		Level:   word.Level,
-		Prompt:  word.Russian,
+		Prompt:  html.EscapeString(word.Russian),
 		Options: options,
 		Answer:  word.English,
 		Metadata: map[string]any{
@@ -144,7 +145,7 @@ func buildVocabFillBlank(word *srs.Word, distractors []srs.Word) Task {
 	return Task{
 		Type:    TypeVocab,
 		Level:   word.Level,
-		Prompt:  blanked,
+		Prompt:  html.EscapeString(blanked),
 		Options: options,
 		Answer:  word.English,
 		Metadata: map[string]any{

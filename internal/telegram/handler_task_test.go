@@ -24,10 +24,10 @@ func TestHandleTasks_NotOnboarded(t *testing.T) {
 	assert.Contains(t, lastReq, "/assess")
 }
 
-func TestHandleTasks_NoGroups(t *testing.T) {
+func TestHandleTasks_NoGroups_AutoCreatesSoloGroup(t *testing.T) {
 	env := setupTestEnv(t)
 
-	// Register and onboard user
+	// Register and onboard user (no groups)
 	u, err := env.userSvc.Register(context.Background(), 801, "bob", "Bob")
 	require.NoError(t, err)
 	err = env.userSvc.UpdateLevel(context.Background(), u.ID, "B1")
@@ -40,8 +40,10 @@ func TestHandleTasks_NoGroups(t *testing.T) {
 	reqs := env.getSendMessageRequests(t)
 	require.NotEmpty(t, reqs)
 
+	// Should auto-create solo group and show first task (not an error)
 	lastReq := reqs[len(reqs)-1].Body
-	assert.Contains(t, lastReq, "нет групп")
+	assert.Contains(t, lastReq, "Задание 1/")
+	assert.Contains(t, lastReq, "inline_keyboard")
 }
 
 func TestHandleTasks_GeneratesAndShowsTask(t *testing.T) {

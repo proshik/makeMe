@@ -23,11 +23,12 @@ func NewTaskRepository(q *sqlc.Queries) *TaskRepository {
 	return &TaskRepository{q: q}
 }
 
-func (r *TaskRepository) CreateDailySet(ctx context.Context, userID, groupID int64, date time.Time) (*task.DailySet, error) {
+func (r *TaskRepository) CreateDailySet(ctx context.Context, userID, groupID int64, date time.Time, round int) (*task.DailySet, error) {
 	row, err := r.q.CreateDailySet(ctx, sqlc.CreateDailySetParams{
 		UserID:  userID,
 		GroupID: groupID,
 		Date:    pgtype.Date{Time: date, Valid: true},
+		Round:   int32(round),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("create daily set: %w", err)
@@ -36,7 +37,7 @@ func (r *TaskRepository) CreateDailySet(ctx context.Context, userID, groupID int
 }
 
 func (r *TaskRepository) GetDailySet(ctx context.Context, userID, groupID int64, date time.Time) (*task.DailySet, error) {
-	row, err := r.q.GetDailySet(ctx, sqlc.GetDailySetParams{
+	row, err := r.q.GetLatestDailySet(ctx, sqlc.GetLatestDailySetParams{
 		UserID:  userID,
 		GroupID: groupID,
 		Date:    pgtype.Date{Time: date, Valid: true},
@@ -147,6 +148,17 @@ func (r *TaskRepository) CountResults(ctx context.Context, dailySetID, userID in
 	return int(row.Answered), int(row.Total), nil
 }
 
+func (r *TaskRepository) CountCorrectResults(ctx context.Context, dailySetID, userID int64) (int, error) {
+	count, err := r.q.CountCorrectTaskResults(ctx, sqlc.CountCorrectTaskResultsParams{
+		DailySetID: dailySetID,
+		UserID:     userID,
+	})
+	if err != nil {
+		return 0, fmt.Errorf("count correct results: %w", err)
+	}
+	return int(count), nil
+}
+
 func toDailySet(row sqlc.DailySet) *task.DailySet {
 	return &task.DailySet{
 		ID:        row.ID,
@@ -154,6 +166,7 @@ func toDailySet(row sqlc.DailySet) *task.DailySet {
 		GroupID:   row.GroupID,
 		Date:      row.Date.Time,
 		CreatedAt: row.CreatedAt.Time,
+		Round:     int(row.Round),
 	}
 }
 

@@ -178,24 +178,30 @@ func TestSubmitAnswer_SkipIsNotAnError(t *testing.T) {
 
 func TestAdjustLevel(t *testing.T) {
 	tests := []struct {
-		name    string
-		current user.Level
-		correct bool
-		want    user.Level
+		name        string
+		current     user.Level
+		correct     bool
+		consecutive int
+		wantLevel   user.Level
+		wantConsec  int
 	}{
-		{"correct from B1 goes up", user.B1, true, user.B2},
-		{"wrong from B1 goes down", user.B1, false, user.A2},
-		{"correct from C2 stays", user.C2, true, user.C2},
-		{"wrong from A1 stays", user.A1, false, user.A1},
-		{"correct from A1 goes up", user.A1, true, user.A2},
-		{"wrong from C2 goes down", user.C2, false, user.C1},
+		{"first correct from B1 stays (consecutive=0)", user.B1, true, 0, user.B1, 1},
+		{"second correct from B1 goes up (consecutive=1)", user.B1, true, 1, user.B2, 0},
+		{"wrong from B1 goes down", user.B1, false, 1, user.A2, 0},
+		{"second correct from C2 stays at C2", user.C2, true, 1, user.C2, 0},
+		{"wrong from A1 stays", user.A1, false, 0, user.A1, 0},
+		{"second correct from A1 goes up", user.A1, true, 1, user.A2, 0},
+		{"wrong from C2 goes down", user.C2, false, 2, user.C1, 0},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := adjustLevel(tt.current, tt.correct)
-			if got != tt.want {
-				t.Errorf("adjustLevel(%s, %v) = %s, want %s", tt.current, tt.correct, got, tt.want)
+			gotLevel, gotConsec := adjustLevel(tt.current, tt.correct, tt.consecutive)
+			if gotLevel != tt.wantLevel {
+				t.Errorf("adjustLevel(%s, %v, %d) level = %s, want %s", tt.current, tt.correct, tt.consecutive, gotLevel, tt.wantLevel)
+			}
+			if gotConsec != tt.wantConsec {
+				t.Errorf("adjustLevel(%s, %v, %d) consecutive = %d, want %d", tt.current, tt.correct, tt.consecutive, gotConsec, tt.wantConsec)
 			}
 		})
 	}
