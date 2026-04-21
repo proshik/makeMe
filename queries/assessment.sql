@@ -1,10 +1,10 @@
 -- name: CreateAssessmentSession :one
 INSERT INTO assessment_sessions (user_id)
 VALUES ($1)
-RETURNING id, user_id, status, current_level, determined_level, pending_question, created_at, completed_at;
+RETURNING id, user_id, status, current_level, determined_level, pending_question, created_at, completed_at, consecutive_correct;
 
 -- name: GetActiveAssessmentSession :one
-SELECT id, user_id, status, current_level, determined_level, pending_question, created_at, completed_at
+SELECT id, user_id, status, current_level, determined_level, pending_question, created_at, completed_at, consecutive_correct
 FROM assessment_sessions
 WHERE user_id = $1 AND status = 'in_progress'
 ORDER BY created_at DESC
@@ -40,7 +40,7 @@ WHERE session_id = $1
 ORDER BY id;
 
 -- name: GetLastCompletedAssessment :one
-SELECT id, user_id, status, current_level, determined_level, pending_question, created_at, completed_at
+SELECT id, user_id, status, current_level, determined_level, pending_question, created_at, completed_at, consecutive_correct
 FROM assessment_sessions
 WHERE user_id = $1 AND status = 'completed'
 ORDER BY completed_at DESC

@@ -125,7 +125,7 @@ func setupTestEnv(t *testing.T) *testEnv {
 	// Use nil dictClient so tests never call the real external dictionary API.
 	// The handler already guards on dictClient != nil and falls back to "not found".
 	// Create bot with WireMock as Telegram API
-	tgBot, err := telegram.New("test-token", userSvc, groupSvc, assessSvc, taskSvc, scoringSvc, srsRepo, nil,
+	tgBot, err := telegram.New("test-token", userSvc, groupSvc, assessSvc, taskSvc, scoringSvc, srsRepo, nil, grammarRepo,
 		bot.WithServerURL(wiremockURL),
 	)
 	require.NoError(t, err)

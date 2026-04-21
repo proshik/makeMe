@@ -97,7 +97,7 @@ func run(ctx context.Context) error {
 
 	dictClient := dictionary.NewClient()
 
-	tgBot, err := telegram.New(cfg.TelegramToken, userSvc, groupSvc, assessSvc, taskSvc, scoringSvc, srsRepo, dictClient)
+	tgBot, err := telegram.New(cfg.TelegramToken, userSvc, groupSvc, assessSvc, taskSvc, scoringSvc, srsRepo, dictClient, grammarRepo)
 	if err != nil {
 		return err
 	}

@@ -64,20 +64,19 @@ func (b *Bot) handleProfile(ctx context.Context, tgBot *bot.Bot, update *models.
 	var streakLine string
 	switch {
 	case streak == 0:
-		streakLine = "Дней подряд занимаешься: 0 — самое время начать серию! 💪"
+		streakLine = "🎽 Дней подряд занимаешься: 0 — самое время начать серию! 💪"
 	case streak < 3:
-		streakLine = fmt.Sprintf("Дней подряд занимаешься: %d 🔥 — хорошее начало!", streak)
+		streakLine = fmt.Sprintf("🎽 Дней подряд занимаешься: %d 🔥 — хорошее начало!", streak)
 	case streak < 7:
-		streakLine = fmt.Sprintf("Дней подряд занимаешься: %d 🔥 — отличный ритм!", streak)
+		streakLine = fmt.Sprintf("🎽 Дней подряд занимаешься: %d 🔥 — отличный ритм!", streak)
 	default:
-		streakLine = fmt.Sprintf("Дней подряд занимаешься: %d 🔥🔥🔥 — ты в огне!", streak)
+		streakLine = fmt.Sprintf("🎽 Дней подряд занимаешься: %d 🔥🔥🔥 — ты в огне!", streak)
 	}
 
 	var sb strings.Builder
-	sb.WriteString("👤 Твой профиль\n\n")
-	sb.WriteString(fmt.Sprintf("🎓 Уровень: %s\n", u.Level))
-	sb.WriteString(fmt.Sprintf("⭐ Баллы за месяц: %.1f баллов\n", monthlyScore))
-	sb.WriteString(streakLine + "\n")
+	sb.WriteString(fmt.Sprintf("🎓 Уровень: %s\n\n", u.Level))
+	sb.WriteString(fmt.Sprintf("⭐ Баллы за месяц: %.1f баллов\n\n", monthlyScore))
+	sb.WriteString(streakLine + "\n\n")
 	sb.WriteString(fmt.Sprintf("📚 Выучено слов: %d (слово считается выученным после 3 повторений)\n", learnedWords))
 
 	tgBot.SendMessage(ctx, &bot.SendMessageParams{

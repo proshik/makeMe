@@ -17,7 +17,15 @@ type GrammarQuestion struct {
 	Explanation string
 }
 
+// GrammarCategory is a grammar topic with its theory explanation.
+type GrammarCategory struct {
+	Name        string
+	Explanation string
+}
+
 // GrammarRepository provides access to grammar questions.
 type GrammarRepository interface {
 	GetByLevel(ctx context.Context, level user.Level) ([]GrammarQuestion, error)
+	GetCategoriesByLevel(ctx context.Context, level user.Level) ([]GrammarCategory, error)
+	GetQuestionsByCategory(ctx context.Context, category string, limit int) ([]GrammarQuestion, error)
 }

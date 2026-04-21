@@ -56,6 +56,92 @@ func (q *Queries) GetGrammarByLevel(ctx context.Context, level string) ([]GetGra
 	return items, nil
 }
 
+const getGrammarCategoriesByLevel = `-- name: GetGrammarCategoriesByLevel :many
+SELECT DISTINCT q.category, COALESCE(c.explanation, '') AS explanation
+FROM grammar_questions q
+LEFT JOIN grammar_categories c ON c.name = q.category
+WHERE q.level = $1
+ORDER BY q.category
+`
+
+type GetGrammarCategoriesByLevelRow struct {
+	Category    string `json:"category"`
+	Explanation string `json:"explanation"`
+}
+
+func (q *Queries) GetGrammarCategoriesByLevel(ctx context.Context, level string) ([]GetGrammarCategoriesByLevelRow, error) {
+	rows, err := q.db.Query(ctx, getGrammarCategoriesByLevel, level)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetGrammarCategoriesByLevelRow{}
+	for rows.Next() {
+		var i GetGrammarCategoriesByLevelRow
+		if err := rows.Scan(&i.Category, &i.Explanation); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getGrammarQuestionsByCategory = `-- name: GetGrammarQuestionsByCategory :many
+SELECT q.id, q.level, q.category, q.prompt, q.options, q.answer,
+       COALESCE(c.explanation, '') AS explanation
+FROM grammar_questions q
+LEFT JOIN grammar_categories c ON c.name = q.category
+WHERE q.category = $1
+ORDER BY q.id
+LIMIT $2
+`
+
+type GetGrammarQuestionsByCategoryParams struct {
+	Category string `json:"category"`
+	Limit    int32  `json:"limit"`
+}
+
+type GetGrammarQuestionsByCategoryRow struct {
+	ID          int64  `json:"id"`
+	Level       string `json:"level"`
+	Category    string `json:"category"`
+	Prompt      string `json:"prompt"`
+	Options     []byte `json:"options"`
+	Answer      string `json:"answer"`
+	Explanation string `json:"explanation"`
+}
+
+func (q *Queries) GetGrammarQuestionsByCategory(ctx context.Context, arg GetGrammarQuestionsByCategoryParams) ([]GetGrammarQuestionsByCategoryRow, error) {
+	rows, err := q.db.Query(ctx, getGrammarQuestionsByCategory, arg.Category, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetGrammarQuestionsByCategoryRow{}
+	for rows.Next() {
+		var i GetGrammarQuestionsByCategoryRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Level,
+			&i.Category,
+			&i.Prompt,
+			&i.Options,
+			&i.Answer,
+			&i.Explanation,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const upsertGrammarCategory = `-- name: UpsertGrammarCategory :exec
 INSERT INTO grammar_categories (name, explanation)
 VALUES ($1, $2)

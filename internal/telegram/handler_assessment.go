@@ -93,14 +93,16 @@ func (b *Bot) handleAssessCallback(ctx context.Context, tgBot *bot.Bot, update *
 		// Assessment complete — send summary then final message
 		if len(answers) > 0 {
 			tgBot.SendMessage(ctx, &bot.SendMessageParams{
-				ChatID: chatID,
-				Text:   formatSummary(answers),
+				ChatID:    chatID,
+				Text:      formatSummary(answers),
+				ParseMode: models.ParseModeMarkdown,
 			})
 		}
 
 		stats := buildLevelStats(answers)
 		tgBot.SendMessage(ctx, &bot.SendMessageParams{
-			ChatID: chatID,
+			ChatID:    chatID,
+			ParseMode: models.ParseModeMarkdown,
 			Text: fmt.Sprintf(
 				"🎉 Тест завершён\\! Твой уровень: *%s* 🏅\n\n"+
 					"%s\n\n"+

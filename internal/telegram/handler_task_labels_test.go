@@ -13,7 +13,7 @@ func TestVocabTaskLabel_EnRu(tt *testing.T) {
 		Type:     task.TypeVocab,
 		Metadata: map[string]any{"subtype": task.VocabSubtypeEnRu},
 	}
-	assert.Equal(tt, "📖 Словарь (EN→RU)", vocabTaskLabel(tsk))
+	assert.Equal(tt, "📖 Перевод слов", vocabTaskLabel(tsk))
 }
 
 func TestVocabTaskLabel_RuEn(tt *testing.T) {
@@ -21,7 +21,7 @@ func TestVocabTaskLabel_RuEn(tt *testing.T) {
 		Type:     task.TypeVocab,
 		Metadata: map[string]any{"subtype": task.VocabSubtypeRuEn},
 	}
-	assert.Equal(tt, "📖 Словарь (RU→EN)", vocabTaskLabel(tsk))
+	assert.Equal(tt, "📖 Перевод слов", vocabTaskLabel(tsk))
 }
 
 func TestVocabTaskLabel_FillBlank(tt *testing.T) {

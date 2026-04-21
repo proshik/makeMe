@@ -19,25 +19,27 @@ import (
 )
 
 type Bot struct {
-	bot        *bot.Bot
-	userSvc    *user.Service
-	groupSvc   *group.Service
-	assessSvc  *assessment.Service
-	taskSvc    *task.Service
-	scoringSvc *scoring.Service
-	srsRepo    srs.Repository
-	dictClient *dictionary.Client
+	bot         *bot.Bot
+	userSvc     *user.Service
+	groupSvc    *group.Service
+	assessSvc   *assessment.Service
+	taskSvc     *task.Service
+	scoringSvc  *scoring.Service
+	srsRepo     srs.Repository
+	dictClient  *dictionary.Client
+	grammarRepo task.GrammarRepository
 }
 
-func New(token string, userSvc *user.Service, groupSvc *group.Service, assessSvc *assessment.Service, taskSvc *task.Service, scoringSvc *scoring.Service, srsRepo srs.Repository, dictClient *dictionary.Client, extraOpts ...bot.Option) (*Bot, error) {
+func New(token string, userSvc *user.Service, groupSvc *group.Service, assessSvc *assessment.Service, taskSvc *task.Service, scoringSvc *scoring.Service, srsRepo srs.Repository, dictClient *dictionary.Client, grammarRepo task.GrammarRepository, extraOpts ...bot.Option) (*Bot, error) {
 	b := &Bot{
-		userSvc:    userSvc,
-		groupSvc:   groupSvc,
-		assessSvc:  assessSvc,
-		taskSvc:    taskSvc,
-		scoringSvc: scoringSvc,
-		srsRepo:    srsRepo,
-		dictClient: dictClient,
+		userSvc:     userSvc,
+		groupSvc:    groupSvc,
+		assessSvc:   assessSvc,
+		taskSvc:     taskSvc,
+		scoringSvc:  scoringSvc,
+		srsRepo:     srsRepo,
+		dictClient:  dictClient,
+		grammarRepo: grammarRepo,
 	}
 
 	opts := []bot.Option{
@@ -64,6 +66,8 @@ func New(token string, userSvc *user.Service, groupSvc *group.Service, assessSvc
 	tgBot.RegisterHandler(bot.HandlerTypeMessageText, "/leaderboard", bot.MatchTypeExact, b.handleLeaderboard)
 	tgBot.RegisterHandler(bot.HandlerTypeCallbackQueryData, "lb:", bot.MatchTypePrefix, b.handleLeaderboardCallback)
 	tgBot.RegisterHandler(bot.HandlerTypeMessageText, "/profile", bot.MatchTypeExact, b.handleProfile)
+	tgBot.RegisterHandler(bot.HandlerTypeMessageText, "/learn", bot.MatchTypeExact, b.handleLearn)
+	tgBot.RegisterHandler(bot.HandlerTypeCallbackQueryData, "learn:", bot.MatchTypePrefix, b.handleLearnCallback)
 
 	b.bot = tgBot
 	return b, nil

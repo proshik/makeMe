@@ -90,6 +90,24 @@ func (q *Queries) AddTaskResult(ctx context.Context, arg AddTaskResultParams) (T
 	return i, err
 }
 
+const countCorrectTaskResults = `-- name: CountCorrectTaskResults :one
+SELECT COUNT(*) FROM task_results tr
+JOIN tasks t ON t.id = tr.task_id
+WHERE t.daily_set_id = $1 AND tr.user_id = $2 AND tr.correct = true
+`
+
+type CountCorrectTaskResultsParams struct {
+	DailySetID int64 `json:"daily_set_id"`
+	UserID     int64 `json:"user_id"`
+}
+
+func (q *Queries) CountCorrectTaskResults(ctx context.Context, arg CountCorrectTaskResultsParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countCorrectTaskResults, arg.DailySetID, arg.UserID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const countTaskResults = `-- name: CountTaskResults :one
 SELECT
     (SELECT COUNT(*) FROM task_results tr
@@ -115,24 +133,6 @@ func (q *Queries) CountTaskResults(ctx context.Context, arg CountTaskResultsPara
 	return i, err
 }
 
-const countCorrectTaskResults = `-- name: CountCorrectTaskResults :one
-SELECT COUNT(*) FROM task_results tr
-JOIN tasks t ON t.id = tr.task_id
-WHERE t.daily_set_id = $1 AND tr.user_id = $2 AND tr.correct = true
-`
-
-type CountCorrectTaskResultsParams struct {
-	DailySetID int64 `json:"daily_set_id"`
-	UserID     int64 `json:"user_id"`
-}
-
-func (q *Queries) CountCorrectTaskResults(ctx context.Context, arg CountCorrectTaskResultsParams) (int64, error) {
-	row := q.db.QueryRow(ctx, countCorrectTaskResults, arg.DailySetID, arg.UserID)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
-}
-
 const createDailySet = `-- name: CreateDailySet :one
 INSERT INTO daily_sets (user_id, group_id, date, round)
 VALUES ($1, $2, $3, $4)
@@ -147,7 +147,12 @@ type CreateDailySetParams struct {
 }
 
 func (q *Queries) CreateDailySet(ctx context.Context, arg CreateDailySetParams) (DailySet, error) {
-	row := q.db.QueryRow(ctx, createDailySet, arg.UserID, arg.GroupID, arg.Date, arg.Round)
+	row := q.db.QueryRow(ctx, createDailySet,
+		arg.UserID,
+		arg.GroupID,
+		arg.Date,
+		arg.Round,
+	)
 	var i DailySet
 	err := row.Scan(
 		&i.ID,

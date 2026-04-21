@@ -3,6 +3,7 @@ package telegram
 import (
 	"context"
 	"fmt"
+	"html"
 	"log/slog"
 	"strconv"
 	"strings"
@@ -84,9 +85,15 @@ func (b *Bot) handleTasks(ctx context.Context, tgBot *bot.Bot, update *models.Up
 	if nextTask == nil {
 		_, total, _ := b.taskSvc.GetProgress(ctx, ds.ID, u.ID)
 		correct, _ := b.taskSvc.GetCorrectCount(ctx, ds.ID, u.ID)
+		var doneText string
+		if correct == total {
+			doneText = fmt.Sprintf("🎉 Все задания на сегодня выполнены!\n\n✅ Правильных ответов: %d из %d\n\nОтличная работа! Возвращайся завтра за новыми 💪", correct, total)
+		} else {
+			doneText = fmt.Sprintf("📝 Задания на сегодня выполнены.\n\n✅ Правильных ответов: %d из %d\n\nВозвращайся завтра — новые задания уже ждут 💪", correct, total)
+		}
 		tgBot.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: update.Message.Chat.ID,
-			Text:   fmt.Sprintf("🎉 Все задания на сегодня выполнены!\n\n✅ Правильных ответов: %d из %d\n\nОтличная работа! Возвращайся завтра за новыми 💪", correct, total),
+			Text:   doneText,
 		})
 		return
 	}
@@ -166,8 +173,9 @@ func (b *Bot) handleTaskCallback(ctx context.Context, tgBot *bot.Bot, update *mo
 		feedback = buildIncorrectFeedback(t)
 	}
 	feedbackParams := &bot.SendMessageParams{
-		ChatID: chatID,
-		Text:   feedback,
+		ChatID:    chatID,
+		Text:      feedback,
+		ParseMode: models.ParseModeHTML,
 	}
 	if t.Type == task.TypeVocab && t.Metadata != nil {
 		if audioURL, _ := t.Metadata["audio_url"].(string); audioURL != "" {
@@ -187,9 +195,15 @@ func (b *Bot) handleTaskCallback(ctx context.Context, tgBot *bot.Bot, update *mo
 	if nextTask == nil {
 		_, total, _ := b.taskSvc.GetProgress(ctx, t.DailySetID, u.ID)
 		correct, _ := b.taskSvc.GetCorrectCount(ctx, t.DailySetID, u.ID)
+		var completionText string
+		if correct == total {
+			completionText = fmt.Sprintf("🏆 Все задания выполнены!\n\n✅ Правильных ответов: %d из %d\n\nТы огонь! Загляни в /leaderboard — посмотри, где ты в рейтинге 🔥", correct, total)
+		} else {
+			completionText = fmt.Sprintf("✅ Задания выполнены!\n\n✅ Правильных ответов: %d из %d\n\nЗагляни в /leaderboard — посмотри, где ты в рейтинге 🔥", correct, total)
+		}
 		tgBot.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: chatID,
-			Text:   fmt.Sprintf("🏆 Все задания выполнены!\n\n✅ Правильных ответов: %d из %d\n\nТы огонь! Загляни в /leaderboard — посмотри, где ты в рейтинге 🔥", correct, total),
+			Text:   completionText,
 		})
 		return
 	}
@@ -205,20 +219,47 @@ func vocabTaskLabel(t *task.Task) string {
 	}
 	switch t.Metadata["subtype"] {
 	case task.VocabSubtypeRuEn:
-		return "📖 Словарь (RU→EN)"
+		return "📖 Перевод слов"
 	case task.VocabSubtypeFillBlank:
 		return "📝 Заполни пропуск"
 	case task.VocabSubtypeEnRu:
-		return "📖 Словарь (EN→RU)"
+		return "📖 Перевод слов"
 	default:
 		return "📖 Словарь"
 	}
+}
+
+// taskInstruction returns the instruction line shown above the question prompt.
+func taskInstruction(t *task.Task) string {
+	if t.Type == task.TypeGrammar {
+		return "Выберите правильный вариант, чтобы заполнить пропуск:"
+	}
+	if t.Metadata == nil {
+		return ""
+	}
+	switch t.Metadata["subtype"] {
+	case task.VocabSubtypeRuEn:
+		return "Выберите правильный перевод на английский язык:"
+	case task.VocabSubtypeEnRu:
+		return "Выберите правильный перевод на русский язык:"
+	case task.VocabSubtypeFillBlank:
+		return "Выберите правильное слово для заполнения пропуска:"
+	}
+	return ""
 }
 
 func sendTaskQuestion(ctx context.Context, tgBot *bot.Bot, chatID int64, t *task.Task, current, total int) {
 	typeLabel := vocabTaskLabel(t)
 	if t.Type == task.TypeGrammar {
 		typeLabel = "📝 Грамматика"
+	}
+
+	instruction := taskInstruction(t)
+	var text string
+	if instruction != "" {
+		text = fmt.Sprintf("%s — Задание %d/%d\n%s\n\n%s", typeLabel, current, total, instruction, t.Prompt)
+	} else {
+		text = fmt.Sprintf("%s — Задание %d/%d\n\n%s", typeLabel, current, total, t.Prompt)
 	}
 
 	buttons := make([][]models.InlineKeyboardButton, len(t.Options))
@@ -230,7 +271,7 @@ func sendTaskQuestion(ctx context.Context, tgBot *bot.Bot, chatID int64, t *task
 
 	tgBot.SendMessage(ctx, &bot.SendMessageParams{
 		ChatID:    chatID,
-		Text:      fmt.Sprintf("%s — Задание %d/%d\n\n%s", typeLabel, current, total, t.Prompt),
+		Text:      text,
 		ParseMode: models.ParseModeHTML,
 		ReplyMarkup: &models.InlineKeyboardMarkup{
 			InlineKeyboard: buttons,
@@ -292,10 +333,9 @@ func (b *Bot) handleWordAudioCallback(ctx context.Context, tgBot *bot.Bot, updat
 	})
 }
 
-// buildIncorrectFeedback returns the wrong-answer message for a task.
-// For grammar tasks with a non-empty explanation in metadata, appends it after the answer.
+// buildIncorrectFeedback returns the wrong-answer message for a task (HTML-formatted).
 func buildIncorrectFeedback(t *task.Task) string {
-	base := fmt.Sprintf("❌ Неправильно. Правильный ответ: %s", t.Answer)
+	base := fmt.Sprintf("❌ Неправильно. Правильный ответ: <b>%s</b>", html.EscapeString(t.Answer))
 	if t.Type != task.TypeGrammar || t.Metadata == nil {
 		return base
 	}
@@ -303,5 +343,24 @@ func buildIncorrectFeedback(t *task.Task) string {
 	if explanation == "" {
 		return base
 	}
-	return base + "\n\n💡 " + explanation
+	return base + "\n\n💡 " + formatExplanationHTML(explanation)
+}
+
+// formatExplanationHTML escapes plain-text explanation for HTML and bolds section headers
+// (lines that end with ":" and are not bullet points).
+func formatExplanationHTML(s string) string {
+	lines := strings.Split(s, "\n")
+	for i, line := range lines {
+		trimmed := strings.TrimSpace(line)
+		if len(trimmed) > 1 &&
+			strings.HasSuffix(trimmed, ":") &&
+			!strings.HasPrefix(trimmed, "•") &&
+			!strings.HasPrefix(trimmed, "✗") &&
+			!strings.HasPrefix(trimmed, "✓") {
+			lines[i] = "<b>" + html.EscapeString(trimmed) + "</b>"
+		} else {
+			lines[i] = html.EscapeString(line)
+		}
+	}
+	return strings.Join(lines, "\n")
 }
