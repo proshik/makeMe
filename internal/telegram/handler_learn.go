@@ -245,11 +245,12 @@ func (b *Bot) handleLearnAnswer(ctx context.Context, tgBot *bot.Bot, chatID int6
 	correct := optIdx >= 0 && optIdx < len(q.Options) && q.Options[optIdx] == q.Answer
 
 	var feedbackText string
-	if correct {
+	if optIdx == -1 {
+		feedbackText = fmt.Sprintf("🤷 Правильный ответ: <b>%s</b>", html.EscapeString(q.Answer))
+	} else if correct {
 		feedbackText = "✅ Правильно!"
 	} else {
-		correctAnswer := q.Answer
-		feedbackText = fmt.Sprintf("❌ Неправильно. Правильный ответ: <b>%s</b>", html.EscapeString(correctAnswer))
+		feedbackText = fmt.Sprintf("❌ Неправильно. Правильный ответ: <b>%s</b>", html.EscapeString(q.Answer))
 	}
 
 	tgBot.SendMessage(ctx, &bot.SendMessageParams{
@@ -301,6 +302,12 @@ func (b *Bot) sendLearnQuestion(ctx context.Context, tgBot *bot.Bot, chatID int6
 			},
 		}
 	}
+	buttons = append(buttons, []models.InlineKeyboardButton{
+		{
+			Text:         "🤷 Не знаю",
+			CallbackData: fmt.Sprintf("learn:qa:%s:%d:%d:%d:-1", level, catIdx, qIdx, total),
+		},
+	})
 
 	tgBot.SendMessage(ctx, &bot.SendMessageParams{
 		ChatID:    chatID,

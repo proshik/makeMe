@@ -3017,7 +3017,7 @@
   },
   {
     "level": "A1",
-    "category": "Present Simple / have",
+    "category": "Have/Have got",
     "subcategory": "general",
     "prompt": "He ___ a car.",
     "options": [
@@ -3420,7 +3420,7 @@
   },
   {
     "level": "A1",
-    "category": "Plurals",
+    "category": "Plural nouns",
     "subcategory": "general",
     "prompt": "There are three ___ in the room.",
     "options": [
@@ -3485,7 +3485,7 @@
   },
   {
     "level": "A1",
-    "category": "There is/are",
+    "category": "there is / there are",
     "subcategory": "general",
     "prompt": "There ___ a lot of people in the park.",
     "options": [
@@ -3524,7 +3524,7 @@
   },
   {
     "level": "A2",
-    "category": "Future Plans",
+    "category": "Going to",
     "subcategory": "general",
     "prompt": "She ___ to see her parents next weekend.",
     "options": [
@@ -3563,7 +3563,7 @@
   },
   {
     "level": "A2",
-    "category": "Too/Enough",
+    "category": "too / enough",
     "subcategory": "general",
     "prompt": "The box was ___ heavy to lift on my own.",
     "options": [
@@ -3615,7 +3615,7 @@
   },
   {
     "level": "A2",
-    "category": "So/Such",
+    "category": "so/such",
     "subcategory": "general",
     "prompt": "He was ___ tired that he fell asleep immediately.",
     "options": [
@@ -3628,7 +3628,7 @@
   },
   {
     "level": "A2",
-    "category": "Question Tags",
+    "category": "Question tags",
     "subcategory": "negative",
     "prompt": "You've met him before, ___ you?",
     "options": [
@@ -3680,7 +3680,7 @@
   },
   {
     "level": "B1",
-    "category": "used to",
+    "category": "used to / be used to / get used to",
     "subcategory": "general",
     "prompt": "She ___ live in Paris when she was young.",
     "options": [
@@ -3693,7 +3693,7 @@
   },
   {
     "level": "B1",
-    "category": "Gerunds",
+    "category": "Gerunds and Infinitives",
     "subcategory": "general",
     "prompt": "I enjoy ___ to music in the evenings.",
     "options": [
@@ -3706,7 +3706,7 @@
   },
   {
     "level": "B1",
-    "category": "Second Conditional",
+    "category": "Second conditional",
     "subcategory": "general",
     "prompt": "If I ___ you, I would apologise.",
     "options": [
@@ -3771,7 +3771,7 @@
   },
   {
     "level": "B2",
-    "category": "Third Conditional",
+    "category": "Third conditional",
     "subcategory": "general",
     "prompt": "If he ___ the instructions, the machine would not have broken.",
     "options": [
@@ -7954,5 +7954,2033 @@
       "might been"
     ],
     "answer": "has been"
+  },
+  {
+    "level": "A1",
+    "category": "Articles",
+    "subcategory": "affirmative",
+    "prompt": "I saw ___ elephant at the zoo.",
+    "options": [
+      "a",
+      "an",
+      "the",
+      "—"
+    ],
+    "answer": "an"
+  },
+  {
+    "level": "A1",
+    "category": "Articles",
+    "subcategory": "affirmative",
+    "prompt": "She is ___ honest person.",
+    "options": [
+      "a",
+      "an",
+      "the",
+      "—"
+    ],
+    "answer": "an"
+  },
+  {
+    "level": "A1",
+    "category": "Articles",
+    "subcategory": "interrogative",
+    "prompt": "Is there ___ umbrella in the corner?",
+    "options": [
+      "a",
+      "an",
+      "the",
+      "—"
+    ],
+    "answer": "an"
+  },
+  {
+    "level": "A1",
+    "category": "Articles",
+    "subcategory": "negative",
+    "prompt": "I don't have ___ brother.",
+    "options": [
+      "a",
+      "an",
+      "the",
+      "—"
+    ],
+    "answer": "a"
+  },
+  {
+    "level": "A1",
+    "category": "Articles",
+    "subcategory": "affirmative",
+    "prompt": "___ moon looks beautiful tonight.",
+    "options": [
+      "A",
+      "An",
+      "The",
+      "—"
+    ],
+    "answer": "The"
+  },
+  {
+    "level": "A2",
+    "category": "Articles",
+    "subcategory": "affirmative",
+    "prompt": "She plays ___ guitar in a band.",
+    "options": [
+      "a",
+      "an",
+      "the",
+      "—"
+    ],
+    "answer": "the"
+  },
+  {
+    "level": "A2",
+    "category": "Articles",
+    "subcategory": "affirmative",
+    "prompt": "They had ___ breakfast at 8 o'clock.",
+    "options": [
+      "a",
+      "an",
+      "the",
+      "—"
+    ],
+    "answer": "—"
+  },
+  {
+    "level": "A2",
+    "category": "Articles",
+    "subcategory": "affirmative",
+    "prompt": "He goes to ___ university in London.",
+    "options": [
+      "a",
+      "an",
+      "the",
+      "—"
+    ],
+    "answer": "a"
+  },
+  {
+    "level": "A2",
+    "category": "Articles",
+    "subcategory": "negative",
+    "prompt": "We don't speak ___ French at home.",
+    "options": [
+      "a",
+      "an",
+      "the",
+      "—"
+    ],
+    "answer": "—"
+  },
+  {
+    "level": "A2",
+    "category": "Articles",
+    "subcategory": "interrogative",
+    "prompt": "Is ___ Amazon the longest river in South America?",
+    "options": [
+      "a",
+      "an",
+      "the",
+      "—"
+    ],
+    "answer": "the"
+  },
+  {
+    "level": "A2",
+    "category": "Articles",
+    "subcategory": "affirmative",
+    "prompt": "They live in ___ United States.",
+    "options": [
+      "a",
+      "an",
+      "the",
+      "—"
+    ],
+    "answer": "the"
+  },
+  {
+    "level": "B1",
+    "category": "Articles",
+    "subcategory": "affirmative",
+    "prompt": "It was ___ most exciting trip of my life.",
+    "options": [
+      "a",
+      "an",
+      "the",
+      "—"
+    ],
+    "answer": "the"
+  },
+  {
+    "level": "B1",
+    "category": "Articles",
+    "subcategory": "affirmative",
+    "prompt": "___ poor need more support from the government.",
+    "options": [
+      "A",
+      "An",
+      "The",
+      "—"
+    ],
+    "answer": "The"
+  },
+  {
+    "level": "B1",
+    "category": "Articles",
+    "subcategory": "affirmative",
+    "prompt": "He was elected ___ president of the club.",
+    "options": [
+      "a",
+      "an",
+      "the",
+      "—"
+    ],
+    "answer": "—"
+  },
+  {
+    "level": "B1",
+    "category": "Articles",
+    "subcategory": "affirmative",
+    "prompt": "I read ___ interesting article about climate change.",
+    "options": [
+      "a",
+      "an",
+      "the",
+      "—"
+    ],
+    "answer": "an"
+  },
+  {
+    "level": "B1",
+    "category": "Articles",
+    "subcategory": "negative",
+    "prompt": "She doesn't go to ___ church regularly.",
+    "options": [
+      "a",
+      "an",
+      "the",
+      "—"
+    ],
+    "answer": "—"
+  },
+  {
+    "level": "B1",
+    "category": "Articles",
+    "subcategory": "interrogative",
+    "prompt": "Do you play ___ chess in your free time?",
+    "options": [
+      "a",
+      "an",
+      "the",
+      "—"
+    ],
+    "answer": "—"
+  },
+  {
+    "level": "B1",
+    "category": "Articles",
+    "subcategory": "affirmative",
+    "prompt": "They live near ___ Eiffel Tower.",
+    "options": [
+      "a",
+      "an",
+      "the",
+      "—"
+    ],
+    "answer": "the"
+  },
+  {
+    "level": "B1",
+    "category": "Articles",
+    "subcategory": "affirmative",
+    "prompt": "It was ___ honour to meet the president.",
+    "options": [
+      "a",
+      "an",
+      "the",
+      "—"
+    ],
+    "answer": "an"
+  },
+  {
+    "level": "B2",
+    "category": "As if",
+    "subcategory": "affirmative",
+    "prompt": "She talks as if she ___ the boss, but she's a junior employee.",
+    "options": [
+      "were",
+      "is",
+      "was",
+      "be"
+    ],
+    "answer": "were"
+  },
+  {
+    "level": "B2",
+    "category": "As if",
+    "subcategory": "affirmative",
+    "prompt": "He stared at me as if he ___ never seen me before.",
+    "options": [
+      "had",
+      "has",
+      "was",
+      "did"
+    ],
+    "answer": "had"
+  },
+  {
+    "level": "B2",
+    "category": "As if",
+    "subcategory": "affirmative",
+    "prompt": "They acted as if nothing ___ happened.",
+    "options": [
+      "had",
+      "has",
+      "was",
+      "were"
+    ],
+    "answer": "had"
+  },
+  {
+    "level": "B2",
+    "category": "As if",
+    "subcategory": "affirmative",
+    "prompt": "It looks as if it ___ going to snow tonight.",
+    "options": [
+      "is",
+      "were",
+      "had been",
+      "would be"
+    ],
+    "answer": "is"
+  },
+  {
+    "level": "B2",
+    "category": "As if",
+    "subcategory": "affirmative",
+    "prompt": "She spent money as if she ___ a millionaire.",
+    "options": [
+      "were",
+      "is",
+      "was",
+      "has been"
+    ],
+    "answer": "were"
+  },
+  {
+    "level": "B2",
+    "category": "As if",
+    "subcategory": "affirmative",
+    "prompt": "He sounded as if he ___ a bad cold — his voice was hoarse.",
+    "options": [
+      "had",
+      "has",
+      "was",
+      "were"
+    ],
+    "answer": "had"
+  },
+  {
+    "level": "B2",
+    "category": "As if",
+    "subcategory": "interrogative",
+    "prompt": "Why does she always act as if she ___ better than everyone else?",
+    "options": [
+      "were",
+      "is",
+      "was",
+      "being"
+    ],
+    "answer": "were"
+  },
+  {
+    "level": "B2",
+    "category": "As if",
+    "subcategory": "negative",
+    "prompt": "He doesn't behave as if he ___ any responsibility for the mistake.",
+    "options": [
+      "had",
+      "has",
+      "were",
+      "was"
+    ],
+    "answer": "had"
+  },
+  {
+    "level": "B2",
+    "category": "Complex Passive",
+    "subcategory": "affirmative",
+    "prompt": "She is said ___ the best surgeon in the country.",
+    "options": [
+      "to be",
+      "to have been",
+      "being",
+      "to have"
+    ],
+    "answer": "to be"
+  },
+  {
+    "level": "B2",
+    "category": "Complex Passive",
+    "subcategory": "affirmative",
+    "prompt": "The artifact is thought ___ over 2000 years old.",
+    "options": [
+      "to be",
+      "to have been",
+      "being",
+      "been"
+    ],
+    "answer": "to be"
+  },
+  {
+    "level": "B2",
+    "category": "Complex Passive",
+    "subcategory": "affirmative",
+    "prompt": "The documents are believed ___ destroyed in the fire.",
+    "options": [
+      "to have been",
+      "to be",
+      "being",
+      "having been"
+    ],
+    "answer": "to have been"
+  },
+  {
+    "level": "B2",
+    "category": "Complex Passive",
+    "subcategory": "affirmative",
+    "prompt": "They are expected ___ a decision by Friday.",
+    "options": [
+      "to make",
+      "to have made",
+      "making",
+      "having made"
+    ],
+    "answer": "to make"
+  },
+  {
+    "level": "B2",
+    "category": "Complex Passive",
+    "subcategory": "affirmative",
+    "prompt": "He is assumed ___ fully aware of the risks involved.",
+    "options": [
+      "to be",
+      "to have been",
+      "being",
+      "having been"
+    ],
+    "answer": "to be"
+  },
+  {
+    "level": "B2",
+    "category": "Complex Passive",
+    "subcategory": "affirmative",
+    "prompt": "The stolen goods are thought ___ hidden somewhere in the city.",
+    "options": [
+      "to be",
+      "to have been",
+      "being",
+      "having been"
+    ],
+    "answer": "to be"
+  },
+  {
+    "level": "B2",
+    "category": "Complex Passive",
+    "subcategory": "affirmative",
+    "prompt": "The senator is reported ___ plans to resign next month.",
+    "options": [
+      "to have",
+      "to be having",
+      "having",
+      "to have had"
+    ],
+    "answer": "to have"
+  },
+  {
+    "level": "B2",
+    "category": "Complex Passive",
+    "subcategory": "interrogative",
+    "prompt": "Is the earthquake damage estimated ___ cost billions to repair?",
+    "options": [
+      "to",
+      "to have",
+      "having",
+      "for having"
+    ],
+    "answer": "to"
+  },
+  {
+    "level": "C2",
+    "category": "Comparison Clauses",
+    "subcategory": "affirmative",
+    "prompt": "___ you practice, the more fluent you become.",
+    "options": [
+      "The more",
+      "The most",
+      "More",
+      "As much"
+    ],
+    "answer": "The more"
+  },
+  {
+    "level": "C2",
+    "category": "Comparison Clauses",
+    "subcategory": "affirmative",
+    "prompt": "No sooner had she sat down ___ the phone rang.",
+    "options": [
+      "than",
+      "when",
+      "as",
+      "that"
+    ],
+    "answer": "than"
+  },
+  {
+    "level": "C2",
+    "category": "Comparison Clauses",
+    "subcategory": "affirmative",
+    "prompt": "He is not so much a teacher ___ a mentor.",
+    "options": [
+      "as",
+      "than",
+      "but",
+      "like"
+    ],
+    "answer": "as"
+  },
+  {
+    "level": "C2",
+    "category": "Comparison Clauses",
+    "subcategory": "affirmative",
+    "prompt": "She earns twice as much ___ her colleague does.",
+    "options": [
+      "as",
+      "than",
+      "like",
+      "that"
+    ],
+    "answer": "as"
+  },
+  {
+    "level": "C2",
+    "category": "Comparison Clauses",
+    "subcategory": "affirmative",
+    "prompt": "The more you worry, ___ you achieve.",
+    "options": [
+      "the less",
+      "the least",
+      "less",
+      "fewer"
+    ],
+    "answer": "the less"
+  },
+  {
+    "level": "C2",
+    "category": "Comparison Clauses",
+    "subcategory": "affirmative",
+    "prompt": "Scarcely had they arrived ___ it began to rain heavily.",
+    "options": [
+      "when",
+      "than",
+      "as",
+      "that"
+    ],
+    "answer": "when"
+  },
+  {
+    "level": "C2",
+    "category": "Comparison Clauses",
+    "subcategory": "affirmative",
+    "prompt": "___ complex the problem, the longer it will take to solve.",
+    "options": [
+      "The more",
+      "The most",
+      "More",
+      "Most"
+    ],
+    "answer": "The more"
+  },
+  {
+    "level": "C2",
+    "category": "Comparison Clauses",
+    "subcategory": "affirmative",
+    "prompt": "He ran faster ___ any other athlete in the competition.",
+    "options": [
+      "than",
+      "as",
+      "like",
+      "that"
+    ],
+    "answer": "than"
+  },
+  {
+    "level": "C1",
+    "category": "Concessive Clauses",
+    "subcategory": "affirmative",
+    "prompt": "She passed the exam ___ not studying much.",
+    "options": [
+      "despite",
+      "although",
+      "however",
+      "even if"
+    ],
+    "answer": "despite"
+  },
+  {
+    "level": "C1",
+    "category": "Concessive Clauses",
+    "subcategory": "affirmative",
+    "prompt": "___ being exhausted, he finished the report on time.",
+    "options": [
+      "Despite",
+      "Although",
+      "Even though",
+      "Nevertheless"
+    ],
+    "answer": "Despite"
+  },
+  {
+    "level": "C1",
+    "category": "Concessive Clauses",
+    "subcategory": "affirmative",
+    "prompt": "He went to work ___ feeling ill.",
+    "options": [
+      "despite",
+      "although",
+      "even though",
+      "in order to"
+    ],
+    "answer": "despite"
+  },
+  {
+    "level": "C1",
+    "category": "Concessive Clauses",
+    "subcategory": "affirmative",
+    "prompt": "She achieved her goal ___ all the obstacles she faced.",
+    "options": [
+      "despite",
+      "although",
+      "however",
+      "whereas"
+    ],
+    "answer": "despite"
+  },
+  {
+    "level": "C1",
+    "category": "Concessive Clauses",
+    "subcategory": "affirmative",
+    "prompt": "___ his best efforts, he couldn't convince the board.",
+    "options": [
+      "Despite",
+      "Although",
+      "Because of",
+      "Due to"
+    ],
+    "answer": "Despite"
+  },
+  {
+    "level": "C1",
+    "category": "Concessive Clauses",
+    "subcategory": "affirmative",
+    "prompt": "She gave a great speech ___ she was nervous.",
+    "options": [
+      "although",
+      "despite",
+      "in spite of",
+      "due to"
+    ],
+    "answer": "although"
+  },
+  {
+    "level": "C1",
+    "category": "Concessive Clauses",
+    "subcategory": "affirmative",
+    "prompt": "The game continued ___ the heavy rain.",
+    "options": [
+      "despite",
+      "although",
+      "nevertheless",
+      "even"
+    ],
+    "answer": "despite"
+  },
+  {
+    "level": "C1",
+    "category": "Hypothetical Past",
+    "subcategory": "affirmative",
+    "prompt": "I wish I ___ harder for the exam — I completely failed.",
+    "options": [
+      "had studied",
+      "studied",
+      "have studied",
+      "would study"
+    ],
+    "answer": "had studied"
+  },
+  {
+    "level": "C1",
+    "category": "Hypothetical Past",
+    "subcategory": "affirmative",
+    "prompt": "If only they ___ us earlier — we could have helped.",
+    "options": [
+      "had warned",
+      "warned",
+      "have warned",
+      "would warn"
+    ],
+    "answer": "had warned"
+  },
+  {
+    "level": "C1",
+    "category": "Hypothetical Past",
+    "subcategory": "affirmative",
+    "prompt": "She wishes she ___ the job offer last year.",
+    "options": [
+      "had accepted",
+      "accepted",
+      "has accepted",
+      "would accept"
+    ],
+    "answer": "had accepted"
+  },
+  {
+    "level": "C1",
+    "category": "Hypothetical Past",
+    "subcategory": "negative",
+    "prompt": "I wish I ___ so much money on that course.",
+    "options": [
+      "hadn't spent",
+      "didn't spend",
+      "haven't spent",
+      "wouldn't spend"
+    ],
+    "answer": "hadn't spent"
+  },
+  {
+    "level": "C1",
+    "category": "Hypothetical Past",
+    "subcategory": "affirmative",
+    "prompt": "If only I ___ what I know now back then.",
+    "options": [
+      "had known",
+      "knew",
+      "have known",
+      "would know"
+    ],
+    "answer": "had known"
+  },
+  {
+    "level": "C1",
+    "category": "Hypothetical Past",
+    "subcategory": "affirmative",
+    "prompt": "He wishes he ___ up earlier — he missed the flight.",
+    "options": [
+      "had woken",
+      "woke",
+      "has woken",
+      "would wake"
+    ],
+    "answer": "had woken"
+  },
+  {
+    "level": "C1",
+    "category": "Hypothetical Past",
+    "subcategory": "affirmative",
+    "prompt": "If only we ___ the map — we got completely lost.",
+    "options": [
+      "had brought",
+      "brought",
+      "have brought",
+      "would bring"
+    ],
+    "answer": "had brought"
+  },
+  {
+    "level": "C1",
+    "category": "Hypothetical Past",
+    "subcategory": "affirmative",
+    "prompt": "She wishes she ___ more time with her family when she had the chance.",
+    "options": [
+      "had spent",
+      "spent",
+      "has spent",
+      "would spend"
+    ],
+    "answer": "had spent"
+  },
+  {
+    "level": "C2",
+    "category": "Implied Conditionals",
+    "subcategory": "affirmative",
+    "prompt": "We left early; ___, we would have missed the train.",
+    "options": [
+      "otherwise",
+      "therefore",
+      "however",
+      "moreover"
+    ],
+    "answer": "otherwise"
+  },
+  {
+    "level": "C2",
+    "category": "Implied Conditionals",
+    "subcategory": "affirmative",
+    "prompt": "___ your help, I would have failed completely.",
+    "options": [
+      "But for",
+      "Despite",
+      "Because of",
+      "In spite of"
+    ],
+    "answer": "But for"
+  },
+  {
+    "level": "C2",
+    "category": "Implied Conditionals",
+    "subcategory": "affirmative",
+    "prompt": "___ more time, we could have done a much better job.",
+    "options": [
+      "Given",
+      "Having",
+      "After",
+      "Despite"
+    ],
+    "answer": "Given"
+  },
+  {
+    "level": "C2",
+    "category": "Implied Conditionals",
+    "subcategory": "affirmative",
+    "prompt": "Study now; ___, you will regret it during the exam.",
+    "options": [
+      "otherwise",
+      "therefore",
+      "however",
+      "besides"
+    ],
+    "answer": "otherwise"
+  },
+  {
+    "level": "C2",
+    "category": "Implied Conditionals",
+    "subcategory": "affirmative",
+    "prompt": "___ his connections, he would never have got that job.",
+    "options": [
+      "But for",
+      "Because of",
+      "Despite",
+      "Although"
+    ],
+    "answer": "But for"
+  },
+  {
+    "level": "C2",
+    "category": "Implied Conditionals",
+    "subcategory": "affirmative",
+    "prompt": "Hurry up; ___, we will miss the last bus.",
+    "options": [
+      "otherwise",
+      "therefore",
+      "however",
+      "besides"
+    ],
+    "answer": "otherwise"
+  },
+  {
+    "level": "C2",
+    "category": "Implied Conditionals",
+    "subcategory": "affirmative",
+    "prompt": "___ better preparation, the team might have won the championship.",
+    "options": [
+      "Given",
+      "Having",
+      "Despite",
+      "Although"
+    ],
+    "answer": "Given"
+  },
+  {
+    "level": "C2",
+    "category": "Implied Conditionals",
+    "subcategory": "affirmative",
+    "prompt": "She would have been promoted, ___ she made a critical error at the last moment.",
+    "options": [
+      "but",
+      "however",
+      "although",
+      "otherwise"
+    ],
+    "answer": "but"
+  },
+  {
+    "level": "C2",
+    "category": "Lexical Patterns",
+    "subcategory": "affirmative",
+    "prompt": "The merger will ___ place next quarter.",
+    "options": [
+      "take",
+      "make",
+      "do",
+      "have"
+    ],
+    "answer": "take"
+  },
+  {
+    "level": "C2",
+    "category": "Lexical Patterns",
+    "subcategory": "negative",
+    "prompt": "His argument didn't ___ any weight with the committee.",
+    "options": [
+      "carry",
+      "have",
+      "make",
+      "bring"
+    ],
+    "answer": "carry"
+  },
+  {
+    "level": "C2",
+    "category": "Lexical Patterns",
+    "subcategory": "affirmative",
+    "prompt": "The new regulation comes ___ effect next month.",
+    "options": [
+      "into",
+      "in",
+      "to",
+      "under"
+    ],
+    "answer": "into"
+  },
+  {
+    "level": "C2",
+    "category": "Lexical Patterns",
+    "subcategory": "affirmative",
+    "prompt": "The crisis was brought ___ by years of poor financial planning.",
+    "options": [
+      "about",
+      "out",
+      "on",
+      "up"
+    ],
+    "answer": "about"
+  },
+  {
+    "level": "C2",
+    "category": "Lexical Patterns",
+    "subcategory": "affirmative",
+    "prompt": "His dedication goes ___ saying — everyone admires him.",
+    "options": [
+      "without",
+      "beyond",
+      "past",
+      "through"
+    ],
+    "answer": "without"
+  },
+  {
+    "level": "C2",
+    "category": "Lexical Patterns",
+    "subcategory": "affirmative",
+    "prompt": "The board decided to ___ a blind eye to the irregularities.",
+    "options": [
+      "turn",
+      "make",
+      "cast",
+      "draw"
+    ],
+    "answer": "turn"
+  },
+  {
+    "level": "C2",
+    "category": "Lexical Patterns",
+    "subcategory": "affirmative",
+    "prompt": "She ___ the blame for the entire project's failure.",
+    "options": [
+      "took",
+      "made",
+      "carried",
+      "did"
+    ],
+    "answer": "took"
+  },
+  {
+    "level": "C2",
+    "category": "Mandative Subjunctive",
+    "subcategory": "affirmative",
+    "prompt": "It is essential that every employee ___ the meeting.",
+    "options": [
+      "attend",
+      "attends",
+      "attended",
+      "is attending"
+    ],
+    "answer": "attend"
+  },
+  {
+    "level": "C2",
+    "category": "Mandative Subjunctive",
+    "subcategory": "affirmative",
+    "prompt": "The doctor recommended that she ___ more exercise.",
+    "options": [
+      "get",
+      "gets",
+      "got",
+      "is getting"
+    ],
+    "answer": "get"
+  },
+  {
+    "level": "C2",
+    "category": "Mandative Subjunctive",
+    "subcategory": "affirmative",
+    "prompt": "The committee insists that the report ___ by Friday.",
+    "options": [
+      "be submitted",
+      "is submitted",
+      "was submitted",
+      "submit"
+    ],
+    "answer": "be submitted"
+  },
+  {
+    "level": "C2",
+    "category": "Mandative Subjunctive",
+    "subcategory": "affirmative",
+    "prompt": "It is vital that he ___ the deadline.",
+    "options": [
+      "meet",
+      "meets",
+      "met",
+      "is meeting"
+    ],
+    "answer": "meet"
+  },
+  {
+    "level": "C2",
+    "category": "Mandative Subjunctive",
+    "subcategory": "affirmative",
+    "prompt": "It is crucial that the information ___ confidential.",
+    "options": [
+      "remain",
+      "remains",
+      "remained",
+      "is remaining"
+    ],
+    "answer": "remain"
+  },
+  {
+    "level": "C2",
+    "category": "Mandative Subjunctive",
+    "subcategory": "affirmative",
+    "prompt": "We demand that the company ___ a full refund.",
+    "options": [
+      "provide",
+      "provides",
+      "provided",
+      "is providing"
+    ],
+    "answer": "provide"
+  },
+  {
+    "level": "C2",
+    "category": "Mandative Subjunctive",
+    "subcategory": "affirmative",
+    "prompt": "It is important that he ___ the consequences of his actions.",
+    "options": [
+      "understand",
+      "understands",
+      "understood",
+      "is understanding"
+    ],
+    "answer": "understand"
+  },
+  {
+    "level": "B2",
+    "category": "Mixed Conditional",
+    "subcategory": "affirmative",
+    "prompt": "If I ___ medicine, I would be a doctor now.",
+    "options": [
+      "had studied",
+      "studied",
+      "have studied",
+      "would study"
+    ],
+    "answer": "had studied"
+  },
+  {
+    "level": "B2",
+    "category": "Mixed Conditional",
+    "subcategory": "affirmative",
+    "prompt": "If she ___ the job offer, she would have money now.",
+    "options": [
+      "had taken",
+      "took",
+      "has taken",
+      "would take"
+    ],
+    "answer": "had taken"
+  },
+  {
+    "level": "B2",
+    "category": "Mixed Conditional",
+    "subcategory": "negative",
+    "prompt": "I ___ so tired now if I had slept properly last night.",
+    "options": [
+      "wouldn't be",
+      "wouldn't have been",
+      "won't be",
+      "wasn't"
+    ],
+    "answer": "wouldn't be"
+  },
+  {
+    "level": "B2",
+    "category": "Mixed Conditional",
+    "subcategory": "affirmative",
+    "prompt": "If he ___ born in England, he might speak better English now.",
+    "options": [
+      "had been",
+      "was",
+      "were",
+      "has been"
+    ],
+    "answer": "had been"
+  },
+  {
+    "level": "B2",
+    "category": "Mixed Conditional",
+    "subcategory": "affirmative",
+    "prompt": "She ___ happier now if she had chosen a different career.",
+    "options": [
+      "would be",
+      "would have been",
+      "will be",
+      "is"
+    ],
+    "answer": "would be"
+  },
+  {
+    "level": "B2",
+    "category": "Mixed Conditional",
+    "subcategory": "negative",
+    "prompt": "If we ___ the map, we wouldn't be lost now.",
+    "options": [
+      "had brought",
+      "brought",
+      "have brought",
+      "bring"
+    ],
+    "answer": "had brought"
+  },
+  {
+    "level": "B2",
+    "category": "Mixed Conditional",
+    "subcategory": "negative",
+    "prompt": "He ___ have a headache now if he hadn't drunk so much last night.",
+    "options": [
+      "wouldn't",
+      "wouldn't have",
+      "won't",
+      "doesn't"
+    ],
+    "answer": "wouldn't"
+  },
+  {
+    "level": "B1",
+    "category": "Modal Perfect",
+    "subcategory": "affirmative",
+    "prompt": "You ___ told me earlier — I had absolutely no idea!",
+    "options": [
+      "should have",
+      "must have",
+      "could have",
+      "might have"
+    ],
+    "answer": "should have"
+  },
+  {
+    "level": "B1",
+    "category": "Modal Perfect",
+    "subcategory": "affirmative",
+    "prompt": "She's not here yet. She ___ missed the bus.",
+    "options": [
+      "must have",
+      "should have",
+      "could have",
+      "would have"
+    ],
+    "answer": "must have"
+  },
+  {
+    "level": "B1",
+    "category": "Modal Perfect",
+    "subcategory": "negative",
+    "prompt": "I ___ done that — it was really dangerous!",
+    "options": [
+      "shouldn't have",
+      "mustn't have",
+      "couldn't have",
+      "mightn't have"
+    ],
+    "answer": "shouldn't have"
+  },
+  {
+    "level": "B1",
+    "category": "Modal Perfect",
+    "subcategory": "affirmative",
+    "prompt": "He ___ finished by now — it was such a simple task.",
+    "options": [
+      "should have",
+      "must have",
+      "could have",
+      "might have"
+    ],
+    "answer": "should have"
+  },
+  {
+    "level": "B1",
+    "category": "Modal Perfect",
+    "subcategory": "negative",
+    "prompt": "They ___ seen us — they didn't react at all.",
+    "options": [
+      "can't have",
+      "mustn't have",
+      "shouldn't have",
+      "wouldn't have"
+    ],
+    "answer": "can't have"
+  },
+  {
+    "level": "B1",
+    "category": "Modal Perfect",
+    "subcategory": "affirmative",
+    "prompt": "She's very pale. She ___ been ill recently.",
+    "options": [
+      "must have",
+      "should have",
+      "could have",
+      "would have"
+    ],
+    "answer": "must have"
+  },
+  {
+    "level": "B1",
+    "category": "Modal Perfect",
+    "subcategory": "affirmative",
+    "prompt": "I ___ brought a coat — it's absolutely freezing outside!",
+    "options": [
+      "should have",
+      "must have",
+      "could have",
+      "might have"
+    ],
+    "answer": "should have"
+  },
+  {
+    "level": "B1",
+    "category": "Modal Perfect",
+    "subcategory": "affirmative",
+    "prompt": "He passed the exam easily. He ___ studied very hard.",
+    "options": [
+      "must have",
+      "should have",
+      "could have",
+      "might have"
+    ],
+    "answer": "must have"
+  },
+  {
+    "level": "A1",
+    "category": "Negatives",
+    "subcategory": "negative",
+    "prompt": "She ___ like coffee — she always drinks tea.",
+    "options": [
+      "doesn't",
+      "don't",
+      "isn't",
+      "aren't"
+    ],
+    "answer": "doesn't"
+  },
+  {
+    "level": "A1",
+    "category": "Negatives",
+    "subcategory": "negative",
+    "prompt": "They ___ at home right now.",
+    "options": [
+      "aren't",
+      "isn't",
+      "don't",
+      "doesn't"
+    ],
+    "answer": "aren't"
+  },
+  {
+    "level": "A1",
+    "category": "Negatives",
+    "subcategory": "negative",
+    "prompt": "He ___ have a bicycle — he always walks.",
+    "options": [
+      "doesn't",
+      "don't",
+      "isn't",
+      "hasn't"
+    ],
+    "answer": "doesn't"
+  },
+  {
+    "level": "A1",
+    "category": "Negatives",
+    "subcategory": "negative",
+    "prompt": "We ___ happy with the results.",
+    "options": [
+      "aren't",
+      "isn't",
+      "don't",
+      "doesn't"
+    ],
+    "answer": "aren't"
+  },
+  {
+    "level": "A1",
+    "category": "Negatives",
+    "subcategory": "negative",
+    "prompt": "She ___ a student — she works in a bank.",
+    "options": [
+      "isn't",
+      "aren't",
+      "doesn't",
+      "don't"
+    ],
+    "answer": "isn't"
+  },
+  {
+    "level": "A1",
+    "category": "Negatives",
+    "subcategory": "negative",
+    "prompt": "My parents ___ live in Moscow.",
+    "options": [
+      "don't",
+      "doesn't",
+      "aren't",
+      "isn't"
+    ],
+    "answer": "don't"
+  },
+  {
+    "level": "A1",
+    "category": "Negatives",
+    "subcategory": "negative",
+    "prompt": "The shop ___ open on Sundays.",
+    "options": [
+      "isn't",
+      "aren't",
+      "doesn't",
+      "don't"
+    ],
+    "answer": "isn't"
+  },
+  {
+    "level": "C1",
+    "category": "Nominal Clauses",
+    "subcategory": "affirmative",
+    "prompt": "___ he refused to help was very disappointing.",
+    "options": [
+      "That",
+      "What",
+      "Which",
+      "It"
+    ],
+    "answer": "That"
+  },
+  {
+    "level": "C1",
+    "category": "Nominal Clauses",
+    "subcategory": "affirmative",
+    "prompt": "I don't understand ___ he is trying to say.",
+    "options": [
+      "what",
+      "that",
+      "which",
+      "how"
+    ],
+    "answer": "what"
+  },
+  {
+    "level": "C1",
+    "category": "Nominal Clauses",
+    "subcategory": "affirmative",
+    "prompt": "The problem is ___ nobody warned us in advance.",
+    "options": [
+      "that",
+      "what",
+      "which",
+      "how"
+    ],
+    "answer": "that"
+  },
+  {
+    "level": "C1",
+    "category": "Nominal Clauses",
+    "subcategory": "affirmative",
+    "prompt": "___ she said really surprised everyone at the meeting.",
+    "options": [
+      "What",
+      "That",
+      "Which",
+      "How"
+    ],
+    "answer": "What"
+  },
+  {
+    "level": "C1",
+    "category": "Nominal Clauses",
+    "subcategory": "affirmative",
+    "prompt": "We need to discuss ___ we should do next.",
+    "options": [
+      "what",
+      "that",
+      "which",
+      "where"
+    ],
+    "answer": "what"
+  },
+  {
+    "level": "C1",
+    "category": "Nominal Clauses",
+    "subcategory": "affirmative",
+    "prompt": "It is clear ___ the project will be delayed significantly.",
+    "options": [
+      "that",
+      "what",
+      "which",
+      "how"
+    ],
+    "answer": "that"
+  },
+  {
+    "level": "C1",
+    "category": "Nominal Clauses",
+    "subcategory": "affirmative",
+    "prompt": "___ happens next depends entirely on the weather.",
+    "options": [
+      "What",
+      "That",
+      "Which",
+      "However"
+    ],
+    "answer": "What"
+  },
+  {
+    "level": "C1",
+    "category": "Nominal Clauses",
+    "subcategory": "interrogative",
+    "prompt": "Nobody knows ___ the company will survive the crisis.",
+    "options": [
+      "whether",
+      "that",
+      "which",
+      "however"
+    ],
+    "answer": "whether"
+  },
+  {
+    "level": "A1",
+    "category": "Prepositions",
+    "subcategory": "affirmative",
+    "prompt": "The exam is ___ Friday morning.",
+    "options": [
+      "on",
+      "in",
+      "at",
+      "for"
+    ],
+    "answer": "on"
+  },
+  {
+    "level": "A1",
+    "category": "Prepositions",
+    "subcategory": "affirmative",
+    "prompt": "She arrived ___ midnight.",
+    "options": [
+      "at",
+      "in",
+      "on",
+      "by"
+    ],
+    "answer": "at"
+  },
+  {
+    "level": "A1",
+    "category": "Prepositions",
+    "subcategory": "affirmative",
+    "prompt": "I was born ___ 1998.",
+    "options": [
+      "in",
+      "on",
+      "at",
+      "by"
+    ],
+    "answer": "in"
+  },
+  {
+    "level": "A1",
+    "category": "Prepositions",
+    "subcategory": "affirmative",
+    "prompt": "We'll meet ___ the café at noon.",
+    "options": [
+      "at",
+      "in",
+      "on",
+      "to"
+    ],
+    "answer": "at"
+  },
+  {
+    "level": "A1",
+    "category": "Prepositions",
+    "subcategory": "affirmative",
+    "prompt": "He has been waiting ___ two hours.",
+    "options": [
+      "for",
+      "since",
+      "during",
+      "in"
+    ],
+    "answer": "for"
+  },
+  {
+    "level": "A1",
+    "category": "Prepositions",
+    "subcategory": "affirmative",
+    "prompt": "She moved to Paris ___ 2020.",
+    "options": [
+      "in",
+      "on",
+      "at",
+      "by"
+    ],
+    "answer": "in"
+  },
+  {
+    "level": "A1",
+    "category": "Prepositions",
+    "subcategory": "affirmative",
+    "prompt": "The train leaves ___ 6:15.",
+    "options": [
+      "at",
+      "in",
+      "on",
+      "by"
+    ],
+    "answer": "at"
+  },
+  {
+    "level": "A1",
+    "category": "Prepositions",
+    "subcategory": "affirmative",
+    "prompt": "I'll call you ___ the morning.",
+    "options": [
+      "in",
+      "on",
+      "at",
+      "by"
+    ],
+    "answer": "in"
+  },
+  {
+    "level": "A1",
+    "category": "Pronouns",
+    "subcategory": "affirmative",
+    "prompt": "The book belongs to Anna — it is ___.",
+    "options": [
+      "hers",
+      "her",
+      "she",
+      "herself"
+    ],
+    "answer": "hers"
+  },
+  {
+    "level": "A1",
+    "category": "Pronouns",
+    "subcategory": "affirmative",
+    "prompt": "He gave ___ a present for my birthday.",
+    "options": [
+      "me",
+      "my",
+      "I",
+      "mine"
+    ],
+    "answer": "me"
+  },
+  {
+    "level": "A1",
+    "category": "Pronouns",
+    "subcategory": "affirmative",
+    "prompt": "I forgot my umbrella. Can I borrow ___?",
+    "options": [
+      "yours",
+      "your",
+      "you",
+      "yourself"
+    ],
+    "answer": "yours"
+  },
+  {
+    "level": "A1",
+    "category": "Pronouns",
+    "subcategory": "affirmative",
+    "prompt": "___ name is Tom and he is from Canada.",
+    "options": [
+      "His",
+      "He",
+      "Him",
+      "Himself"
+    ],
+    "answer": "His"
+  },
+  {
+    "level": "A1",
+    "category": "Pronouns",
+    "subcategory": "affirmative",
+    "prompt": "We painted the fence ___. Nobody helped us.",
+    "options": [
+      "ourselves",
+      "us",
+      "our",
+      "ours"
+    ],
+    "answer": "ourselves"
+  },
+  {
+    "level": "A1",
+    "category": "Pronouns",
+    "subcategory": "affirmative",
+    "prompt": "The cat cleaned ___ after eating.",
+    "options": [
+      "itself",
+      "himself",
+      "herself",
+      "themselves"
+    ],
+    "answer": "itself"
+  },
+  {
+    "level": "A1",
+    "category": "Pronouns",
+    "subcategory": "interrogative",
+    "prompt": "___ bag is this? It's not mine.",
+    "options": [
+      "Whose",
+      "Who",
+      "Which",
+      "What"
+    ],
+    "answer": "Whose"
+  },
+  {
+    "level": "A1",
+    "category": "Pronouns",
+    "subcategory": "affirmative",
+    "prompt": "Look at them — ___ are dancing in the street!",
+    "options": [
+      "they",
+      "them",
+      "their",
+      "theirs"
+    ],
+    "answer": "they"
+  },
+  {
+    "level": "C1",
+    "category": "Reason Clauses",
+    "subcategory": "affirmative",
+    "prompt": "She was absent from work ___ illness.",
+    "options": [
+      "due to",
+      "because",
+      "although",
+      "so that"
+    ],
+    "answer": "due to"
+  },
+  {
+    "level": "C1",
+    "category": "Reason Clauses",
+    "subcategory": "affirmative",
+    "prompt": "___ it was raining heavily, we stayed inside.",
+    "options": [
+      "Because",
+      "Despite",
+      "Although",
+      "However"
+    ],
+    "answer": "Because"
+  },
+  {
+    "level": "C1",
+    "category": "Reason Clauses",
+    "subcategory": "affirmative",
+    "prompt": "He resigned ___ disagreements with the management.",
+    "options": [
+      "owing to",
+      "despite",
+      "although",
+      "so that"
+    ],
+    "answer": "owing to"
+  },
+  {
+    "level": "C1",
+    "category": "Reason Clauses",
+    "subcategory": "affirmative",
+    "prompt": "The match was postponed ___ poor weather conditions.",
+    "options": [
+      "due to",
+      "despite",
+      "although",
+      "however"
+    ],
+    "answer": "due to"
+  },
+  {
+    "level": "C1",
+    "category": "Reason Clauses",
+    "subcategory": "affirmative",
+    "prompt": "___ the project was so successful, the team received a bonus.",
+    "options": [
+      "Since",
+      "Despite",
+      "Although",
+      "Unless"
+    ],
+    "answer": "Since"
+  },
+  {
+    "level": "C1",
+    "category": "Reason Clauses",
+    "subcategory": "affirmative",
+    "prompt": "She was nervous ___ it was her first public speech.",
+    "options": [
+      "because",
+      "despite",
+      "although",
+      "however"
+    ],
+    "answer": "because"
+  },
+  {
+    "level": "C1",
+    "category": "Reason Clauses",
+    "subcategory": "affirmative",
+    "prompt": "The road was closed ___ an accident earlier that morning.",
+    "options": [
+      "owing to",
+      "despite",
+      "although",
+      "moreover"
+    ],
+    "answer": "owing to"
+  },
+  {
+    "level": "C1",
+    "category": "Stative Verbs",
+    "subcategory": "affirmative",
+    "prompt": "The flowers ___ wonderful after the rain.",
+    "options": [
+      "smell",
+      "are smelling",
+      "smells",
+      "is smelling"
+    ],
+    "answer": "smell"
+  },
+  {
+    "level": "C1",
+    "category": "Stative Verbs",
+    "subcategory": "affirmative",
+    "prompt": "She ___ coffee more than tea.",
+    "options": [
+      "prefers",
+      "is preferring",
+      "prefer",
+      "is prefer"
+    ],
+    "answer": "prefers"
+  },
+  {
+    "level": "C1",
+    "category": "Stative Verbs",
+    "subcategory": "affirmative",
+    "prompt": "I ___ a headache — can I sit down, please?",
+    "options": [
+      "have",
+      "am having",
+      "has",
+      "am have"
+    ],
+    "answer": "have"
+  },
+  {
+    "level": "C1",
+    "category": "Stative Verbs",
+    "subcategory": "affirmative",
+    "prompt": "This fabric ___ so soft and comfortable.",
+    "options": [
+      "feels",
+      "is feeling",
+      "feel",
+      "feeling"
+    ],
+    "answer": "feels"
+  },
+  {
+    "level": "C1",
+    "category": "Stative Verbs",
+    "subcategory": "affirmative",
+    "prompt": "He ___ three languages fluently.",
+    "options": [
+      "knows",
+      "is knowing",
+      "know",
+      "is know"
+    ],
+    "answer": "knows"
+  },
+  {
+    "level": "C1",
+    "category": "Stative Verbs",
+    "subcategory": "affirmative",
+    "prompt": "The milk ___ sour — don't drink it.",
+    "options": [
+      "smells",
+      "is smelling",
+      "smell",
+      "is smell"
+    ],
+    "answer": "smells"
+  },
+  {
+    "level": "C1",
+    "category": "Stative Verbs",
+    "subcategory": "affirmative",
+    "prompt": "She ___ a big house in the countryside.",
+    "options": [
+      "owns",
+      "is owning",
+      "own",
+      "is own"
+    ],
+    "answer": "owns"
+  },
+  {
+    "level": "C1",
+    "category": "Stative Verbs",
+    "subcategory": "affirmative",
+    "prompt": "We ___ that the project will be a great success.",
+    "options": [
+      "believe",
+      "are believing",
+      "believes",
+      "is believing"
+    ],
+    "answer": "believe"
+  },
+  {
+    "level": "C2",
+    "category": "Subject-Verb Agreement",
+    "subcategory": "negative",
+    "prompt": "Neither of the answers ___ correct.",
+    "options": [
+      "is",
+      "are",
+      "was",
+      "were"
+    ],
+    "answer": "is"
+  },
+  {
+    "level": "C2",
+    "category": "Subject-Verb Agreement",
+    "subcategory": "affirmative",
+    "prompt": "Everyone ___ encouraged to participate in the project.",
+    "options": [
+      "is",
+      "are",
+      "was",
+      "were"
+    ],
+    "answer": "is"
+  },
+  {
+    "level": "C2",
+    "category": "Subject-Verb Agreement",
+    "subcategory": "affirmative",
+    "prompt": "The news ___ always interesting to read.",
+    "options": [
+      "is",
+      "are",
+      "was",
+      "were"
+    ],
+    "answer": "is"
+  },
+  {
+    "level": "C2",
+    "category": "Subject-Verb Agreement",
+    "subcategory": "affirmative",
+    "prompt": "Each of the reports ___ reviewed by the manager yesterday.",
+    "options": [
+      "was",
+      "were",
+      "is",
+      "are"
+    ],
+    "answer": "was"
+  },
+  {
+    "level": "C2",
+    "category": "Subject-Verb Agreement",
+    "subcategory": "affirmative",
+    "prompt": "A number of errors ___ found in the document.",
+    "options": [
+      "were",
+      "was",
+      "is",
+      "are"
+    ],
+    "answer": "were"
+  },
+  {
+    "level": "C2",
+    "category": "Subject-Verb Agreement",
+    "subcategory": "negative",
+    "prompt": "Neither the president nor the ministers ___ aware of the issue.",
+    "options": [
+      "were",
+      "was",
+      "is",
+      "are"
+    ],
+    "answer": "were"
+  },
+  {
+    "level": "C2",
+    "category": "Subject-Verb Agreement",
+    "subcategory": "affirmative",
+    "prompt": "The majority of the work ___ completed ahead of schedule.",
+    "options": [
+      "was",
+      "were",
+      "is",
+      "are"
+    ],
+    "answer": "was"
+  },
+  {
+    "level": "C2",
+    "category": "Subject-Verb Agreement",
+    "subcategory": "affirmative",
+    "prompt": "Either the manager or the employees ___ responsible for the error.",
+    "options": [
+      "are",
+      "is",
+      "were",
+      "was"
+    ],
+    "answer": "are"
+  },
+  {
+    "level": "C2",
+    "category": "Temporal Inversion",
+    "subcategory": "affirmative",
+    "prompt": "Hardly ___ sat down when the alarm went off.",
+    "options": [
+      "had she",
+      "she had",
+      "did she",
+      "was she"
+    ],
+    "answer": "had she"
+  },
+  {
+    "level": "C2",
+    "category": "Temporal Inversion",
+    "subcategory": "affirmative",
+    "prompt": "Not until he retired ___ he able to travel freely.",
+    "options": [
+      "was",
+      "did",
+      "had",
+      "were"
+    ],
+    "answer": "was"
+  },
+  {
+    "level": "C2",
+    "category": "Temporal Inversion",
+    "subcategory": "affirmative",
+    "prompt": "Only when the results ___ announced did they finally celebrate.",
+    "options": [
+      "were",
+      "are",
+      "have been",
+      "had been"
+    ],
+    "answer": "were"
+  },
+  {
+    "level": "C2",
+    "category": "Temporal Inversion",
+    "subcategory": "affirmative",
+    "prompt": "Scarcely ___ fallen asleep when the baby started crying.",
+    "options": [
+      "had I",
+      "I had",
+      "did I",
+      "was I"
+    ],
+    "answer": "had I"
+  },
+  {
+    "level": "C2",
+    "category": "Temporal Inversion",
+    "subcategory": "negative",
+    "prompt": "Not until the last minute ___ they admit the mistake.",
+    "options": [
+      "did",
+      "had",
+      "were",
+      "have"
+    ],
+    "answer": "did"
+  },
+  {
+    "level": "C2",
+    "category": "Temporal Inversion",
+    "subcategory": "affirmative",
+    "prompt": "Seldom ___ seen such dedication from a young student.",
+    "options": [
+      "have I",
+      "I have",
+      "did I",
+      "I did"
+    ],
+    "answer": "have I"
+  },
+  {
+    "level": "C2",
+    "category": "Temporal Inversion",
+    "subcategory": "affirmative",
+    "prompt": "Only after working for months ___ she finally succeed.",
+    "options": [
+      "did",
+      "had",
+      "was",
+      "were"
+    ],
+    "answer": "did"
   }
 ]
