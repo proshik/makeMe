@@ -178,6 +178,10 @@ func (b *Bot) handleLearnCat(ctx context.Context, tgBot *bot.Bot, chatID int64, 
 	questions := b.loadLearnSession(ctx, cat.Name)
 	total := len(questions)
 
+	if u := UserFromContext(ctx); u != nil {
+		slog.Info("learn category opened", "user_id", u.ID, "level", level, "category", cat.Name, "total_questions", total)
+	}
+
 	var theoryText string
 	if cat.Explanation != "" {
 		theoryText = fmt.Sprintf("📗 <b>%s</b>\n\n%s", html.EscapeString(cat.Name), formatExplanationHTML(cat.Explanation))
@@ -221,6 +225,12 @@ func (b *Bot) handleLearnPractice(ctx context.Context, tgBot *bot.Bot, chatID in
 	if !ok {
 		return
 	}
+	if u := UserFromContext(ctx); u != nil {
+		cats, err := b.grammarRepo.GetCategoriesByLevel(ctx, level)
+		if err == nil && catIdx < len(cats) {
+			slog.Info("learn practice started", "user_id", u.ID, "level", level, "category", cats[catIdx].Name, "total", total)
+		}
+	}
 	b.sendLearnQuestion(ctx, tgBot, chatID, level, catIdx, qIdx, total)
 }
 
@@ -242,10 +252,15 @@ func (b *Bot) handleLearnAnswer(ctx context.Context, tgBot *bot.Bot, chatID int6
 	}
 
 	q := questions[qIdx]
-	correct := optIdx >= 0 && optIdx < len(q.Options) && q.Options[optIdx] == q.Answer
+	skipped := optIdx == -1
+	correct := !skipped && optIdx >= 0 && optIdx < len(q.Options) && q.Options[optIdx] == q.Answer
+
+	if u := UserFromContext(ctx); u != nil {
+		slog.Info("learn question answered", "user_id", u.ID, "level", level, "category", cats[catIdx].Name, "position", qIdx+1, "total", total, "correct", correct, "skipped", skipped)
+	}
 
 	var feedbackText string
-	if optIdx == -1 {
+	if skipped {
 		feedbackText = fmt.Sprintf("🤷 Правильный ответ: <b>%s</b>", html.EscapeString(q.Answer))
 	} else if correct {
 		feedbackText = "✅ Правильно!"
@@ -263,7 +278,9 @@ func (b *Bot) handleLearnAnswer(ctx context.Context, tgBot *bot.Bot, chatID int6
 	if nextIdx < total {
 		b.sendLearnQuestion(ctx, tgBot, chatID, level, catIdx, nextIdx, total)
 	} else {
-		// Practice complete
+		if u := UserFromContext(ctx); u != nil {
+			slog.Info("learn practice completed", "user_id", u.ID, "level", level, "category", cats[catIdx].Name, "total", total)
+		}
 		tgBot.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID:    chatID,
 			Text:      "✅ Практика завершена! Отличная работа 💪",
@@ -292,6 +309,10 @@ func (b *Bot) sendLearnQuestion(ctx context.Context, tgBot *bot.Bot, chatID int6
 	}
 
 	q := questions[qIdx]
+
+	if u := UserFromContext(ctx); u != nil {
+		slog.Debug("learn question shown", "user_id", u.ID, "level", level, "category", cats[catIdx].Name, "position", qIdx+1, "total", total)
+	}
 
 	buttons := make([][]models.InlineKeyboardButton, len(q.Options))
 	for i, opt := range q.Options {
