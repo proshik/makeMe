@@ -50,6 +50,7 @@ type TaskResult struct {
 	Response   string
 	Correct    bool
 	Score      int
+	Skipped    bool
 	DurationMs int
 	CreatedAt  time.Time
 }

@@ -115,6 +115,7 @@ func (r *TaskRepository) AddResult(ctx context.Context, result *task.TaskResult)
 		Response: result.Response,
 		Correct:  result.Correct,
 		Score:    int32(result.Score),
+		Skipped:  result.Skipped,
 	})
 	if err != nil {
 		return fmt.Errorf("add task result: %w", err)
@@ -199,5 +200,6 @@ func toTaskResult(row sqlc.TaskResult) *task.TaskResult {
 		Response: row.Response,
 		Correct:  row.Correct,
 		Score:    int(row.Score),
+		Skipped:  row.Skipped,
 	}
 }

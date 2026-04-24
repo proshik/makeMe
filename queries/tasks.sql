@@ -26,8 +26,8 @@ JOIN daily_sets ds ON ds.id = t.daily_set_id
 WHERE t.id = $1;
 
 -- name: AddTaskResult :one
-INSERT INTO task_results (task_id, user_id, response, correct, score)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO task_results (task_id, user_id, response, correct, score, skipped)
+VALUES ($1, $2, $3, $4, $5, $6)
 RETURNING *;
 
 -- name: GetTaskResult :one

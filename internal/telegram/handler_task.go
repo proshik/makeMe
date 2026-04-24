@@ -157,9 +157,13 @@ func (b *Bot) handleTaskCallback(ctx context.Context, tgBot *bot.Bot, update *mo
 		return
 	}
 
-	optionIdx, err := strconv.Atoi(parts[2])
-	if err != nil {
-		return
+	isSkip := parts[2] == "idk"
+	var optionIdx int
+	if !isSkip {
+		optionIdx, err = strconv.Atoi(parts[2])
+		if err != nil {
+			return
+		}
 	}
 
 	tgBot.AnswerCallbackQuery(ctx, &bot.AnswerCallbackQueryParams{
@@ -174,12 +178,16 @@ func (b *Bot) handleTaskCallback(ctx context.Context, tgBot *bot.Bot, update *mo
 		return
 	}
 
-	response := ""
-	if optionIdx >= 0 && optionIdx < len(t.Options) {
-		response = t.Options[optionIdx]
+	var result *task.TaskResult
+	if isSkip {
+		result, err = b.taskSvc.SubmitSkip(ctx, taskID, u.ID)
+	} else {
+		response := ""
+		if optionIdx >= 0 && optionIdx < len(t.Options) {
+			response = t.Options[optionIdx]
+		}
+		result, err = b.taskSvc.SubmitAnswer(ctx, taskID, u.ID, response)
 	}
-
-	result, err := b.taskSvc.SubmitAnswer(ctx, taskID, u.ID, response)
 	if err != nil {
 		if err == task.ErrAlreadyAnswered {
 			tgBot.SendMessage(ctx, &bot.SendMessageParams{
@@ -195,14 +203,17 @@ func (b *Bot) handleTaskCallback(ctx context.Context, tgBot *bot.Bot, update *mo
 	// Feedback
 	var feedback string
 	correctPhrases := []string{"✅ Правильно!", "✅ Отлично!", "✅ Молодец!", "✅ В точку!", "✅ Супер!"}
-	if result.Correct {
+	switch {
+	case result.Skipped:
+		feedback = buildSkipFeedback(t)
+	case result.Correct:
 		feedback = correctPhrases[taskID%int64(len(correctPhrases))]
 		if b.scoringSvc != nil {
 			if err := b.scoringSvc.RecordScore(ctx, u.ID, t.GroupID, t.Level, result.Score); err != nil {
 				slog.Error("failed to record score", "user_id", u.ID, "task_id", taskID, "error", err)
 			}
 		}
-	} else {
+	default:
 		feedback = buildIncorrectFeedback(t)
 	}
 	feedbackParams := &bot.SendMessageParams{
@@ -295,12 +306,15 @@ func sendTaskQuestion(ctx context.Context, tgBot *bot.Bot, chatID int64, t *task
 		text = fmt.Sprintf("%s — Задание %d/%d\n\n%s", typeLabel, current, total, t.Prompt)
 	}
 
-	buttons := make([][]models.InlineKeyboardButton, len(t.Options))
+	buttons := make([][]models.InlineKeyboardButton, 0, len(t.Options)+1)
 	for i, opt := range t.Options {
-		buttons[i] = []models.InlineKeyboardButton{
+		buttons = append(buttons, []models.InlineKeyboardButton{
 			{Text: opt, CallbackData: fmt.Sprintf("task:%d:%d", t.ID, i)},
-		}
+		})
 	}
+	buttons = append(buttons, []models.InlineKeyboardButton{
+		{Text: "🤷 Не знаю", CallbackData: fmt.Sprintf("task:%d:idk", t.ID)},
+	})
 
 	tgBot.SendMessage(ctx, &bot.SendMessageParams{
 		ChatID:    chatID,
@@ -369,6 +383,20 @@ func (b *Bot) handleWordAudioCallback(ctx context.Context, tgBot *bot.Bot, updat
 // buildIncorrectFeedback returns the wrong-answer message for a task (HTML-formatted).
 func buildIncorrectFeedback(t *task.Task) string {
 	base := fmt.Sprintf("❌ Неправильно. Правильный ответ: <b>%s</b>", html.EscapeString(t.Answer))
+	if t.Type != task.TypeGrammar || t.Metadata == nil {
+		return base
+	}
+	explanation, _ := t.Metadata["explanation"].(string)
+	if explanation == "" {
+		return base
+	}
+	return base + "\n\n💡 " + formatExplanationHTML(explanation)
+}
+
+// buildSkipFeedback returns the message shown when the user taps "🤷 Не знаю".
+// Mirrors buildIncorrectFeedback but leads with an honest-skip prefix.
+func buildSkipFeedback(t *task.Task) string {
+	base := fmt.Sprintf("🤷 Пропущено. Правильный ответ: <b>%s</b>", html.EscapeString(t.Answer))
 	if t.Type != task.TypeGrammar || t.Metadata == nil {
 		return base
 	}

@@ -114,6 +114,7 @@ type TaskResult struct {
 	Score      int32              `json:"score"`
 	DurationMs pgtype.Int4        `json:"duration_ms"`
 	CreatedAt  pgtype.Timestamptz `json:"created_at"`
+	Skipped    bool               `json:"skipped"`
 }
 
 type User struct {

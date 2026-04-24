@@ -237,3 +237,116 @@ func TestService_MaxRounds_ExposedForHandler(t *testing.T) {
 	svc := newServiceWithMax(repo, 7)
 	assert.Equal(t, 7, svc.MaxRounds())
 }
+
+// trackingSRSRepo records UpsertCard calls so we can verify SRS updates.
+type trackingSRSRepo struct {
+	noopSRSRepo
+	upserts []srs.ReviewCard
+}
+
+func (r *trackingSRSRepo) UpsertCard(ctx context.Context, card *srs.ReviewCard) error {
+	r.upserts = append(r.upserts, *card)
+	return nil
+}
+
+func newServiceWithSRS(repo Repository, srsRepo srs.Repository) *Service {
+	vocab := &stubGenerator{taskType: TypeVocab}
+	grammar := &stubGenerator{taskType: TypeGrammar}
+	return NewService(repo, srsRepo, 5, vocab, grammar)
+}
+
+// addTask inserts a task directly into the fake repo so tests can target it.
+func (r *fakeRepo) addTaskDirect(dailySetID int64, t Task) *Task {
+	r.nextTaskID++
+	t.ID = r.nextTaskID
+	t.DailySetID = dailySetID
+	r.tasks[dailySetID] = append(r.tasks[dailySetID], t)
+	return &r.tasks[dailySetID][len(r.tasks[dailySetID])-1]
+}
+
+func TestSubmitSkip_RecordsSkippedResult(t *testing.T) {
+	repo := newFakeRepo()
+	svc := newServiceWithSRS(repo, noopSRSRepo{})
+	ctx := context.Background()
+
+	ds, err := repo.CreateDailySet(ctx, 1, 10, time.Now(), 0)
+	require.NoError(t, err)
+	task := repo.addTaskDirect(ds.ID, Task{Type: TypeGrammar, Level: user.A1, Prompt: "q", Answer: "correct"})
+
+	res, err := svc.SubmitSkip(ctx, task.ID, 1)
+	require.NoError(t, err)
+
+	assert.True(t, res.Skipped)
+	assert.False(t, res.Correct)
+	assert.Equal(t, 0, res.Score)
+	assert.Equal(t, "", res.Response)
+	assert.Len(t, repo.results, 1)
+	assert.True(t, repo.results[0].Skipped)
+}
+
+func TestSubmitSkip_UpdatesSRS_AsWrong_ForVocab(t *testing.T) {
+	repo := newFakeRepo()
+	srsRepo := &trackingSRSRepo{}
+	svc := newServiceWithSRS(repo, srsRepo)
+	ctx := context.Background()
+
+	ds, err := repo.CreateDailySet(ctx, 1, 10, time.Now(), 0)
+	require.NoError(t, err)
+	vocabTask := repo.addTaskDirect(ds.ID, Task{
+		Type:     TypeVocab,
+		Level:    user.A1,
+		Prompt:   "hello",
+		Answer:   "привет",
+		Metadata: map[string]any{"word_id": int64(42)},
+	})
+
+	_, err = svc.SubmitSkip(ctx, vocabTask.ID, 1)
+	require.NoError(t, err)
+
+	require.Len(t, srsRepo.upserts, 1, "vocab skip must update the SRS card")
+	card := srsRepo.upserts[0]
+	assert.Equal(t, int64(42), card.WordID)
+	// Wrong-answer SM-2 review resets repetitions to 0.
+	assert.Equal(t, 0, card.Repetitions)
+}
+
+func TestSubmitSkip_SkipsSRSForGrammar(t *testing.T) {
+	repo := newFakeRepo()
+	srsRepo := &trackingSRSRepo{}
+	svc := newServiceWithSRS(repo, srsRepo)
+	ctx := context.Background()
+
+	ds, err := repo.CreateDailySet(ctx, 1, 10, time.Now(), 0)
+	require.NoError(t, err)
+	grammarTask := repo.addTaskDirect(ds.ID, Task{Type: TypeGrammar, Level: user.A1, Prompt: "q", Answer: "a"})
+
+	_, err = svc.SubmitSkip(ctx, grammarTask.ID, 1)
+	require.NoError(t, err)
+
+	assert.Empty(t, srsRepo.upserts, "grammar skip must not touch SRS")
+}
+
+func TestSubmitSkip_ReturnsErrAlreadyAnswered_WhenAnswered(t *testing.T) {
+	repo := newFakeRepo()
+	svc := newServiceWithSRS(repo, noopSRSRepo{})
+	ctx := context.Background()
+
+	ds, err := repo.CreateDailySet(ctx, 1, 10, time.Now(), 0)
+	require.NoError(t, err)
+	task := repo.addTaskDirect(ds.ID, Task{Type: TypeGrammar, Level: user.A1, Prompt: "q", Answer: "a"})
+
+	_, err = svc.SubmitSkip(ctx, task.ID, 1)
+	require.NoError(t, err)
+
+	_, err = svc.SubmitSkip(ctx, task.ID, 1)
+	assert.ErrorIs(t, err, ErrAlreadyAnswered)
+}
+
+func TestSubmitSkip_ReturnsErrTaskNotFound_WhenUnknownTask(t *testing.T) {
+	repo := newFakeRepo()
+	svc := newServiceWithSRS(repo, noopSRSRepo{})
+	ctx := context.Background()
+
+	_, err := svc.SubmitSkip(ctx, 9999, 1)
+	assert.ErrorIs(t, err, ErrTaskNotFound)
+}

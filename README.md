@@ -9,7 +9,7 @@ Go, PostgreSQL (pgx/sqlc/goose), chi, [go-telegram/bot](https://github.com/go-te
 ## Features
 
 - **Adaptive assessment** — 30 adaptive questions in two phases: vocabulary (1–15) then grammar (16–30); starts at A1, requires 2 consecutive correct answers to promote a level; includes "I don't know" button and a full summary with level justification
-- **Daily tasks** — 5 vocabulary + 5 grammar tasks per set; up to 5 rounds per day per user (configurable via `MAX_ROUNDS_PER_DAY`); solo mode — no group required, one is auto-created; resumes where you left off
+- **Daily tasks** — 5 vocabulary + 5 grammar tasks per set; up to 5 rounds per day per user (configurable via `MAX_ROUNDS_PER_DAY`); solo mode — no group required, one is auto-created; resumes where you left off. Each task shows a **🤷 Не знаю** button — honest skips are recorded separately and treated as wrong for SRS scheduling but don't penalise beyond 0 points.
 - **Spaced repetition (SM-2)** — vocabulary cards follow the SM-2 algorithm; new words appear when reviews are caught up
 - **Word bank** — ~900 words across A1–C2 with IPA transcription and audio pronunciation (fetched on demand from Free Dictionary API, cached in DB)
 - **Grammar questions** — stored in DB with Murphy's Essential/English Grammar in Use categories; ~100 questions per A1–B1 level
@@ -178,6 +178,7 @@ task_results
 ├── response        TEXT NOT NULL
 ├── correct         BOOLEAN NOT NULL
 ├── score           INT NOT NULL
+├── skipped         BOOLEAN NOT NULL (true when user tapped "🤷 Не знаю")
 ├── duration_ms     INT
 ├── created_at      TIMESTAMPTZ
 └── UNIQUE(task_id, user_id)

@@ -164,6 +164,45 @@ func (s *Service) SubmitAnswer(ctx context.Context, taskID, userID int64, respon
 	return result, nil
 }
 
+// SubmitSkip records an "I don't know" response for a task.
+// Skip is treated as a wrong answer for SRS scheduling but stored with
+// skipped=true so history can distinguish honest skips from wrong guesses.
+func (s *Service) SubmitSkip(ctx context.Context, taskID, userID int64) (*TaskResult, error) {
+	task, err := s.repo.GetTaskByID(ctx, taskID)
+	if err != nil {
+		return nil, ErrTaskNotFound
+	}
+
+	existing, err := s.repo.GetResult(ctx, taskID, userID)
+	if err == nil && existing != nil {
+		return nil, ErrAlreadyAnswered
+	}
+
+	result := &TaskResult{
+		TaskID:   taskID,
+		UserID:   userID,
+		Response: "",
+		Correct:  false,
+		Score:    0,
+		Skipped:  true,
+	}
+
+	if err := s.repo.AddResult(ctx, result); err != nil {
+		return nil, fmt.Errorf("add result: %w", err)
+	}
+
+	if task.Type == TypeVocab && task.Metadata != nil {
+		if wordIDRaw, ok := task.Metadata["word_id"]; ok {
+			wordID := toInt64(wordIDRaw)
+			if wordID > 0 {
+				s.updateSRS(ctx, userID, wordID, false)
+			}
+		}
+	}
+
+	return result, nil
+}
+
 // GetNextUnanswered returns the next unanswered task in the daily set.
 func (s *Service) GetNextUnanswered(ctx context.Context, dailySetID, userID int64) (*Task, error) {
 	tasks, err := s.repo.GetTasksByDailySet(ctx, dailySetID)

@@ -55,9 +55,9 @@ func (q *Queries) AddTask(ctx context.Context, arg AddTaskParams) (Task, error) 
 }
 
 const addTaskResult = `-- name: AddTaskResult :one
-INSERT INTO task_results (task_id, user_id, response, correct, score)
-VALUES ($1, $2, $3, $4, $5)
-RETURNING id, task_id, user_id, response, correct, score, duration_ms, created_at
+INSERT INTO task_results (task_id, user_id, response, correct, score, skipped)
+VALUES ($1, $2, $3, $4, $5, $6)
+RETURNING id, task_id, user_id, response, correct, score, duration_ms, created_at, skipped
 `
 
 type AddTaskResultParams struct {
@@ -66,6 +66,7 @@ type AddTaskResultParams struct {
 	Response string `json:"response"`
 	Correct  bool   `json:"correct"`
 	Score    int32  `json:"score"`
+	Skipped  bool   `json:"skipped"`
 }
 
 func (q *Queries) AddTaskResult(ctx context.Context, arg AddTaskResultParams) (TaskResult, error) {
@@ -75,6 +76,7 @@ func (q *Queries) AddTaskResult(ctx context.Context, arg AddTaskResultParams) (T
 		arg.Response,
 		arg.Correct,
 		arg.Score,
+		arg.Skipped,
 	)
 	var i TaskResult
 	err := row.Scan(
@@ -86,6 +88,7 @@ func (q *Queries) AddTaskResult(ctx context.Context, arg AddTaskResultParams) (T
 		&i.Score,
 		&i.DurationMs,
 		&i.CreatedAt,
+		&i.Skipped,
 	)
 	return i, err
 }
@@ -233,7 +236,7 @@ func (q *Queries) GetTaskByID(ctx context.Context, id int64) (GetTaskByIDRow, er
 }
 
 const getTaskResult = `-- name: GetTaskResult :one
-SELECT id, task_id, user_id, response, correct, score, duration_ms, created_at FROM task_results WHERE task_id = $1 AND user_id = $2
+SELECT id, task_id, user_id, response, correct, score, duration_ms, created_at, skipped FROM task_results WHERE task_id = $1 AND user_id = $2
 `
 
 type GetTaskResultParams struct {
@@ -253,6 +256,7 @@ func (q *Queries) GetTaskResult(ctx context.Context, arg GetTaskResultParams) (T
 		&i.Score,
 		&i.DurationMs,
 		&i.CreatedAt,
+		&i.Skipped,
 	)
 	return i, err
 }

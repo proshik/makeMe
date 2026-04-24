@@ -192,6 +192,90 @@ func TestHandleTasks_ShowsLimitMessage_WhenRoundsExhausted(t *testing.T) {
 	assert.NotContains(t, lastReq, "inline_keyboard")
 }
 
+func TestHandleTasks_ShowsIdkButton(t *testing.T) {
+	env := setupTestEnv(t)
+
+	u, err := env.userSvc.Register(context.Background(), 830, "gina", "Gina")
+	require.NoError(t, err)
+	err = env.userSvc.UpdateLevel(context.Background(), u.ID, "A1")
+	require.NoError(t, err)
+
+	env.sendUpdate(t, makeTextUpdate(1, 830, 830, "gina", "Gina", "/newgroup Skippers"))
+	env.resetWireMock(t)
+
+	env.sendUpdate(t, makeTextUpdate(2, 830, 830, "gina", "Gina", "/tasks"))
+
+	reqs := env.getSendMessageRequests(t)
+	require.NotEmpty(t, reqs)
+
+	// At least one /tasks message must carry the "🤷 Не знаю" button
+	// with a callback_data suffix of ":idk".
+	found := false
+	for _, r := range reqs {
+		if strings.Contains(r.Body, "\\ud83e\\udd37 \\u041d\\u0435 \\u0437\\u043d\\u0430\\u044e") ||
+			strings.Contains(r.Body, "🤷 Не знаю") {
+			if strings.Contains(r.Body, ":idk") {
+				found = true
+				break
+			}
+		}
+	}
+	assert.True(t, found, "expected a message with a 'Не знаю' button and ':idk' callback, got: %+v", reqs)
+}
+
+func TestHandleTaskCallback_Skip_RecordsAndShowsAnswer(t *testing.T) {
+	env := setupTestEnv(t)
+
+	u, err := env.userSvc.Register(context.Background(), 831, "henry", "Henry")
+	require.NoError(t, err)
+	err = env.userSvc.UpdateLevel(context.Background(), u.ID, "A1")
+	require.NoError(t, err)
+
+	env.sendUpdate(t, makeTextUpdate(1, 831, 831, "henry", "Henry", "/newgroup SkipGroup"))
+
+	groups, err := env.groupSvc.ListByUser(context.Background(), u.ID)
+	require.NoError(t, err)
+	require.NotEmpty(t, groups)
+
+	ds, err := env.taskSvc.GenerateDaily(context.Background(), u.ID, groups[0].ID, u.Level)
+	require.NoError(t, err)
+	require.NotEmpty(t, ds.Tasks)
+
+	env.resetWireMock(t)
+
+	first := ds.Tasks[0]
+	env.sendUpdate(t, makeCallbackUpdate(400, 831, 831, "henry", "Henry",
+		"task:"+itoa(first.ID)+":idk"))
+
+	reqs := env.getSendMessageRequests(t)
+	require.NotEmpty(t, reqs)
+
+	// Skip feedback should contain Пропущено + the correct answer text.
+	foundFeedback := false
+	for _, r := range reqs {
+		if strings.Contains(r.Body, "Пропущено") {
+			foundFeedback = true
+			break
+		}
+	}
+	assert.True(t, foundFeedback, "expected a message with 'Пропущено', got: %+v", reqs)
+
+	// Verify the row in DB: skipped=true, correct=false, score=0.
+	stored, err := env.taskSvc.GetTaskByID(context.Background(), first.ID)
+	require.NoError(t, err)
+	_ = stored
+	var skipped, correct bool
+	var score int
+	err = env.pool.QueryRow(context.Background(),
+		"SELECT skipped, correct, score FROM task_results WHERE task_id = $1 AND user_id = $2",
+		first.ID, u.ID,
+	).Scan(&skipped, &correct, &score)
+	require.NoError(t, err)
+	assert.True(t, skipped, "task_results.skipped must be true")
+	assert.False(t, correct, "task_results.correct must be false")
+	assert.Equal(t, 0, score, "task_results.score must be 0")
+}
+
 func TestHandleWordAudio_WithCachedAudio(t *testing.T) {
 	env := setupTestEnv(t)
 
