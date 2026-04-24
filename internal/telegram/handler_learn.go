@@ -36,6 +36,8 @@ func (b *Bot) handleLearn(ctx context.Context, tgBot *bot.Bot, update *models.Up
 	if u == nil {
 		return
 	}
+	slog.Debug("cmd received", "cmd", "/learn", "user_id", u.ID)
+
 	if !u.Onboarded {
 		tgBot.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: update.Message.Chat.ID,
@@ -43,6 +45,8 @@ func (b *Bot) handleLearn(ctx context.Context, tgBot *bot.Bot, update *models.Up
 		})
 		return
 	}
+
+	slog.Info("learn started", "user_id", u.ID, "level", u.Level)
 	b.sendLearnMenu(ctx, tgBot, update.Message.Chat.ID, u.Level)
 }
 

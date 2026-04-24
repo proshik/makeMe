@@ -23,6 +23,8 @@ func (b *Bot) handleNewGroup(ctx context.Context, tgBot *bot.Bot, update *models
 		return
 	}
 
+	slog.Debug("cmd received", "cmd", "/newgroup", "user_id", u.ID)
+
 	name := strings.TrimSpace(strings.TrimPrefix(update.Message.Text, "/newgroup"))
 	if name == "" {
 		tgBot.SendMessage(ctx, &bot.SendMessageParams{
@@ -41,6 +43,8 @@ func (b *Bot) handleNewGroup(ctx context.Context, tgBot *bot.Bot, update *models
 		})
 		return
 	}
+
+	slog.Info("group created", "user_id", u.ID, "group_id", g.ID, "name", g.Name)
 
 	tgBot.SendMessage(ctx, &bot.SendMessageParams{
 		ChatID: update.Message.Chat.ID,
@@ -63,6 +67,8 @@ func (b *Bot) handleJoin(ctx context.Context, tgBot *bot.Bot, update *models.Upd
 	if u == nil {
 		return
 	}
+
+	slog.Debug("cmd received", "cmd", "/join", "user_id", u.ID)
 
 	code := strings.TrimSpace(strings.TrimPrefix(update.Message.Text, "/join"))
 	if code == "" {
@@ -92,6 +98,8 @@ func (b *Bot) handleJoin(ctx context.Context, tgBot *bot.Bot, update *models.Upd
 		return
 	}
 
+	slog.Info("group joined", "user_id", u.ID, "group_id", g.ID, "name", g.Name)
+
 	tgBot.SendMessage(ctx, &bot.SendMessageParams{
 		ChatID: update.Message.Chat.ID,
 		Text:   fmt.Sprintf("🙌 Ты вступил в группу «%s»! Добро пожаловать в команду!\n\nНачинай соревноваться: /tasks 🚀", g.Name),
@@ -107,6 +115,8 @@ func (b *Bot) handleMyGroups(ctx context.Context, tgBot *bot.Bot, update *models
 	if u == nil {
 		return
 	}
+
+	slog.Debug("cmd received", "cmd", "/mygroups", "user_id", u.ID)
 
 	groups, err := b.groupSvc.ListByUser(ctx, u.ID)
 	if err != nil {

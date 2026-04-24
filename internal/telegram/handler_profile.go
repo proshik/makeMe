@@ -20,6 +20,8 @@ func (b *Bot) handleProfile(ctx context.Context, tgBot *bot.Bot, update *models.
 		return
 	}
 
+	slog.Debug("cmd received", "cmd", "/profile", "user_id", u.ID)
+
 	if !u.Onboarded {
 		tgBot.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: update.Message.Chat.ID,
@@ -60,6 +62,8 @@ func (b *Bot) handleProfile(ctx context.Context, tgBot *bot.Bot, update *models.
 	}
 
 	streak := calcStreak(scoreDays)
+
+	slog.Info("profile viewed", "user_id", u.ID, "level", u.Level, "streak", streak, "monthly_score", monthlyScore, "learned_words", learnedWords)
 
 	var streakLine string
 	switch {

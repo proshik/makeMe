@@ -3,6 +3,7 @@ package telegram
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
@@ -21,6 +22,9 @@ func (b *Bot) handleStart(ctx context.Context, tgBot *bot.Bot, update *models.Up
 		})
 		return
 	}
+
+	slog.Debug("cmd received", "cmd", "/start", "user_id", u.ID)
+	slog.Info("user start", "user_id", u.ID, "onboarded", u.Onboarded, "level", u.Level)
 
 	var text string
 	if u.Onboarded {

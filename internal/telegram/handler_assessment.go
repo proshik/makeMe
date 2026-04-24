@@ -32,6 +32,8 @@ func (b *Bot) handleAssess(ctx context.Context, tgBot *bot.Bot, update *models.U
 		return
 	}
 
+	slog.Debug("cmd received", "cmd", "/assess", "user_id", u.ID)
+
 	session, question, err := b.assessSvc.Start(ctx, u.ID)
 	if err != nil {
 		slog.Error("failed to start assessment", "user_id", u.ID, "error", err)
@@ -41,6 +43,8 @@ func (b *Bot) handleAssess(ctx context.Context, tgBot *bot.Bot, update *models.U
 		})
 		return
 	}
+
+	slog.Info("assessment started", "user_id", u.ID, "session_id", session.ID)
 
 	count, _ := b.assessSvc.AnswerCount(ctx, session.ID)
 	sendQuestion(ctx, tgBot, update.Message.Chat.ID, question, count+1)
@@ -63,7 +67,8 @@ func (b *Bot) handleAssessCallback(ctx context.Context, tgBot *bot.Bot, update *
 	}
 
 	var optionIdx int
-	if parts[1] == "idk" {
+	isSkip := parts[1] == "idk"
+	if isSkip {
 		optionIdx = assessment.SkipOption
 	} else {
 		var err error
@@ -72,6 +77,8 @@ func (b *Bot) handleAssessCallback(ctx context.Context, tgBot *bot.Bot, update *
 			return
 		}
 	}
+
+	slog.Debug("assessment callback", "user_id", u.ID, "skipped", isSkip)
 
 	tgBot.AnswerCallbackQuery(ctx, &bot.AnswerCallbackQueryParams{
 		CallbackQueryID: update.CallbackQuery.ID,
@@ -90,6 +97,7 @@ func (b *Bot) handleAssessCallback(ctx context.Context, tgBot *bot.Bot, update *
 	}
 
 	if nextQuestion == nil {
+		slog.Info("assessment completed", "user_id", u.ID, "level", session.DeterminedLevel)
 		// Assessment complete — send summary then final message
 		if len(answers) > 0 {
 			tgBot.SendMessage(ctx, &bot.SendMessageParams{

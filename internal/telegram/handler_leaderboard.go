@@ -23,6 +23,8 @@ func (b *Bot) handleLeaderboard(ctx context.Context, tgBot *bot.Bot, update *mod
 		return
 	}
 
+	slog.Debug("cmd received", "cmd", "/leaderboard", "user_id", u.ID)
+
 	groups, err := b.groupSvc.ListByUser(ctx, u.ID)
 	if err != nil {
 		slog.Error("failed to get groups for leaderboard", "user_id", u.ID, "error", err)
@@ -112,6 +114,7 @@ func (b *Bot) sendLeaderboard(ctx context.Context, tgBot *bot.Bot, chatID int64,
 		slog.Error("failed to get leaderboard", "group_id", g.ID, "error", err)
 		return
 	}
+	slog.Info("leaderboard viewed", "group_id", g.ID, "period", period, "entries", len(entries))
 
 	var periodLabel string
 	if period == "day" {

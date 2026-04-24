@@ -54,6 +54,8 @@ func (b *Bot) handleTasks(ctx context.Context, tgBot *bot.Bot, update *models.Up
 		return
 	}
 
+	slog.Debug("cmd received", "cmd", "/tasks", "user_id", u.ID)
+
 	if !u.Onboarded {
 		tgBot.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: update.Message.Chat.ID,
@@ -86,6 +88,7 @@ func (b *Bot) handleTasks(ctx context.Context, tgBot *bot.Bot, update *models.Up
 	ds, err := b.taskSvc.GenerateDaily(ctx, u.ID, groupID, u.Level)
 	if err != nil {
 		if errors.Is(err, task.ErrDailyLimitReached) {
+			slog.Info("daily limit reached", "user_id", u.ID, "max_rounds", b.taskSvc.MaxRounds())
 			max := b.taskSvc.MaxRounds()
 			tgBot.SendMessage(ctx, &bot.SendMessageParams{
 				ChatID: update.Message.Chat.ID,
@@ -103,6 +106,8 @@ func (b *Bot) handleTasks(ctx context.Context, tgBot *bot.Bot, update *models.Up
 		})
 		return
 	}
+
+	slog.Info("task round started", "user_id", u.ID, "group_id", groupID, "round", ds.Round+1, "max_rounds", b.taskSvc.MaxRounds())
 
 	tgBot.SendMessage(ctx, &bot.SendMessageParams{
 		ChatID: update.Message.Chat.ID,
@@ -132,6 +137,7 @@ func (b *Bot) handleTasks(ctx context.Context, tgBot *bot.Bot, update *models.Up
 	}
 
 	answered, total, _ := b.taskSvc.GetProgress(ctx, ds.ID, u.ID)
+	slog.Debug("task shown", "user_id", u.ID, "task_id", nextTask.ID, "type", nextTask.Type, "level", nextTask.Level, "position", answered+1, "total", total)
 	sendTaskQuestion(ctx, tgBot, update.Message.Chat.ID, nextTask, answered+1, total)
 }
 
@@ -158,6 +164,8 @@ func (b *Bot) handleTaskCallback(ctx context.Context, tgBot *bot.Bot, update *mo
 	}
 
 	isSkip := parts[2] == "idk"
+	slog.Debug("task callback", "user_id", u.ID, "task_id", parts[1], "is_skip", isSkip)
+
 	var optionIdx int
 	if !isSkip {
 		optionIdx, err = strconv.Atoi(parts[2])
@@ -200,6 +208,8 @@ func (b *Bot) handleTaskCallback(ctx context.Context, tgBot *bot.Bot, update *mo
 		return
 	}
 
+	slog.Info("task answered", "user_id", u.ID, "task_id", taskID, "type", t.Type, "level", t.Level, "correct", result.Correct, "skipped", result.Skipped, "score", result.Score)
+
 	// Feedback
 	var feedback string
 	correctPhrases := []string{"✅ Правильно!", "✅ Отлично!", "✅ Молодец!", "✅ В точку!", "✅ Супер!"}
@@ -239,6 +249,7 @@ func (b *Bot) handleTaskCallback(ctx context.Context, tgBot *bot.Bot, update *mo
 	if nextTask == nil {
 		_, total, _ := b.taskSvc.GetProgress(ctx, t.DailySetID, u.ID)
 		correct, _ := b.taskSvc.GetCorrectCount(ctx, t.DailySetID, u.ID)
+		slog.Info("round completed", "user_id", u.ID, "daily_set_id", t.DailySetID, "correct", correct, "total", total)
 		var completionText string
 		if correct == total {
 			completionText = fmt.Sprintf("🏆 Все задания выполнены!\n\n✅ Правильных ответов: %d из %d\n\nТы огонь! Загляни в /leaderboard — посмотри, где ты в рейтинге 🔥", correct, total)
@@ -253,6 +264,7 @@ func (b *Bot) handleTaskCallback(ctx context.Context, tgBot *bot.Bot, update *mo
 	}
 
 	answered, total, _ := b.taskSvc.GetProgress(ctx, t.DailySetID, u.ID)
+	slog.Debug("task shown", "user_id", u.ID, "task_id", nextTask.ID, "type", nextTask.Type, "level", nextTask.Level, "position", answered+1, "total", total)
 	sendTaskQuestion(ctx, tgBot, chatID, nextTask, answered+1, total)
 }
 
