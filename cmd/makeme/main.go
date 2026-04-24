@@ -303,4 +303,5 @@ func setupLogger(level string) {
 		lvl = slog.LevelInfo
 	}
 	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: lvl})))
+	slog.Info("log level configured", "level", lvl)
 }
