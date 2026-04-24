@@ -17,23 +17,31 @@ const (
 )
 
 var (
-	ErrNoDailySet     = errors.New("no daily set for today")
-	ErrAlreadyAnswered = errors.New("task already answered")
-	ErrTaskNotFound    = errors.New("task not found")
+	ErrNoDailySet        = errors.New("no daily set for today")
+	ErrAlreadyAnswered   = errors.New("task already answered")
+	ErrTaskNotFound      = errors.New("task not found")
+	ErrDailyLimitReached = errors.New("daily round limit reached")
 )
 
 type Service struct {
 	repo       Repository
 	srsRepo    srs.Repository
+	maxRounds  int
 	generators []TaskGenerator
 }
 
-func NewService(repo Repository, srsRepo srs.Repository, generators ...TaskGenerator) *Service {
+func NewService(repo Repository, srsRepo srs.Repository, maxRounds int, generators ...TaskGenerator) *Service {
 	return &Service{
 		repo:       repo,
 		srsRepo:    srsRepo,
+		maxRounds:  maxRounds,
 		generators: generators,
 	}
+}
+
+// MaxRounds returns the per-day round limit.
+func (s *Service) MaxRounds() int {
+	return s.maxRounds
 }
 
 // GenerateDaily returns the current in-progress daily set, or creates a new one.
@@ -56,6 +64,10 @@ func (s *Service) GenerateDaily(ctx context.Context, userID, groupID int64, leve
 		}
 		// All answered — start a new round
 		nextRound = existing.Round + 1
+	}
+
+	if s.maxRounds > 0 && nextRound >= s.maxRounds {
+		return nil, ErrDailyLimitReached
 	}
 
 	ds, err := s.repo.CreateDailySet(ctx, userID, groupID, today, nextRound)

@@ -90,7 +90,7 @@ func run(ctx context.Context) error {
 	taskRepo := postgres.NewTaskRepository(queries)
 	vocabGen := task.NewVocabGenerator(srsRepo)
 	grammarGen := task.NewGrammarGenerator(grammarRepo)
-	taskSvc := task.NewService(taskRepo, srsRepo, vocabGen, grammarGen)
+	taskSvc := task.NewService(taskRepo, srsRepo, cfg.MaxRoundsPerDay, vocabGen, grammarGen)
 
 	scoringRepo := postgres.NewScoringRepository(queries)
 	scoringSvc := scoring.NewService(scoringRepo)

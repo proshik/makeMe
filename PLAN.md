@@ -206,11 +206,12 @@ Telegram-хендлеры — тонкие адаптеры:
 
 ```go
 type Config struct {
-    Port          string // "8080"
-    DatabaseURL   string // "postgres://user:pass@host:5432/makeme"
-    TelegramToken string
-    WebhookURL    string // "https://domain.com/webhook/{token}"
-    LogLevel      string // "debug" / "info" / "warn" / "error"
+    Port            string // "8080"
+    DatabaseURL     string // "postgres://user:pass@host:5432/makeme"
+    TelegramToken   string
+    WebhookURL      string // "https://domain.com/webhook/{token}"
+    LogLevel        string // "debug" / "info" / "warn" / "error"
+    MaxRoundsPerDay int    // limit on /tasks rounds per user per day (default 5)
 }
 ```
 
@@ -457,8 +458,9 @@ type Config struct {
 - [x] **Сброс уровня на границе фаз** — при переходе с словарной на грамматическую фазу уровень сбрасывается до A1
 - [x] **100+ слов A1 и 100+ слов A2** — seed-миграция `00021` добавляет 160+ слов A1 и 120+ слов A2 с примерами (`ON CONFLICT DO NOTHING`)
 - [x] **Фазовый дисплей в боте** — «📚 Словарный запас — Вопрос 3/15» и «✍️ Грамматика — Вопрос 2/15»
+- [x] **Дневной лимит раундов** — `MAX_ROUNDS_PER_DAY` (default 5) ограничивает число раундов на сутки; `task.ErrDailyLimitReached` блокирует создание нового раунда; `/tasks` показывает «🎯 Раунд N из 5 на сегодня» перед первым заданием; по достижении лимита — сообщение «возвращайся завтра»
 
-**Проверка:** `/tasks` без группы → создаётся «Соло», показывается 10 заданий; повторный `/tasks` после завершения → новый раунд; ассесмент 30 вопросов, первые 15 — слова, последние 15 — грамматика; пользователь не повышает уровень с одного правильного ответа.
+**Проверка:** `/tasks` без группы → создаётся «Соло», показывается 10 заданий; повторный `/tasks` после завершения → новый раунд; ассесмент 30 вопросов, первые 15 — слова, последние 15 — грамматика; пользователь не повышает уровень с одного правильного ответа; после 5 раундов `/tasks` показывает сообщение о лимите.
 
 ---
 

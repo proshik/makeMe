@@ -53,6 +53,10 @@ type testEnv struct {
 }
 
 func setupTestEnv(t *testing.T) *testEnv {
+	return setupTestEnvWithMaxRounds(t, 5)
+}
+
+func setupTestEnvWithMaxRounds(t *testing.T, maxRounds int) *testEnv {
 	t.Helper()
 	ctx := context.Background()
 
@@ -117,7 +121,7 @@ func setupTestEnv(t *testing.T) *testEnv {
 
 	taskRepo := postgres.NewTaskRepository(queries)
 	vocabGen := task.NewVocabGenerator(srsRepo)
-	taskSvc := task.NewService(taskRepo, srsRepo, vocabGen, grammarGen)
+	taskSvc := task.NewService(taskRepo, srsRepo, maxRounds, vocabGen, grammarGen)
 
 	scoringRepo := postgres.NewScoringRepository(queries)
 	scoringSvc := scoring.NewService(scoringRepo)

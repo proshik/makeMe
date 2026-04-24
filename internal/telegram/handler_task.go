@@ -2,6 +2,7 @@ package telegram
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"html"
 	"log/slog"
@@ -13,6 +14,22 @@ import (
 
 	"makeMe/internal/domain/task"
 )
+
+// pluralRounds returns the Russian plural form for "раунд" matching n.
+func pluralRounds(n int) string {
+	mod100 := n % 100
+	if mod100 >= 11 && mod100 <= 14 {
+		return "раундов"
+	}
+	switch n % 10 {
+	case 1:
+		return "раунд"
+	case 2, 3, 4:
+		return "раунда"
+	default:
+		return "раундов"
+	}
+}
 
 func toInt64(v any) int64 {
 	switch n := v.(type) {
@@ -68,6 +85,17 @@ func (b *Bot) handleTasks(ctx context.Context, tgBot *bot.Bot, update *models.Up
 	groupID := groups[0].ID
 	ds, err := b.taskSvc.GenerateDaily(ctx, u.ID, groupID, u.Level)
 	if err != nil {
+		if errors.Is(err, task.ErrDailyLimitReached) {
+			max := b.taskSvc.MaxRounds()
+			tgBot.SendMessage(ctx, &bot.SendMessageParams{
+				ChatID: update.Message.Chat.ID,
+				Text: fmt.Sprintf(
+					"🎯 Сегодняшний лимит исчерпан.\n\nКаждому пользователю выдаётся по %d %s за один день. Возвращайся завтра за новыми заданиями.",
+					max, pluralRounds(max),
+				),
+			})
+			return
+		}
 		slog.Error("failed to generate daily set", "user_id", u.ID, "error", err)
 		tgBot.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: update.Message.Chat.ID,
@@ -75,6 +103,11 @@ func (b *Bot) handleTasks(ctx context.Context, tgBot *bot.Bot, update *models.Up
 		})
 		return
 	}
+
+	tgBot.SendMessage(ctx, &bot.SendMessageParams{
+		ChatID: update.Message.Chat.ID,
+		Text:   fmt.Sprintf("🎯 Раунд %d из %d на сегодня", ds.Round+1, b.taskSvc.MaxRounds()),
+	})
 
 	nextTask, err := b.taskSvc.GetNextUnanswered(ctx, ds.ID, u.ID)
 	if err != nil {

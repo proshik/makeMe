@@ -3,6 +3,7 @@ package telegram_test
 import (
 	"context"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -117,6 +118,78 @@ func TestHandleTasks_FullFlow(t *testing.T) {
 
 func itoa(n int64) string {
 	return fmt.Sprintf("%d", n)
+}
+
+func TestHandleTasks_ShowsRoundHeader_OnFirstRound(t *testing.T) {
+	env := setupTestEnv(t)
+
+	u, err := env.userSvc.Register(context.Background(), 820, "erin", "Erin")
+	require.NoError(t, err)
+	err = env.userSvc.UpdateLevel(context.Background(), u.ID, "A1")
+	require.NoError(t, err)
+
+	env.sendUpdate(t, makeTextUpdate(1, 820, 820, "erin", "Erin", "/newgroup Round"))
+	env.resetWireMock(t)
+
+	env.sendUpdate(t, makeTextUpdate(2, 820, 820, "erin", "Erin", "/tasks"))
+
+	reqs := env.getSendMessageRequests(t)
+	require.NotEmpty(t, reqs)
+
+	// The bot must announce the current round out of maxRounds (5 by default)
+	// as a standalone message separate from the task question.
+	found := false
+	for _, r := range reqs {
+		if strings.Contains(r.Body, "Раунд 1 из 5") {
+			found = true
+			break
+		}
+	}
+	assert.True(t, found, "expected a message containing 'Раунд 1 из 5', got: %+v", reqs)
+}
+
+func TestHandleTasks_ShowsLimitMessage_WhenRoundsExhausted(t *testing.T) {
+	env := setupTestEnvWithMaxRounds(t, 1)
+
+	u, err := env.userSvc.Register(context.Background(), 821, "frank", "Frank")
+	require.NoError(t, err)
+	err = env.userSvc.UpdateLevel(context.Background(), u.ID, "A1")
+	require.NoError(t, err)
+
+	env.sendUpdate(t, makeTextUpdate(1, 821, 821, "frank", "Frank", "/newgroup Cap"))
+	groups, err := env.groupSvc.ListByUser(context.Background(), u.ID)
+	require.NoError(t, err)
+	require.NotEmpty(t, groups)
+
+	ds, err := env.taskSvc.GenerateDaily(context.Background(), u.ID, groups[0].ID, u.Level)
+	require.NoError(t, err)
+	require.NotEmpty(t, ds.Tasks)
+
+	// Answer all 10 tasks in round 0
+	for _, tt := range ds.Tasks {
+		correctIdx := 0
+		for i, opt := range tt.Options {
+			if opt == tt.Answer {
+				correctIdx = i
+				break
+			}
+		}
+		env.sendUpdate(t, makeCallbackUpdate(int64(300+tt.ID), 821, 821, "frank", "Frank",
+			"task:"+itoa(tt.ID)+":"+itoa(int64(correctIdx))))
+	}
+
+	env.resetWireMock(t)
+
+	// With maxRounds=1, the second /tasks must yield the limit message.
+	env.sendUpdate(t, makeTextUpdate(99, 821, 821, "frank", "Frank", "/tasks"))
+
+	reqs := env.getSendMessageRequests(t)
+	require.NotEmpty(t, reqs)
+	lastReq := reqs[len(reqs)-1].Body
+	assert.Contains(t, lastReq, "раунд")
+	assert.Contains(t, lastReq, "завтра")
+	// No new task must be sent when the limit is hit.
+	assert.NotContains(t, lastReq, "inline_keyboard")
 }
 
 func TestHandleWordAudio_WithCachedAudio(t *testing.T) {
