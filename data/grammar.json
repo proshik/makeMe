@@ -1043,7 +1043,7 @@
     "level": "A2",
     "category": "Past Simple",
     "subcategory": "affirmative",
-    "prompt": "They ___ in a small village for ten years.",
+    "prompt": "They ___ in a small village for ten years before they moved to the city.",
     "options": [
       "are living",
       "live",
@@ -1251,14 +1251,14 @@
     "level": "A2",
     "category": "Present Perfect: just/already/yet",
     "subcategory": "interrogative",
-    "prompt": "Have you ___ been to New York?",
+    "prompt": "She hasn't arrived ___.",
     "options": [
       "still",
       "already",
       "just",
-      "ever"
+      "yet"
     ],
-    "answer": "ever"
+    "answer": "yet"
   },
   {
     "level": "A2",
@@ -1982,7 +1982,7 @@
     "prompt": "I ___ the office at six, so call me then.",
     "options": [
       "will leave",
-      "am leaving",
+      "have left",
       "will be leaving",
       "leave"
     ],
@@ -1995,7 +1995,7 @@
     "prompt": "Don't come at noon — we ___ lunch.",
     "options": [
       "will have",
-      "are having",
+      "had",
       "will be having",
       "have"
     ],
@@ -2020,7 +2020,7 @@
     "subcategory": "general",
     "prompt": "She ___ the report by Friday.",
     "options": [
-      "will finish",
+      "has finished",
       "finishes",
       "is finishing",
       "will have finished"
@@ -3749,7 +3749,7 @@
     "subcategory": "general",
     "prompt": "By Friday, I ___ this project.",
     "options": [
-      "will finish",
+      "finished",
       "finish",
       "will have finished",
       "am finishing"
@@ -5493,7 +5493,7 @@
     "options": [
       "were going",
       "go to",
-      "will",
+      "have",
       "are going to"
     ],
     "answer": "are going to"
@@ -7039,7 +7039,7 @@
     "prompt": "She ___ finish the report today — it's not urgent.",
     "options": [
       "mustn't",
-      "needn't",
+      "couldn't",
       "can't",
       "doesn't have to"
     ],
@@ -7673,7 +7673,7 @@
     "level": "C1",
     "category": "Advanced Modals",
     "subcategory": "general",
-    "prompt": "I ___ have helped you move, but I was away that weekend.",
+    "prompt": "I ___ have lifted that box myself — it wasn't even heavy.",
     "options": [
       "could",
       "would",
@@ -9094,8 +9094,8 @@
     "options": [
       "should have",
       "must have",
-      "could have",
-      "might have"
+      "will have",
+      "would have"
     ],
     "answer": "should have"
   },
@@ -9129,7 +9129,7 @@
     "level": "B1",
     "category": "Modal Perfect",
     "subcategory": "affirmative",
-    "prompt": "He ___ finished by now — it was such a simple task.",
+    "prompt": "He ___ finished by now, but he hasn't even started.",
     "options": [
       "should have",
       "must have",
