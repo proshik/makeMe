@@ -33,6 +33,7 @@ func (r *GrammarRepository) GetByLevel(ctx context.Context, level user.Level) ([
 			ID:          row.ID,
 			Level:       user.Level(row.Level),
 			Category:    row.Category,
+			Subcategory: row.Subcategory,
 			Prompt:      row.Prompt,
 			Options:     options,
 			Answer:      row.Answer,
@@ -54,11 +55,8 @@ func (r *GrammarRepository) GetCategoriesByLevel(ctx context.Context, level user
 	return cats, nil
 }
 
-func (r *GrammarRepository) GetQuestionsByCategory(ctx context.Context, category string, limit int) ([]task.GrammarQuestion, error) {
-	rows, err := r.q.GetGrammarQuestionsByCategory(ctx, sqlc.GetGrammarQuestionsByCategoryParams{
-		Category: category,
-		Limit:    int32(limit),
-	})
+func (r *GrammarRepository) GetQuestionsByCategory(ctx context.Context, category string) ([]task.GrammarQuestion, error) {
+	rows, err := r.q.GetGrammarQuestionsByCategory(ctx, category)
 	if err != nil {
 		return nil, fmt.Errorf("get grammar questions by category: %w", err)
 	}
@@ -69,12 +67,14 @@ func (r *GrammarRepository) GetQuestionsByCategory(ctx context.Context, category
 			return nil, fmt.Errorf("unmarshal grammar options: %w", err)
 		}
 		questions = append(questions, task.GrammarQuestion{
-			ID:       row.ID,
-			Level:    user.Level(row.Level),
-			Category: row.Category,
-			Prompt:   row.Prompt,
-			Options:  options,
-			Answer:   row.Answer,
+			ID:          row.ID,
+			Level:       user.Level(row.Level),
+			Category:    row.Category,
+			Subcategory: row.Subcategory,
+			Prompt:      row.Prompt,
+			Options:     options,
+			Answer:      row.Answer,
+			Explanation: row.Explanation,
 		})
 	}
 	return questions, nil

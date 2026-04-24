@@ -10,7 +10,7 @@ import (
 )
 
 const getGrammarByLevel = `-- name: GetGrammarByLevel :many
-SELECT q.id, q.level, q.category, q.prompt, q.options, q.answer,
+SELECT q.id, q.level, q.category, q.subcategory, q.prompt, q.options, q.answer,
        COALESCE(c.explanation, '') AS explanation
 FROM grammar_questions q
 LEFT JOIN grammar_categories c ON c.name = q.category
@@ -22,6 +22,7 @@ type GetGrammarByLevelRow struct {
 	ID          int64  `json:"id"`
 	Level       string `json:"level"`
 	Category    string `json:"category"`
+	Subcategory string `json:"subcategory"`
 	Prompt      string `json:"prompt"`
 	Options     []byte `json:"options"`
 	Answer      string `json:"answer"`
@@ -41,6 +42,7 @@ func (q *Queries) GetGrammarByLevel(ctx context.Context, level string) ([]GetGra
 			&i.ID,
 			&i.Level,
 			&i.Category,
+			&i.Subcategory,
 			&i.Prompt,
 			&i.Options,
 			&i.Answer,
@@ -90,32 +92,27 @@ func (q *Queries) GetGrammarCategoriesByLevel(ctx context.Context, level string)
 }
 
 const getGrammarQuestionsByCategory = `-- name: GetGrammarQuestionsByCategory :many
-SELECT q.id, q.level, q.category, q.prompt, q.options, q.answer,
+SELECT q.id, q.level, q.category, q.subcategory, q.prompt, q.options, q.answer,
        COALESCE(c.explanation, '') AS explanation
 FROM grammar_questions q
 LEFT JOIN grammar_categories c ON c.name = q.category
 WHERE q.category = $1
 ORDER BY q.id
-LIMIT $2
 `
-
-type GetGrammarQuestionsByCategoryParams struct {
-	Category string `json:"category"`
-	Limit    int32  `json:"limit"`
-}
 
 type GetGrammarQuestionsByCategoryRow struct {
 	ID          int64  `json:"id"`
 	Level       string `json:"level"`
 	Category    string `json:"category"`
+	Subcategory string `json:"subcategory"`
 	Prompt      string `json:"prompt"`
 	Options     []byte `json:"options"`
 	Answer      string `json:"answer"`
 	Explanation string `json:"explanation"`
 }
 
-func (q *Queries) GetGrammarQuestionsByCategory(ctx context.Context, arg GetGrammarQuestionsByCategoryParams) ([]GetGrammarQuestionsByCategoryRow, error) {
-	rows, err := q.db.Query(ctx, getGrammarQuestionsByCategory, arg.Category, arg.Limit)
+func (q *Queries) GetGrammarQuestionsByCategory(ctx context.Context, category string) ([]GetGrammarQuestionsByCategoryRow, error) {
+	rows, err := q.db.Query(ctx, getGrammarQuestionsByCategory, category)
 	if err != nil {
 		return nil, err
 	}
@@ -127,6 +124,7 @@ func (q *Queries) GetGrammarQuestionsByCategory(ctx context.Context, arg GetGram
 			&i.ID,
 			&i.Level,
 			&i.Category,
+			&i.Subcategory,
 			&i.Prompt,
 			&i.Options,
 			&i.Answer,
@@ -160,26 +158,29 @@ func (q *Queries) UpsertGrammarCategory(ctx context.Context, arg UpsertGrammarCa
 }
 
 const upsertGrammarQuestion = `-- name: UpsertGrammarQuestion :exec
-INSERT INTO grammar_questions (level, category, prompt, options, answer)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO grammar_questions (level, category, subcategory, prompt, options, answer)
+VALUES ($1, $2, $3, $4, $5, $6)
 ON CONFLICT (level, prompt) DO UPDATE
-SET category = EXCLUDED.category,
-    options  = EXCLUDED.options,
-    answer   = EXCLUDED.answer
+SET category    = EXCLUDED.category,
+    subcategory = EXCLUDED.subcategory,
+    options     = EXCLUDED.options,
+    answer      = EXCLUDED.answer
 `
 
 type UpsertGrammarQuestionParams struct {
-	Level    string `json:"level"`
-	Category string `json:"category"`
-	Prompt   string `json:"prompt"`
-	Options  []byte `json:"options"`
-	Answer   string `json:"answer"`
+	Level       string `json:"level"`
+	Category    string `json:"category"`
+	Subcategory string `json:"subcategory"`
+	Prompt      string `json:"prompt"`
+	Options     []byte `json:"options"`
+	Answer      string `json:"answer"`
 }
 
 func (q *Queries) UpsertGrammarQuestion(ctx context.Context, arg UpsertGrammarQuestionParams) error {
 	_, err := q.db.Exec(ctx, upsertGrammarQuestion,
 		arg.Level,
 		arg.Category,
+		arg.Subcategory,
 		arg.Prompt,
 		arg.Options,
 		arg.Answer,

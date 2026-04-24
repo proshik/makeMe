@@ -1,4 +1,4 @@
-.PHONY: run build migrate-up migrate-down migrate-create sqlc seed-words install-tools
+.PHONY: run build migrate-up migrate-down migrate-create sqlc install-tools
 
 DATABASE_URL ?= postgres://makeme:makeme@localhost:5432/makeme?sslmode=disable
 
@@ -22,12 +22,6 @@ migrate-create:
 
 sqlc:
 	~/go/bin/sqlc generate
-
-seed-words:
-	go run ./cmd/seed data/words.json
-
-seed-grammar:
-	go run ./cmd/seed data/grammar.json
 
 # Install development tools using the public proxy (not the corporate one)
 install-tools:

@@ -21,11 +21,12 @@ type WordEntry struct {
 }
 
 type GrammarEntry struct {
-	Level    string   `json:"level"`
-	Category string   `json:"category"`
-	Prompt   string   `json:"prompt"`
-	Options  []string `json:"options"`
-	Answer   string   `json:"answer"`
+	Level       string   `json:"level"`
+	Category    string   `json:"category"`
+	Subcategory string   `json:"subcategory"`
+	Prompt      string   `json:"prompt"`
+	Options     []string `json:"options"`
+	Answer      string   `json:"answer"`
 }
 
 func main() {
@@ -108,12 +109,17 @@ func seedGrammar(ctx context.Context, queries *sqlc.Queries, data []byte) {
 			log.Printf("failed to marshal options for %q: %v", q.Prompt, err)
 			continue
 		}
+		subcategory := q.Subcategory
+		if subcategory == "" {
+			subcategory = "general"
+		}
 		err = queries.UpsertGrammarQuestion(ctx, sqlc.UpsertGrammarQuestionParams{
-			Level:    q.Level,
-			Category: q.Category,
-			Prompt:   q.Prompt,
-			Options:  optionsJSON,
-			Answer:   q.Answer,
+			Level:       q.Level,
+			Category:    q.Category,
+			Subcategory: subcategory,
+			Prompt:      q.Prompt,
+			Options:     optionsJSON,
+			Answer:      q.Answer,
 		})
 		if err != nil {
 			log.Printf("failed to upsert grammar %q: %v", q.Prompt, err)

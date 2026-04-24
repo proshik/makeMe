@@ -12,7 +12,7 @@ Go, PostgreSQL (pgx/sqlc/goose), chi, [go-telegram/bot](https://github.com/go-te
 - **Daily tasks** — 5 vocabulary + 5 grammar tasks per set; up to 5 rounds per day per user (configurable via `MAX_ROUNDS_PER_DAY`); solo mode — no group required, one is auto-created; resumes where you left off. Each task shows a **🤷 Не знаю** button — honest skips are recorded separately and treated as wrong for SRS scheduling but don't penalise beyond 0 points.
 - **Spaced repetition (SM-2)** — vocabulary cards follow the SM-2 algorithm; new words appear when reviews are caught up
 - **Word bank** — ~900 words across A1–C2 with IPA transcription and audio pronunciation (fetched on demand from Free Dictionary API, cached in DB)
-- **Grammar questions** — stored in DB with Murphy's Essential/English Grammar in Use categories; ~100 questions per A1–B1 level
+- **Grammar questions** — stored in DB with Murphy's English Grammar in Use categories; 600+ questions across A1–C2; each tagged with subcategory (affirmative/negative/interrogative) for balanced `/learn` sessions
 - **Groups & leaderboards** — users join groups by invite code; daily/weekly/monthly leaderboards with normalized scores so different levels compete fairly
 - **Fair scoring** — raw points multiplied by a level coefficient (A1=0.6 … C2=1.5) so a perfect A1 score ≈ a perfect C2 score
 - **Profile** — current level, monthly points, daily streak, number of learned words
@@ -29,6 +29,7 @@ Go, PostgreSQL (pgx/sqlc/goose), chi, [go-telegram/bot](https://github.com/go-te
 | `/join КОД` | Join a group by invite code. |
 | `/mygroups` | List all groups you belong to. |
 | `/tasks` | Get today's tasks (3 vocab + 2 grammar). Generates if needed, resumes where you left off. |
+| `/learn` | Browse grammar topics at your level (and the next one). Each practice session shows up to 20 questions with a stratified mix of subtypes (affirmative / negative / interrogative / spelling). |
 | `/leaderboard` | Today's group leaderboard. Add `week` or `month` for other periods. |
 | `/profile` | Your level, monthly score, daily streak, and number of learned words. |
 
@@ -198,10 +199,15 @@ grammar_questions
 ├── id              BIGSERIAL PK
 ├── level           TEXT NOT NULL  (A1–C2)
 ├── category        TEXT NOT NULL  (Murphy topic, e.g. "Present Simple")
-├── question        TEXT NOT NULL
+├── subcategory     TEXT NOT NULL  DEFAULT 'general'  (affirmative/negative/interrogative/spelling/general)
+├── prompt          TEXT NOT NULL  (fill-in-the-blank with ___)
 ├── options         JSONB NOT NULL (array of 4 strings)
-├── answer          INT NOT NULL   (0-based index)
-└── created_at      TIMESTAMPTZ
+├── answer          TEXT NOT NULL  (correct option value)
+└── UNIQUE(level, prompt)
+
+grammar_categories
+├── name            TEXT PK        (category name, e.g. "Present Simple")
+└── explanation     TEXT NOT NULL  (theory shown in /learn)
 ```
 
 Level coefficients for normalized scores: A1=0.6, A2=0.8, B1=1.0, B2=1.15, C1=1.3, C2=1.5
@@ -234,16 +240,14 @@ Copy `.env.example` to `.env` and fill in the values:
 ```bash
 cp .env.example .env   # fill in values (see table above)
 
-make migrate-up        # run database migrations
-make seed-words        # seed word bank from data/words.json (~900 words across A1–C2)
-make sqlc              # regenerate sqlc code
-make run               # start the server
+make sqlc              # regenerate sqlc code after changing queries/
+make run               # start the server (applies migrations + seeds on startup)
 make build             # build binary
 ```
 
-### Word bank
+### Seed data
 
-The base word bank lives in `data/words.json` (~900 words, ~150 per CEFR level). To add words, edit the file and re-run `make seed-words` — existing entries are upserted, so no duplicates.
+Words (`data/words.json`) and grammar questions (`data/grammar.json`) are seeded automatically every time the application starts — no separate command needed. To add content, edit the relevant JSON file and restart the app; upserts are idempotent.
 
 IPA transcription and audio pronunciation are fetched on demand from the [Free Dictionary API](https://dictionaryapi.dev/) (no key required) the first time a user taps **🔊 Послушать** on a vocabulary card, then cached in the DB.
 

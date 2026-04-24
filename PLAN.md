@@ -537,6 +537,26 @@ type Config struct {
 
 ---
 
+### Фаза 10.6 — Стратификация /learn по подтипам правил [DONE]
+
+**Цель:** в одной сессии `/learn` гарантировать разнообразие подтипов правила (утверждение/отрицание/вопрос/spelling) и поднять лимит до 20 вопросов.
+
+**Что сделано:**
+- [x] `migrations/00022_add_grammar_subcategory.sql` — новая колонка `subcategory TEXT NOT NULL DEFAULT 'general'` + индекс `(category, subcategory)`
+- [x] `queries/grammar.sql` — `subcategory` во всех SELECT и `UpsertGrammarQuestion`; убран `LIMIT` из `GetGrammarQuestionsByCategory` (стратифицированную выборку делает Go)
+- [x] `make sqlc` — регенерация
+- [x] `internal/domain/task/grammar_repository.go` — поле `Subcategory` в `GrammarQuestion`; метод без `limit`
+- [x] `internal/domain/task/grammar_sampler.go` — `StratifiedSample` (round-robin по bucket-ам с детерминированным shuffle) + `LearnSessionSeed`
+- [x] `internal/domain/task/grammar_sampler_test.go` — юнит-тесты детерминизма, равномерности, пустого входа
+- [x] `internal/storage/postgres/grammar.go` — маппинг `Subcategory` и новая сигнатура `GetQuestionsByCategory`
+- [x] `internal/telegram/handler_learn.go` — `learnPracticeLimit = 20`; хелпер `loadLearnSession` с seed `(user_id, category, UTC day)` гарантирует стабильный порядок вопросов между callback-ами и обновление порядка на следующий день
+- [x] `cmd/seed/main.go` — парсинг и передача `subcategory` (дефолт `'general'`)
+- [x] `data/grammar.json` — проставлены `subcategory` для всех 230 вопросов; объединены темы `Past Simple (regular)` + `Past Simple negatives` → `Past Simple`, `Present Simple spelling` → `Present Simple`
+
+**Проверка:** `make seed-grammar` → `/learn` → выбрать `Past Simple` → «Начать практику» показывает до 20 вопросов с миксом affirmative/negative/interrogative.
+
+---
+
 ### Фаза 11 — Задания на перевод фраз (RU → EN)
 
 **Цель:** активное владение языком — самостоятельно составить предложение, а не выбрать из вариантов.

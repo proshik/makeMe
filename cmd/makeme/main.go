@@ -215,11 +215,12 @@ type grammarCategoryEntry struct {
 }
 
 type grammarQuestionEntry struct {
-	Level    string   `json:"level"`
-	Category string   `json:"category"`
-	Prompt   string   `json:"prompt"`
-	Options  []string `json:"options"`
-	Answer   string   `json:"answer"`
+	Level       string   `json:"level"`
+	Category    string   `json:"category"`
+	Subcategory string   `json:"subcategory"`
+	Prompt      string   `json:"prompt"`
+	Options     []string `json:"options"`
+	Answer      string   `json:"answer"`
 }
 
 func seedGrammarCategories(ctx context.Context, dbURL, file string) error {
@@ -276,12 +277,17 @@ func seedGrammarQuestions(ctx context.Context, dbURL, file string) error {
 			slog.Warn("failed to marshal options", "prompt", e.Prompt, "error", err)
 			continue
 		}
+		subcategory := e.Subcategory
+		if subcategory == "" {
+			subcategory = "general"
+		}
 		if err := q.UpsertGrammarQuestion(ctx, sqlc.UpsertGrammarQuestionParams{
-			Level:    e.Level,
-			Category: e.Category,
-			Prompt:   e.Prompt,
-			Options:  optJSON,
-			Answer:   e.Answer,
+			Level:       e.Level,
+			Category:    e.Category,
+			Subcategory: subcategory,
+			Prompt:      e.Prompt,
+			Options:     optJSON,
+			Answer:      e.Answer,
 		}); err != nil {
 			slog.Warn("failed to upsert grammar question", "prompt", e.Prompt, "error", err)
 		}

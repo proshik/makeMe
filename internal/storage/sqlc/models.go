@@ -48,12 +48,13 @@ type GrammarCategory struct {
 }
 
 type GrammarQuestion struct {
-	ID       int64  `json:"id"`
-	Level    string `json:"level"`
-	Category string `json:"category"`
-	Prompt   string `json:"prompt"`
-	Options  []byte `json:"options"`
-	Answer   string `json:"answer"`
+	ID          int64  `json:"id"`
+	Level       string `json:"level"`
+	Category    string `json:"category"`
+	Prompt      string `json:"prompt"`
+	Options     []byte `json:"options"`
+	Answer      string `json:"answer"`
+	Subcategory string `json:"subcategory"`
 }
 
 type Group struct {

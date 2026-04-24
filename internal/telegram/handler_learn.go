@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
@@ -15,7 +16,7 @@ import (
 	"makeMe/internal/domain/user"
 )
 
-const learnPracticeLimit = 5
+const learnPracticeLimit = 20
 
 // nextLevel returns the next CEFR level above l, or ("", false) for C2.
 func nextLevel(l user.Level) (user.Level, bool) {
@@ -173,11 +174,8 @@ func (b *Bot) handleLearnCat(ctx context.Context, tgBot *bot.Bot, chatID int64, 
 
 	cat := cats[idx]
 
-	// Count available practice questions
-	questions, err := b.grammarRepo.GetQuestionsByCategory(ctx, cat.Name, learnPracticeLimit)
-	if err != nil {
-		slog.Error("failed to count questions for category", "category", cat.Name, "error", err)
-	}
+	// Build the sampled question list to know how many this session will show.
+	questions := b.loadLearnSession(ctx, cat.Name)
 	total := len(questions)
 
 	var theoryText string
@@ -238,8 +236,8 @@ func (b *Bot) handleLearnAnswer(ctx context.Context, tgBot *bot.Bot, chatID int6
 		return
 	}
 
-	questions, err := b.grammarRepo.GetQuestionsByCategory(ctx, cats[catIdx].Name, learnPracticeLimit)
-	if err != nil || qIdx >= len(questions) {
+	questions := b.loadLearnSession(ctx, cats[catIdx].Name)
+	if qIdx >= len(questions) {
 		return
 	}
 
@@ -286,9 +284,9 @@ func (b *Bot) sendLearnQuestion(ctx context.Context, tgBot *bot.Bot, chatID int6
 		return
 	}
 
-	questions, err := b.grammarRepo.GetQuestionsByCategory(ctx, cats[catIdx].Name, learnPracticeLimit)
-	if err != nil || qIdx >= len(questions) {
-		slog.Error("failed to get questions for category", "category", cats[catIdx].Name, "error", err)
+	questions := b.loadLearnSession(ctx, cats[catIdx].Name)
+	if qIdx >= len(questions) {
+		slog.Error("learn question index out of range", "category", cats[catIdx].Name, "qIdx", qIdx, "available", len(questions))
 		return
 	}
 
@@ -312,6 +310,25 @@ func (b *Bot) sendLearnQuestion(ctx context.Context, tgBot *bot.Bot, chatID int6
 			InlineKeyboard: buttons,
 		},
 	})
+}
+
+// loadLearnSession fetches all questions in the category and returns a
+// stratified sample (up to learnPracticeLimit) ordered deterministically for
+// the current (user, category, UTC day). The same session produces the same
+// question order across callbacks, while a new day yields a new order.
+func (b *Bot) loadLearnSession(ctx context.Context, category string) []task.GrammarQuestion {
+	all, err := b.grammarRepo.GetQuestionsByCategory(ctx, category)
+	if err != nil {
+		slog.Error("failed to get questions for category", "category", category, "error", err)
+		return nil
+	}
+	u := UserFromContext(ctx)
+	var userID int64
+	if u != nil {
+		userID = u.ID
+	}
+	seed := task.LearnSessionSeed(userID, category, time.Now().UTC().Format("2006-01-02"))
+	return task.StratifiedSample(all, seed, learnPracticeLimit)
 }
 
 // --- Callback parsers ---

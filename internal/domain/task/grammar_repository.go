@@ -11,6 +11,7 @@ type GrammarQuestion struct {
 	ID          int64
 	Level       user.Level
 	Category    string
+	Subcategory string
 	Prompt      string
 	Options     []string
 	Answer      string
@@ -27,5 +28,5 @@ type GrammarCategory struct {
 type GrammarRepository interface {
 	GetByLevel(ctx context.Context, level user.Level) ([]GrammarQuestion, error)
 	GetCategoriesByLevel(ctx context.Context, level user.Level) ([]GrammarCategory, error)
-	GetQuestionsByCategory(ctx context.Context, category string, limit int) ([]GrammarQuestion, error)
+	GetQuestionsByCategory(ctx context.Context, category string) ([]GrammarQuestion, error)
 }

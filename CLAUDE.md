@@ -67,10 +67,19 @@ Tasks are generated daily and differ each day.
 - If there is no plan file, mention this to the user and suggest creating one
 
 ### Seed Data — NEVER use migrations for content
-- **Words** (`data/words.json`) — run `make seed-words` to upsert into DB.
-- **Grammar questions** (`data/grammar.json`) — run `make seed-grammar` to upsert into DB.
+- **Words** (`data/words.json`) and **Grammar questions** (`data/grammar.json`) are seeded **automatically on every app startup** — no manual command needed.
 - Migrations are for **schema changes only** (CREATE TABLE, ALTER TABLE, indexes).
-- Adding or editing words/grammar questions = edit the JSON file, then run the seed command. Never put INSERT rows for these tables into a migration file.
+- Adding or editing words/grammar questions = edit the JSON file and restart the app (or redeploy). Never put INSERT rows for these tables into a migration file.
+
+#### Grammar `subcategory` values
+Each grammar question carries a `subcategory` used by `/learn` to stratify the per-session sample so one practice covers different aspects of a rule. Allowed values:
+- `affirmative` — plain positive sentence (e.g. Past Simple `She played tennis.`)
+- `negative` — answer contains a negative contraction (`don't`, `didn't`, `won't`, `can't`, …)
+- `interrogative` — prompt ends with `?`
+- `spelling` — 3rd-person-singular / plural / ending spelling drill
+- `general` — catch-all for rules where the affirmative/negative/interrogative split doesn't apply (Articles, Prepositions, Object pronouns, …)
+
+Pick one of the above when adding new entries. Unknown values fall back to `"general"` automatically.
 
 ### Git & Commits
 - Always suggest committing after completing a logical unit of work (phase, feature, fix)
