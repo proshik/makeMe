@@ -2135,13 +2135,6 @@
     "transcription": "/əˈpɪnjən/"
   },
   {
-    "english": "opportunity",
-    "russian": "возможность",
-    "level": "B1",
-    "example": "Don't miss this opportunity.",
-    "transcription": "/ˌɒp.əˈtjuː.nɪ.tɪ/"
-  },
-  {
     "english": "organize",
     "russian": "организовывать",
     "level": "B1",
@@ -3120,13 +3113,6 @@
     "level": "B2",
     "example": "Studies indicate a problem.",
     "transcription": "/ˈɪndɪkeɪt/"
-  },
-  {
-    "english": "inevitable",
-    "russian": "неизбежный",
-    "level": "B2",
-    "example": "Mistakes are inevitable.",
-    "transcription": "/ɪnˈɛvɪtəbəl/"
   },
   {
     "english": "initial",
@@ -6277,5 +6263,1440 @@
     "level": "C2",
     "example": "She took umbrage at the remark.",
     "transcription": "/ˈʌm.bɹɪdʒ/"
+  },
+  {
+    "english": "run",
+    "russian": "бежать, бегать",
+    "level": "A1",
+    "example": "I run every morning to stay fit.",
+    "transcription": ""
+  },
+  {
+    "english": "walk",
+    "russian": "идти пешком, ходить",
+    "level": "A1",
+    "example": "We walk to school every day.",
+    "transcription": ""
+  },
+  {
+    "english": "sit",
+    "russian": "сидеть, садиться",
+    "level": "A1",
+    "example": "Please sit down and wait.",
+    "transcription": ""
+  },
+  {
+    "english": "stand",
+    "russian": "стоять, встать",
+    "level": "A1",
+    "example": "Stand up when the teacher enters.",
+    "transcription": ""
+  },
+  {
+    "english": "talk",
+    "russian": "разговаривать, говорить",
+    "level": "A1",
+    "example": "We talk on the phone every evening.",
+    "transcription": ""
+  },
+  {
+    "english": "listen",
+    "russian": "слушать",
+    "level": "A1",
+    "example": "Listen to the teacher carefully.",
+    "transcription": ""
+  },
+  {
+    "english": "look",
+    "russian": "смотреть, выглядеть",
+    "level": "A1",
+    "example": "Look at the beautiful sky!",
+    "transcription": ""
+  },
+  {
+    "english": "get",
+    "russian": "получать, становиться",
+    "level": "A1",
+    "example": "I get up at seven every morning.",
+    "transcription": ""
+  },
+  {
+    "english": "find",
+    "russian": "находить, найти",
+    "level": "A1",
+    "example": "Can you find my keys?",
+    "transcription": ""
+  },
+  {
+    "english": "tell",
+    "russian": "говорить, рассказывать",
+    "level": "A1",
+    "example": "Tell me your name, please.",
+    "transcription": ""
+  },
+  {
+    "english": "feel",
+    "russian": "чувствовать, ощущать",
+    "level": "A1",
+    "example": "I feel happy today.",
+    "transcription": ""
+  },
+  {
+    "english": "need",
+    "russian": "нуждаться, нужно",
+    "level": "A1",
+    "example": "I need a glass of water.",
+    "transcription": ""
+  },
+  {
+    "english": "use",
+    "russian": "использовать, пользоваться",
+    "level": "A1",
+    "example": "You can use my pen.",
+    "transcription": ""
+  },
+  {
+    "english": "start",
+    "russian": "начинать, начинаться",
+    "level": "A1",
+    "example": "The lesson starts at nine.",
+    "transcription": ""
+  },
+  {
+    "english": "stop",
+    "russian": "останавливаться, прекращать",
+    "level": "A1",
+    "example": "Stop talking and listen!",
+    "transcription": ""
+  },
+  {
+    "english": "hold",
+    "russian": "держать, удерживать",
+    "level": "A1",
+    "example": "Hold my hand, please.",
+    "transcription": ""
+  },
+  {
+    "english": "bring",
+    "russian": "приносить, привозить",
+    "level": "A1",
+    "example": "Bring your book to class tomorrow.",
+    "transcription": ""
+  },
+  {
+    "english": "join",
+    "russian": "присоединяться, вступать",
+    "level": "A1",
+    "example": "Would you like to join our group?",
+    "transcription": ""
+  },
+  {
+    "english": "show",
+    "russian": "показывать, демонстрировать",
+    "level": "A1",
+    "example": "Show me your homework.",
+    "transcription": ""
+  },
+  {
+    "english": "call",
+    "russian": "звонить, называть",
+    "level": "A1",
+    "example": "I will call you tonight.",
+    "transcription": ""
+  },
+  {
+    "english": "meet",
+    "russian": "встречать, познакомиться",
+    "level": "A1",
+    "example": "Nice to meet you!",
+    "transcription": ""
+  },
+  {
+    "english": "fall",
+    "russian": "падать, осень",
+    "level": "A1",
+    "example": "Be careful — don't fall!",
+    "transcription": ""
+  },
+  {
+    "english": "turn",
+    "russian": "поворачивать, становиться",
+    "level": "A1",
+    "example": "Turn left at the traffic lights.",
+    "transcription": ""
+  },
+  {
+    "english": "jump",
+    "russian": "прыгать",
+    "level": "A1",
+    "example": "The children love to jump in puddles.",
+    "transcription": ""
+  },
+  {
+    "english": "move",
+    "russian": "двигаться, переезжать",
+    "level": "A1",
+    "example": "Please move your bag — I want to sit.",
+    "transcription": ""
+  },
+  {
+    "english": "put",
+    "russian": "класть, ставить",
+    "level": "A1",
+    "example": "Put your books on the desk.",
+    "transcription": ""
+  },
+  {
+    "english": "cut",
+    "russian": "резать, порезать",
+    "level": "A1",
+    "example": "Cut the bread into slices.",
+    "transcription": ""
+  },
+  {
+    "english": "pull",
+    "russian": "тянуть, тащить",
+    "level": "A1",
+    "example": "Pull the door — don't push it.",
+    "transcription": ""
+  },
+  {
+    "english": "push",
+    "russian": "толкать, нажимать",
+    "level": "A1",
+    "example": "Push the button to open the door.",
+    "transcription": ""
+  },
+  {
+    "english": "follow",
+    "russian": "следовать, следить",
+    "level": "A1",
+    "example": "Follow me — I know the way.",
+    "transcription": ""
+  },
+  {
+    "english": "keep",
+    "russian": "хранить, продолжать, держать",
+    "level": "A1",
+    "example": "Keep this a secret.",
+    "transcription": ""
+  },
+  {
+    "english": "let",
+    "russian": "позволять, разрешать",
+    "level": "A1",
+    "example": "Let me help you with your bags.",
+    "transcription": ""
+  },
+  {
+    "english": "become",
+    "russian": "становиться, стать",
+    "level": "A1",
+    "example": "She wants to become a doctor.",
+    "transcription": ""
+  },
+  {
+    "english": "allow",
+    "russian": "разрешать, позволять",
+    "level": "A1",
+    "example": "Smoking is not allowed here.",
+    "transcription": ""
+  },
+  {
+    "english": "happen",
+    "russian": "происходить, случаться",
+    "level": "A1",
+    "example": "What happened to your arm?",
+    "transcription": ""
+  },
+  {
+    "english": "dance",
+    "russian": "танцевать, танец",
+    "level": "A1",
+    "example": "She loves to dance at parties.",
+    "transcription": ""
+  },
+  {
+    "english": "sing",
+    "russian": "петь",
+    "level": "A1",
+    "example": "He can sing very well.",
+    "transcription": ""
+  },
+  {
+    "english": "draw",
+    "russian": "рисовать, чертить",
+    "level": "A1",
+    "example": "Draw a picture of your house.",
+    "transcription": ""
+  },
+  {
+    "english": "swim",
+    "russian": "плавать, купаться",
+    "level": "A1",
+    "example": "Can you swim?",
+    "transcription": ""
+  },
+  {
+    "english": "ride",
+    "russian": "ездить верхом или на велосипеде",
+    "level": "A1",
+    "example": "I ride my bike to school.",
+    "transcription": ""
+  },
+  {
+    "english": "break",
+    "russian": "ломать, разбивать, перерыв",
+    "level": "A1",
+    "example": "Don't break the window!",
+    "transcription": ""
+  },
+  {
+    "english": "arm",
+    "russian": "рука (от плеча до запястья)",
+    "level": "A1",
+    "example": "She broke her arm playing football.",
+    "transcription": ""
+  },
+  {
+    "english": "back",
+    "russian": "спина, назад",
+    "level": "A1",
+    "example": "My back hurts after sitting all day.",
+    "transcription": ""
+  },
+  {
+    "english": "face",
+    "russian": "лицо",
+    "level": "A1",
+    "example": "Wash your face before breakfast.",
+    "transcription": ""
+  },
+  {
+    "english": "body",
+    "russian": "тело",
+    "level": "A1",
+    "example": "Exercise is good for your body.",
+    "transcription": ""
+  },
+  {
+    "english": "tooth",
+    "russian": "зуб",
+    "level": "A1",
+    "example": "Brush your teeth twice a day.",
+    "transcription": ""
+  },
+  {
+    "english": "skin",
+    "russian": "кожа",
+    "level": "A1",
+    "example": "Her skin is very soft.",
+    "transcription": ""
+  },
+  {
+    "english": "heart",
+    "russian": "сердце",
+    "level": "A1",
+    "example": "My heart beats fast when I run.",
+    "transcription": ""
+  },
+  {
+    "english": "brain",
+    "russian": "мозг",
+    "level": "A1",
+    "example": "Regular reading is good for your brain.",
+    "transcription": ""
+  },
+  {
+    "english": "son",
+    "russian": "сын",
+    "level": "A1",
+    "example": "Their son is five years old.",
+    "transcription": ""
+  },
+  {
+    "english": "daughter",
+    "russian": "дочь",
+    "level": "A1",
+    "example": "She has one daughter and two sons.",
+    "transcription": ""
+  },
+  {
+    "english": "husband",
+    "russian": "муж",
+    "level": "A1",
+    "example": "Her husband works in a hospital.",
+    "transcription": ""
+  },
+  {
+    "english": "wife",
+    "russian": "жена",
+    "level": "A1",
+    "example": "He bought flowers for his wife.",
+    "transcription": ""
+  },
+  {
+    "english": "baby",
+    "russian": "малыш, младенец",
+    "level": "A1",
+    "example": "The baby is sleeping.",
+    "transcription": ""
+  },
+  {
+    "english": "parent",
+    "russian": "родитель",
+    "level": "A1",
+    "example": "My parents live in the countryside.",
+    "transcription": ""
+  },
+  {
+    "english": "adult",
+    "russian": "взрослый",
+    "level": "A1",
+    "example": "This film is for adults only.",
+    "transcription": ""
+  },
+  {
+    "english": "banana",
+    "russian": "банан",
+    "level": "A1",
+    "example": "Monkeys love to eat bananas.",
+    "transcription": ""
+  },
+  {
+    "english": "orange",
+    "russian": "апельсин",
+    "level": "A1",
+    "example": "Would you like an orange?",
+    "transcription": ""
+  },
+  {
+    "english": "lemon",
+    "russian": "лимон",
+    "level": "A1",
+    "example": "Add a slice of lemon to your tea.",
+    "transcription": ""
+  },
+  {
+    "english": "tomato",
+    "russian": "помидор",
+    "level": "A1",
+    "example": "I put tomato in my salad.",
+    "transcription": ""
+  },
+  {
+    "english": "potato",
+    "russian": "картофель, картошка",
+    "level": "A1",
+    "example": "We have potatoes for dinner tonight.",
+    "transcription": ""
+  },
+  {
+    "english": "carrot",
+    "russian": "морковь",
+    "level": "A1",
+    "example": "Rabbits love to eat carrots.",
+    "transcription": ""
+  },
+  {
+    "english": "onion",
+    "russian": "лук",
+    "level": "A1",
+    "example": "Onions make my eyes water.",
+    "transcription": ""
+  },
+  {
+    "english": "chicken",
+    "russian": "курица, курятина",
+    "level": "A1",
+    "example": "We had chicken soup for lunch.",
+    "transcription": ""
+  },
+  {
+    "english": "soup",
+    "russian": "суп",
+    "level": "A1",
+    "example": "It's cold today — let's have some soup.",
+    "transcription": ""
+  },
+  {
+    "english": "pasta",
+    "russian": "макароны, паста",
+    "level": "A1",
+    "example": "Pasta is popular all over the world.",
+    "transcription": ""
+  },
+  {
+    "english": "juice",
+    "russian": "сок",
+    "level": "A1",
+    "example": "Would you like orange juice or water?",
+    "transcription": ""
+  },
+  {
+    "english": "meal",
+    "russian": "еда, приём пищи",
+    "level": "A1",
+    "example": "Dinner is my favourite meal of the day.",
+    "transcription": ""
+  },
+  {
+    "english": "dish",
+    "russian": "блюдо, тарелка",
+    "level": "A1",
+    "example": "This dish is very popular in Italy.",
+    "transcription": ""
+  },
+  {
+    "english": "fruit",
+    "russian": "фрукт, фрукты",
+    "level": "A1",
+    "example": "Eat more fruit and vegetables.",
+    "transcription": ""
+  },
+  {
+    "english": "salad",
+    "russian": "салат",
+    "level": "A1",
+    "example": "I made a salad with tomatoes and cucumbers.",
+    "transcription": ""
+  },
+  {
+    "english": "horse",
+    "russian": "лошадь",
+    "level": "A1",
+    "example": "She rides her horse every weekend.",
+    "transcription": ""
+  },
+  {
+    "english": "cow",
+    "russian": "корова",
+    "level": "A1",
+    "example": "Cows give us milk.",
+    "transcription": ""
+  },
+  {
+    "english": "pig",
+    "russian": "свинья",
+    "level": "A1",
+    "example": "Pigs are very intelligent animals.",
+    "transcription": ""
+  },
+  {
+    "english": "sheep",
+    "russian": "овца",
+    "level": "A1",
+    "example": "The farmer has fifty sheep.",
+    "transcription": ""
+  },
+  {
+    "english": "bedroom",
+    "russian": "спальня",
+    "level": "A1",
+    "example": "My bedroom has a big window.",
+    "transcription": ""
+  },
+  {
+    "english": "clock",
+    "russian": "часы (настенные или настольные)",
+    "level": "A1",
+    "example": "The clock on the wall says it's noon.",
+    "transcription": ""
+  },
+  {
+    "english": "sofa",
+    "russian": "диван",
+    "level": "A1",
+    "example": "The cat is sleeping on the sofa.",
+    "transcription": ""
+  },
+  {
+    "english": "lamp",
+    "russian": "лампа",
+    "level": "A1",
+    "example": "Turn on the lamp — it's getting dark.",
+    "transcription": ""
+  },
+  {
+    "english": "shelf",
+    "russian": "полка",
+    "level": "A1",
+    "example": "Put the book back on the shelf.",
+    "transcription": ""
+  },
+  {
+    "english": "mirror",
+    "russian": "зеркало",
+    "level": "A1",
+    "example": "She looked at herself in the mirror.",
+    "transcription": ""
+  },
+  {
+    "english": "life",
+    "russian": "жизнь",
+    "level": "A1",
+    "example": "Life in the city is very busy.",
+    "transcription": ""
+  },
+  {
+    "english": "world",
+    "russian": "мир, свет",
+    "level": "A1",
+    "example": "She wants to travel around the world.",
+    "transcription": ""
+  },
+  {
+    "english": "road",
+    "russian": "дорога, шоссе",
+    "level": "A1",
+    "example": "The road to the village is very narrow.",
+    "transcription": ""
+  },
+  {
+    "english": "home",
+    "russian": "дом, домой",
+    "level": "A1",
+    "example": "I'm going home after school.",
+    "transcription": ""
+  },
+  {
+    "english": "people",
+    "russian": "люди",
+    "level": "A1",
+    "example": "Many people visit this museum every day.",
+    "transcription": ""
+  },
+  {
+    "english": "person",
+    "russian": "человек, личность",
+    "level": "A1",
+    "example": "She is a very kind person.",
+    "transcription": ""
+  },
+  {
+    "english": "word",
+    "russian": "слово",
+    "level": "A1",
+    "example": "I don't understand this word.",
+    "transcription": ""
+  },
+  {
+    "english": "game",
+    "russian": "игра",
+    "level": "A1",
+    "example": "Let's play a board game tonight.",
+    "transcription": ""
+  },
+  {
+    "english": "idea",
+    "russian": "идея, мысль",
+    "level": "A1",
+    "example": "That's a great idea!",
+    "transcription": ""
+  },
+  {
+    "english": "team",
+    "russian": "команда",
+    "level": "A1",
+    "example": "Our team won the match.",
+    "transcription": ""
+  },
+  {
+    "english": "problem",
+    "russian": "проблема",
+    "level": "A1",
+    "example": "I have a problem with my computer.",
+    "transcription": ""
+  },
+  {
+    "english": "town",
+    "russian": "небольшой город, посёлок",
+    "level": "A1",
+    "example": "I grew up in a small town.",
+    "transcription": ""
+  },
+  {
+    "english": "age",
+    "russian": "возраст, эпоха",
+    "level": "A1",
+    "example": "What is your age?",
+    "transcription": ""
+  },
+  {
+    "english": "job",
+    "russian": "работа, должность",
+    "level": "A1",
+    "example": "She has a good job at the hospital.",
+    "transcription": ""
+  },
+  {
+    "english": "cloud",
+    "russian": "облако",
+    "level": "A1",
+    "example": "Dark clouds appeared in the sky.",
+    "transcription": ""
+  },
+  {
+    "english": "plane",
+    "russian": "самолёт",
+    "level": "A1",
+    "example": "We took a plane to Spain.",
+    "transcription": ""
+  },
+  {
+    "english": "bike",
+    "russian": "велосипед",
+    "level": "A1",
+    "example": "She cycles to work on her bike.",
+    "transcription": ""
+  },
+  {
+    "english": "question",
+    "russian": "вопрос",
+    "level": "A1",
+    "example": "Do you have any questions?",
+    "transcription": ""
+  },
+  {
+    "english": "cup",
+    "russian": "чашка",
+    "level": "A1",
+    "example": "Would you like a cup of tea?",
+    "transcription": ""
+  },
+  {
+    "english": "place",
+    "russian": "место",
+    "level": "A1",
+    "example": "This is a beautiful place for a picnic.",
+    "transcription": ""
+  },
+  {
+    "english": "wind",
+    "russian": "ветер",
+    "level": "A1",
+    "example": "The wind is blowing strongly today.",
+    "transcription": ""
+  },
+  {
+    "english": "sad",
+    "russian": "грустный, печальный",
+    "level": "A1",
+    "example": "She felt sad when her friend left.",
+    "transcription": ""
+  },
+  {
+    "english": "beautiful",
+    "russian": "красивый, прекрасный",
+    "level": "A1",
+    "example": "What a beautiful sunset!",
+    "transcription": ""
+  },
+  {
+    "english": "young",
+    "russian": "молодой",
+    "level": "A1",
+    "example": "He is young — only twenty years old.",
+    "transcription": ""
+  },
+  {
+    "english": "boring",
+    "russian": "скучный",
+    "level": "A1",
+    "example": "The film was very boring.",
+    "transcription": ""
+  },
+  {
+    "english": "interesting",
+    "russian": "интересный",
+    "level": "A1",
+    "example": "This is a very interesting book.",
+    "transcription": ""
+  },
+  {
+    "english": "warm",
+    "russian": "тёплый",
+    "level": "A1",
+    "example": "The weather is warm and sunny today.",
+    "transcription": ""
+  },
+  {
+    "english": "cool",
+    "russian": "прохладный, классный",
+    "level": "A1",
+    "example": "It's cool in the evening.",
+    "transcription": ""
+  },
+  {
+    "english": "long",
+    "russian": "длинный, долгий",
+    "level": "A1",
+    "example": "It's a long walk to the station.",
+    "transcription": ""
+  },
+  {
+    "english": "short",
+    "russian": "короткий, невысокий",
+    "level": "A1",
+    "example": "The film is short — only one hour.",
+    "transcription": ""
+  },
+  {
+    "english": "high",
+    "russian": "высокий, высоко",
+    "level": "A1",
+    "example": "The mountains are very high here.",
+    "transcription": ""
+  },
+  {
+    "english": "low",
+    "russian": "низкий, низко",
+    "level": "A1",
+    "example": "The shelf is too low for the tall books.",
+    "transcription": ""
+  },
+  {
+    "english": "ugly",
+    "russian": "некрасивый, уродливый",
+    "level": "A1",
+    "example": "That old building looks very ugly.",
+    "transcription": ""
+  },
+  {
+    "english": "right",
+    "russian": "правильный, правый",
+    "level": "A1",
+    "example": "Is this the right answer?",
+    "transcription": ""
+  },
+  {
+    "english": "wrong",
+    "russian": "неправильный, неверный",
+    "level": "A1",
+    "example": "Sorry, that answer is wrong.",
+    "transcription": ""
+  },
+  {
+    "english": "true",
+    "russian": "правдивый, истинный",
+    "level": "A1",
+    "example": "Is it true that you won the prize?",
+    "transcription": ""
+  },
+  {
+    "english": "color",
+    "russian": "цвет",
+    "level": "A1",
+    "example": "What is your favourite colour?",
+    "transcription": ""
+  },
+  {
+    "english": "always",
+    "russian": "всегда",
+    "level": "A1",
+    "example": "She always arrives on time.",
+    "transcription": ""
+  },
+  {
+    "english": "never",
+    "russian": "никогда",
+    "level": "A1",
+    "example": "I never eat meat.",
+    "transcription": ""
+  },
+  {
+    "english": "often",
+    "russian": "часто",
+    "level": "A1",
+    "example": "How often do you exercise?",
+    "transcription": ""
+  },
+  {
+    "english": "usually",
+    "russian": "обычно, как правило",
+    "level": "A1",
+    "example": "I usually have coffee in the morning.",
+    "transcription": ""
+  },
+  {
+    "english": "sometimes",
+    "russian": "иногда",
+    "level": "A1",
+    "example": "We sometimes eat at a restaurant.",
+    "transcription": ""
+  },
+  {
+    "english": "still",
+    "russian": "всё ещё, до сих пор",
+    "level": "A1",
+    "example": "Is it still raining outside?",
+    "transcription": ""
+  },
+  {
+    "english": "again",
+    "russian": "снова, ещё раз",
+    "level": "A1",
+    "example": "Could you say that again, please?",
+    "transcription": ""
+  },
+  {
+    "english": "also",
+    "russian": "также, тоже",
+    "level": "A1",
+    "example": "I also like tea.",
+    "transcription": ""
+  },
+  {
+    "english": "very",
+    "russian": "очень",
+    "level": "A1",
+    "example": "The coffee is very hot.",
+    "transcription": ""
+  },
+  {
+    "english": "really",
+    "russian": "действительно, очень",
+    "level": "A1",
+    "example": "That's really good news!",
+    "transcription": ""
+  },
+  {
+    "english": "quite",
+    "russian": "довольно, весьма",
+    "level": "A1",
+    "example": "The film was quite good.",
+    "transcription": ""
+  },
+  {
+    "english": "enough",
+    "russian": "достаточно",
+    "level": "A1",
+    "example": "Is there enough food for everyone?",
+    "transcription": ""
+  },
+  {
+    "english": "too",
+    "russian": "слишком, тоже",
+    "level": "A1",
+    "example": "This soup is too hot.",
+    "transcription": ""
+  },
+  {
+    "english": "together",
+    "russian": "вместе",
+    "level": "A1",
+    "example": "Let's work together on this project.",
+    "transcription": ""
+  },
+  {
+    "english": "alone",
+    "russian": "один, в одиночестве",
+    "level": "A1",
+    "example": "She lives alone in a big apartment.",
+    "transcription": ""
+  },
+  {
+    "english": "outside",
+    "russian": "снаружи, на улице",
+    "level": "A1",
+    "example": "It's cold outside — put on your coat.",
+    "transcription": ""
+  },
+  {
+    "english": "inside",
+    "russian": "внутри, в помещении",
+    "level": "A1",
+    "example": "Come inside — it's warm.",
+    "transcription": ""
+  },
+  {
+    "english": "now",
+    "russian": "сейчас, теперь",
+    "level": "A1",
+    "example": "What are you doing now?",
+    "transcription": ""
+  },
+  {
+    "english": "soon",
+    "russian": "скоро, вскоре",
+    "level": "A1",
+    "example": "Dinner will be ready soon.",
+    "transcription": ""
+  },
+  {
+    "english": "last",
+    "russian": "последний, прошлый",
+    "level": "A1",
+    "example": "I saw him last week.",
+    "transcription": ""
+  },
+  {
+    "english": "next",
+    "russian": "следующий, рядом",
+    "level": "A1",
+    "example": "See you next Monday!",
+    "transcription": ""
+  },
+  {
+    "english": "first",
+    "russian": "первый, сначала",
+    "level": "A1",
+    "example": "She was the first to arrive.",
+    "transcription": ""
+  },
+  {
+    "english": "then",
+    "russian": "тогда, потом",
+    "level": "A1",
+    "example": "Eat breakfast, then brush your teeth.",
+    "transcription": ""
+  },
+  {
+    "english": "each",
+    "russian": "каждый (отдельный)",
+    "level": "A1",
+    "example": "Each student has a textbook.",
+    "transcription": ""
+  },
+  {
+    "english": "every",
+    "russian": "каждый (все)",
+    "level": "A1",
+    "example": "I go to the gym every day.",
+    "transcription": ""
+  },
+  {
+    "english": "between",
+    "russian": "между",
+    "level": "A1",
+    "example": "The park is between the school and the bank.",
+    "transcription": ""
+  },
+  {
+    "english": "above",
+    "russian": "над, выше",
+    "level": "A1",
+    "example": "The lamp is above the table.",
+    "transcription": ""
+  },
+  {
+    "english": "below",
+    "russian": "под, ниже",
+    "level": "A1",
+    "example": "The temperature is below zero.",
+    "transcription": ""
+  },
+  {
+    "english": "around",
+    "russian": "вокруг, примерно",
+    "level": "A1",
+    "example": "There are trees around the house.",
+    "transcription": ""
+  },
+  {
+    "english": "bank",
+    "russian": "банк",
+    "level": "A2",
+    "example": "I need to go to the bank to get some money.",
+    "transcription": ""
+  },
+  {
+    "english": "office",
+    "russian": "офис, кабинет",
+    "level": "A2",
+    "example": "She works in an office in the city centre.",
+    "transcription": ""
+  },
+  {
+    "english": "company",
+    "russian": "компания, фирма",
+    "level": "A2",
+    "example": "He works for a big international company.",
+    "transcription": ""
+  },
+  {
+    "english": "boss",
+    "russian": "начальник, шеф",
+    "level": "A2",
+    "example": "My boss gave me a new project to work on.",
+    "transcription": ""
+  },
+  {
+    "english": "manager",
+    "russian": "менеджер, руководитель",
+    "level": "A2",
+    "example": "The manager decided to hire two new people.",
+    "transcription": ""
+  },
+  {
+    "english": "story",
+    "russian": "история, рассказ",
+    "level": "A2",
+    "example": "She told us a funny story about her holiday.",
+    "transcription": ""
+  },
+  {
+    "english": "plan",
+    "russian": "план",
+    "level": "A2",
+    "example": "What's your plan for the weekend?",
+    "transcription": ""
+  },
+  {
+    "english": "news",
+    "russian": "новости",
+    "level": "A2",
+    "example": "Have you heard the news today?",
+    "transcription": ""
+  },
+  {
+    "english": "language",
+    "russian": "язык (иностранный)",
+    "level": "A2",
+    "example": "How many languages do you speak?",
+    "transcription": ""
+  },
+  {
+    "english": "price",
+    "russian": "цена",
+    "level": "A2",
+    "example": "The price of this jacket is too high.",
+    "transcription": ""
+  },
+  {
+    "english": "date",
+    "russian": "дата, свидание",
+    "level": "A2",
+    "example": "What is today's date?",
+    "transcription": ""
+  },
+  {
+    "english": "size",
+    "russian": "размер",
+    "level": "A2",
+    "example": "What size shoes do you wear?",
+    "transcription": ""
+  },
+  {
+    "english": "shape",
+    "russian": "форма",
+    "level": "A2",
+    "example": "The table has a round shape.",
+    "transcription": ""
+  },
+  {
+    "english": "height",
+    "russian": "высота, рост",
+    "level": "A2",
+    "example": "What is your height?",
+    "transcription": ""
+  },
+  {
+    "english": "weight",
+    "russian": "вес",
+    "level": "A2",
+    "example": "The doctor checked my weight.",
+    "transcription": ""
+  },
+  {
+    "english": "health",
+    "russian": "здоровье",
+    "level": "A2",
+    "example": "Good food is important for your health.",
+    "transcription": ""
+  },
+  {
+    "english": "email",
+    "russian": "электронная почта",
+    "level": "A2",
+    "example": "Send me an email with the details.",
+    "transcription": ""
+  },
+  {
+    "english": "screen",
+    "russian": "экран",
+    "level": "A2",
+    "example": "Don't sit too close to the screen.",
+    "transcription": ""
+  },
+  {
+    "english": "app",
+    "russian": "приложение",
+    "level": "A2",
+    "example": "I downloaded a new app for learning English.",
+    "transcription": ""
+  },
+  {
+    "english": "ticket",
+    "russian": "билет",
+    "level": "A2",
+    "example": "I bought a train ticket online.",
+    "transcription": ""
+  },
+  {
+    "english": "match",
+    "russian": "матч, совпадать",
+    "level": "A2",
+    "example": "Did you watch the football match last night?",
+    "transcription": ""
+  },
+  {
+    "english": "race",
+    "russian": "гонка, забег",
+    "level": "A2",
+    "example": "She won the race by just one second.",
+    "transcription": ""
+  },
+  {
+    "english": "prize",
+    "russian": "приз, награда",
+    "level": "A2",
+    "example": "He won first prize in the competition.",
+    "transcription": ""
+  },
+  {
+    "english": "winner",
+    "russian": "победитель",
+    "level": "A2",
+    "example": "The winner received a gold medal.",
+    "transcription": ""
+  },
+  {
+    "english": "fact",
+    "russian": "факт",
+    "level": "A2",
+    "example": "It's a fact that the Earth orbits the Sun.",
+    "transcription": ""
+  },
+  {
+    "english": "case",
+    "russian": "случай, дело",
+    "level": "A2",
+    "example": "In that case, let's change our plans.",
+    "transcription": ""
+  },
+  {
+    "english": "part",
+    "russian": "часть, роль",
+    "level": "A2",
+    "example": "This is the most important part of the book.",
+    "transcription": ""
+  },
+  {
+    "english": "group",
+    "russian": "группа",
+    "level": "A2",
+    "example": "Work in groups of three for this activity.",
+    "transcription": ""
+  },
+  {
+    "english": "information",
+    "russian": "информация",
+    "level": "A2",
+    "example": "Do you have any information about the trains?",
+    "transcription": ""
+  },
+  {
+    "english": "sentence",
+    "russian": "предложение (грамматическое)",
+    "level": "A2",
+    "example": "Write a sentence using this new word.",
+    "transcription": ""
+  },
+  {
+    "english": "insect",
+    "russian": "насекомое",
+    "level": "A2",
+    "example": "A bee is a type of insect.",
+    "transcription": ""
+  },
+  {
+    "english": "temperature",
+    "russian": "температура",
+    "level": "A2",
+    "example": "The temperature outside is minus five degrees.",
+    "transcription": ""
+  },
+  {
+    "english": "market",
+    "russian": "рынок, базар",
+    "level": "A2",
+    "example": "We buy fresh vegetables at the market.",
+    "transcription": ""
+  },
+  {
+    "english": "wine",
+    "russian": "вино",
+    "level": "A2",
+    "example": "Would you like a glass of red wine?",
+    "transcription": ""
+  },
+  {
+    "english": "beer",
+    "russian": "пиво",
+    "level": "A2",
+    "example": "He ordered a cold beer at the bar.",
+    "transcription": ""
+  },
+  {
+    "english": "website",
+    "russian": "веб-сайт, сайт",
+    "level": "A2",
+    "example": "Check the company's website for more details.",
+    "transcription": ""
+  },
+  {
+    "english": "check",
+    "russian": "проверять, счёт",
+    "level": "A2",
+    "example": "Please check your answers before you submit.",
+    "transcription": ""
+  },
+  {
+    "english": "sign",
+    "russian": "знак, подписывать",
+    "level": "A2",
+    "example": "Sign your name at the bottom of the form.",
+    "transcription": ""
+  },
+  {
+    "english": "ring",
+    "russian": "звонить, кольцо",
+    "level": "A2",
+    "example": "The phone is ringing — can you answer it?",
+    "transcription": ""
+  },
+  {
+    "english": "knock",
+    "russian": "стучать",
+    "level": "A2",
+    "example": "Knock before you enter the room.",
+    "transcription": ""
+  },
+  {
+    "english": "lock",
+    "russian": "замок, запирать",
+    "level": "A2",
+    "example": "Don't forget to lock the door.",
+    "transcription": ""
+  },
+  {
+    "english": "wave",
+    "russian": "махать рукой, волна",
+    "level": "A2",
+    "example": "She waved goodbye from the window.",
+    "transcription": ""
+  },
+  {
+    "english": "throw",
+    "russian": "бросать, кидать",
+    "level": "A2",
+    "example": "Throw the ball to me!",
+    "transcription": ""
+  },
+  {
+    "english": "catch",
+    "russian": "ловить, поймать",
+    "level": "A2",
+    "example": "Can you catch this?",
+    "transcription": ""
+  },
+  {
+    "english": "paint",
+    "russian": "рисовать красками, краска",
+    "level": "A2",
+    "example": "He paints beautiful landscapes.",
+    "transcription": ""
+  },
+  {
+    "english": "type",
+    "russian": "печатать, тип",
+    "level": "A2",
+    "example": "Can you type a letter for me?",
+    "transcription": ""
+  },
+  {
+    "english": "print",
+    "russian": "распечатывать, печатать",
+    "level": "A2",
+    "example": "Please print the document and bring it here.",
+    "transcription": ""
+  },
+  {
+    "english": "enter",
+    "russian": "входить, вводить (данные)",
+    "level": "A2",
+    "example": "Enter your password to log in.",
+    "transcription": ""
+  },
+  {
+    "english": "build",
+    "russian": "строить, создавать",
+    "level": "A2",
+    "example": "They are building a new school in our area.",
+    "transcription": ""
+  },
+  {
+    "english": "false",
+    "russian": "ложный, неверный",
+    "level": "A2",
+    "example": "True or false: the Earth is flat.",
+    "transcription": ""
+  },
+  {
+    "english": "colleague",
+    "russian": "коллега",
+    "level": "B1",
+    "example": "I had lunch with my colleagues today.",
+    "transcription": ""
+  },
+  {
+    "english": "employee",
+    "russian": "сотрудник, работник",
+    "level": "B1",
+    "example": "The company has over 500 employees.",
+    "transcription": ""
+  },
+  {
+    "english": "system",
+    "russian": "система",
+    "level": "B1",
+    "example": "The new computer system is very fast.",
+    "transcription": ""
+  },
+  {
+    "english": "factory",
+    "russian": "завод, фабрика",
+    "level": "B1",
+    "example": "The factory produces a thousand cars a day.",
+    "transcription": ""
+  },
+  {
+    "english": "keyboard",
+    "russian": "клавиатура",
+    "level": "B1",
+    "example": "Clean your keyboard — it's full of dust.",
+    "transcription": ""
+  },
+  {
+    "english": "mouse",
+    "russian": "компьютерная мышь",
+    "level": "B1",
+    "example": "My mouse stopped working — I need a new one.",
+    "transcription": ""
+  },
+  {
+    "english": "download",
+    "russian": "скачивать, загружать",
+    "level": "B1",
+    "example": "I downloaded the new software yesterday.",
+    "transcription": ""
+  },
+  {
+    "english": "upload",
+    "russian": "загружать в сеть",
+    "level": "B1",
+    "example": "Upload the photo to the website.",
+    "transcription": ""
   }
 ]
