@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"html"
 	"log/slog"
+	"math/rand/v2"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
@@ -160,6 +160,10 @@ func catButtons(cats []task.GrammarCategory, level user.Level) [][]models.Inline
 }
 
 // handleLearnCat parses "learn:cat:{level}:{idx}" and shows the theory screen.
+// A fresh per-session seed is generated here and embedded into the "Начать
+// практику" callback, so that question order is reshuffled every time the
+// user enters a category — but stays stable across the callbacks within one
+// practice run (each subsequent learn:qa: callback carries the same seed).
 func (b *Bot) handleLearnCat(ctx context.Context, tgBot *bot.Bot, chatID int64, data string) {
 	level, idx, ok := parseLearnCat(data)
 	if !ok {
@@ -174,12 +178,16 @@ func (b *Bot) handleLearnCat(ctx context.Context, tgBot *bot.Bot, chatID int64, 
 
 	cat := cats[idx]
 
-	// Build the sampled question list to know how many this session will show.
-	questions := b.loadLearnSession(ctx, cat.Name)
+	// Generate a per-session seed (uint32 fits in 10 chars and stays well under
+	// the 64-byte callback limit). The total question count is independent of
+	// seed (StratifiedSample only re-orders), so the seed only affects order.
+	seed := int64(rand.Uint32())
+
+	questions := b.loadLearnSession(ctx, cat.Name, seed)
 	total := len(questions)
 
 	if u := UserFromContext(ctx); u != nil {
-		slog.Info("learn category opened", "user_id", u.ID, "level", level, "category", cat.Name, "total_questions", total)
+		slog.Info("learn category opened", "user_id", u.ID, "level", level, "category", cat.Name, "total_questions", total, "seed", seed)
 	}
 
 	var theoryText string
@@ -189,13 +197,12 @@ func (b *Bot) handleLearnCat(ctx context.Context, tgBot *bot.Bot, chatID int64, 
 		theoryText = fmt.Sprintf("📗 <b>%s</b>\n\nОписание для этой темы пока не добавлено.", html.EscapeString(cat.Name))
 	}
 
-	catCallback := fmt.Sprintf("learn:cat:%s:%d", level, idx)
 	var keyboard [][]models.InlineKeyboardButton
 	if total > 0 {
 		keyboard = [][]models.InlineKeyboardButton{
 			{
 				{Text: fmt.Sprintf("📝 Начать практику (%d вопросов) →", total),
-					CallbackData: fmt.Sprintf("learn:practice:%s:%d:%d", level, idx, total)},
+					CallbackData: fmt.Sprintf("learn:practice:%s:%d:%d:%d", level, idx, total, seed)},
 			},
 			{
 				{Text: "← Назад к темам", CallbackData: "learn:menu"},
@@ -206,7 +213,6 @@ func (b *Bot) handleLearnCat(ctx context.Context, tgBot *bot.Bot, chatID int64, 
 			{{Text: "← Назад к темам", CallbackData: "learn:menu"}},
 		}
 	}
-	_ = catCallback
 
 	tgBot.SendMessage(ctx, &bot.SendMessageParams{
 		ChatID:    chatID,
@@ -219,24 +225,24 @@ func (b *Bot) handleLearnCat(ctx context.Context, tgBot *bot.Bot, chatID int64, 
 }
 
 // handleLearnPractice shows practice question at position qIdx.
-// Called for "learn:practice:{level}:{catIdx}:{total}" (first question).
+// Called for "learn:practice:{level}:{catIdx}:{total}:{seed}" (first question).
 func (b *Bot) handleLearnPractice(ctx context.Context, tgBot *bot.Bot, chatID int64, data string, qIdx int) {
-	level, catIdx, total, ok := parseLearnPractice(data)
+	level, catIdx, total, seed, ok := parseLearnPractice(data)
 	if !ok {
 		return
 	}
 	if u := UserFromContext(ctx); u != nil {
 		cats, err := b.grammarRepo.GetCategoriesByLevel(ctx, level)
 		if err == nil && catIdx < len(cats) {
-			slog.Info("learn practice started", "user_id", u.ID, "level", level, "category", cats[catIdx].Name, "total", total)
+			slog.Info("learn practice started", "user_id", u.ID, "level", level, "category", cats[catIdx].Name, "total", total, "seed", seed)
 		}
 	}
-	b.sendLearnQuestion(ctx, tgBot, chatID, level, catIdx, qIdx, total)
+	b.sendLearnQuestion(ctx, tgBot, chatID, level, catIdx, qIdx, total, seed)
 }
 
-// handleLearnAnswer processes "learn:qa:{level}:{catIdx}:{qIdx}:{total}:{optIdx}".
+// handleLearnAnswer processes "learn:qa:{level}:{catIdx}:{qIdx}:{total}:{seed}:{optIdx}".
 func (b *Bot) handleLearnAnswer(ctx context.Context, tgBot *bot.Bot, chatID int64, data string) {
-	level, catIdx, qIdx, total, optIdx, ok := parseLearnQA(data)
+	level, catIdx, qIdx, total, seed, optIdx, ok := parseLearnQA(data)
 	if !ok {
 		return
 	}
@@ -246,7 +252,7 @@ func (b *Bot) handleLearnAnswer(ctx context.Context, tgBot *bot.Bot, chatID int6
 		return
 	}
 
-	questions := b.loadLearnSession(ctx, cats[catIdx].Name)
+	questions := b.loadLearnSession(ctx, cats[catIdx].Name, seed)
 	if qIdx >= len(questions) {
 		return
 	}
@@ -276,7 +282,7 @@ func (b *Bot) handleLearnAnswer(ctx context.Context, tgBot *bot.Bot, chatID int6
 
 	nextIdx := qIdx + 1
 	if nextIdx < total {
-		b.sendLearnQuestion(ctx, tgBot, chatID, level, catIdx, nextIdx, total)
+		b.sendLearnQuestion(ctx, tgBot, chatID, level, catIdx, nextIdx, total, seed)
 	} else {
 		if u := UserFromContext(ctx); u != nil {
 			slog.Info("learn practice completed", "user_id", u.ID, "level", level, "category", cats[catIdx].Name, "total", total)
@@ -295,14 +301,17 @@ func (b *Bot) handleLearnAnswer(ctx context.Context, tgBot *bot.Bot, chatID int6
 }
 
 // sendLearnQuestion fetches and displays question qIdx for the given category.
-func (b *Bot) sendLearnQuestion(ctx context.Context, tgBot *bot.Bot, chatID int64, level user.Level, catIdx, qIdx, total int) {
+// The seed pins the question order for this practice run — every learn:qa:
+// callback carries it so re-derivation of the question list across callbacks
+// is deterministic.
+func (b *Bot) sendLearnQuestion(ctx context.Context, tgBot *bot.Bot, chatID int64, level user.Level, catIdx, qIdx, total int, seed int64) {
 	cats, err := b.grammarRepo.GetCategoriesByLevel(ctx, level)
 	if err != nil || catIdx >= len(cats) {
 		slog.Error("failed to get categories for learn question", "error", err)
 		return
 	}
 
-	questions := b.loadLearnSession(ctx, cats[catIdx].Name)
+	questions := b.loadLearnSession(ctx, cats[catIdx].Name, seed)
 	if qIdx >= len(questions) {
 		slog.Error("learn question index out of range", "category", cats[catIdx].Name, "qIdx", qIdx, "available", len(questions))
 		return
@@ -319,14 +328,14 @@ func (b *Bot) sendLearnQuestion(ctx context.Context, tgBot *bot.Bot, chatID int6
 		buttons[i] = []models.InlineKeyboardButton{
 			{
 				Text:         opt,
-				CallbackData: fmt.Sprintf("learn:qa:%s:%d:%d:%d:%d", level, catIdx, qIdx, total, i),
+				CallbackData: fmt.Sprintf("learn:qa:%s:%d:%d:%d:%d:%d", level, catIdx, qIdx, total, seed, i),
 			},
 		}
 	}
 	buttons = append(buttons, []models.InlineKeyboardButton{
 		{
 			Text:         "🤷 Не знаю",
-			CallbackData: fmt.Sprintf("learn:qa:%s:%d:%d:%d:-1", level, catIdx, qIdx, total),
+			CallbackData: fmt.Sprintf("learn:qa:%s:%d:%d:%d:%d:-1", level, catIdx, qIdx, total, seed),
 		},
 	})
 
@@ -340,22 +349,17 @@ func (b *Bot) sendLearnQuestion(ctx context.Context, tgBot *bot.Bot, chatID int6
 	})
 }
 
-// loadLearnSession fetches all questions in the category and returns a
-// stratified sample (up to learnPracticeLimit) ordered deterministically for
-// the current (user, category, UTC day). The same session produces the same
-// question order across callbacks, while a new day yields a new order.
-func (b *Bot) loadLearnSession(ctx context.Context, category string) []task.GrammarQuestion {
+// loadLearnSession fetches all questions for the category and returns a
+// stratified sample (up to learnPracticeLimit) ordered by the given seed.
+// The seed is created fresh in handleLearnCat and travels through every
+// callback in the practice run, so the order is stable for one session and
+// reshuffled when the user re-enters the category.
+func (b *Bot) loadLearnSession(ctx context.Context, category string, seed int64) []task.GrammarQuestion {
 	all, err := b.grammarRepo.GetQuestionsByCategory(ctx, category)
 	if err != nil {
 		slog.Error("failed to get questions for category", "category", category, "error", err)
 		return nil
 	}
-	u := UserFromContext(ctx)
-	var userID int64
-	if u != nil {
-		userID = u.ID
-	}
-	seed := task.LearnSessionSeed(userID, category, time.Now().UTC().Format("2006-01-02"))
 	return task.StratifiedSample(all, seed, learnPracticeLimit)
 }
 
@@ -375,44 +379,54 @@ func parseLearnCat(data string) (user.Level, int, bool) {
 	return user.Level(parts[2]), idx, true
 }
 
-// parseLearnPractice parses "learn:practice:{level}:{catIdx}:{total}".
-func parseLearnPractice(data string) (user.Level, int, int, bool) {
-	parts := strings.SplitN(data, ":", 5)
-	if len(parts) != 5 {
-		return "", 0, 0, false
+// parseLearnPractice parses "learn:practice:{level}:{catIdx}:{total}:{seed}".
+func parseLearnPractice(data string) (level user.Level, catIdx, total int, seed int64, ok bool) {
+	parts := strings.SplitN(data, ":", 6)
+	if len(parts) != 6 {
+		return "", 0, 0, 0, false
 	}
-	catIdx, err := strconv.Atoi(parts[3])
+	var err error
+	catIdx, err = strconv.Atoi(parts[3])
 	if err != nil {
-		return "", 0, 0, false
+		return "", 0, 0, 0, false
 	}
-	total, err := strconv.Atoi(parts[4])
+	total, err = strconv.Atoi(parts[4])
 	if err != nil {
-		return "", 0, 0, false
+		return "", 0, 0, 0, false
 	}
-	return user.Level(parts[2]), catIdx, total, true
+	seed, err = strconv.ParseInt(parts[5], 10, 64)
+	if err != nil {
+		return "", 0, 0, 0, false
+	}
+	return user.Level(parts[2]), catIdx, total, seed, true
 }
 
-// parseLearnQA parses "learn:qa:{level}:{catIdx}:{qIdx}:{total}:{optIdx}".
-func parseLearnQA(data string) (user.Level, int, int, int, int, bool) {
-	parts := strings.SplitN(data, ":", 7)
-	if len(parts) != 7 {
-		return "", 0, 0, 0, 0, false
+// parseLearnQA parses "learn:qa:{level}:{catIdx}:{qIdx}:{total}:{seed}:{optIdx}".
+func parseLearnQA(data string) (level user.Level, catIdx, qIdx, total int, seed int64, optIdx int, ok bool) {
+	parts := strings.SplitN(data, ":", 8)
+	if len(parts) != 8 {
+		return "", 0, 0, 0, 0, 0, false
 	}
-	catIdx, err := strconv.Atoi(parts[3])
+	var err error
+	catIdx, err = strconv.Atoi(parts[3])
 	if err != nil {
-		return "", 0, 0, 0, 0, false
+		return "", 0, 0, 0, 0, 0, false
 	}
-	qIdx, err := strconv.Atoi(parts[4])
+	qIdx, err = strconv.Atoi(parts[4])
 	if err != nil {
-		return "", 0, 0, 0, 0, false
+		return "", 0, 0, 0, 0, 0, false
 	}
-	total, err := strconv.Atoi(parts[5])
+	total, err = strconv.Atoi(parts[5])
 	if err != nil {
-		return "", 0, 0, 0, 0, false
+		return "", 0, 0, 0, 0, 0, false
 	}
-	optIdx, err := strconv.Atoi(parts[6])
+	seed, err = strconv.ParseInt(parts[6], 10, 64)
 	if err != nil {
-		return "", 0, 0, 0, 0, false
+		return "", 0, 0, 0, 0, 0, false
 	}
-	return user.Level(parts[2]), catIdx, qIdx, total, optIdx, true
+	optIdx, err = strconv.Atoi(parts[7])
+	if err != nil {
+		return "", 0, 0, 0, 0, 0, false
+	}
+	return user.Level(parts[2]), catIdx, qIdx, total, seed, optIdx, true
 }
