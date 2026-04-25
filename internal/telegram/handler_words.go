@@ -407,11 +407,13 @@ func (b *Bot) sendWordsFeedback(ctx context.Context, tgBot *bot.Bot, chatID int6
 		ParseMode: models.ParseModeHTML,
 	}
 
-	var rows [][]models.InlineKeyboardButton
-	if word.AudioURL != "" {
-		rows = append(rows, []models.InlineKeyboardButton{
-			{Text: "🔊 Послушать", CallbackData: fmt.Sprintf("word_audio:%d", wordID)},
-		})
+	// Audio button is always offered: handleWordAudioCallback lazily fetches
+	// pronunciation from the Free Dictionary API on first click and falls back
+	// to a "not found" reply if the word has no audio. Without this, the
+	// button would never appear for words whose audio_url has not yet been
+	// populated — circular and unhelpful.
+	rows := [][]models.InlineKeyboardButton{
+		{{Text: "🔊 Послушать", CallbackData: fmt.Sprintf("word_audio:%d", wordID)}},
 	}
 	if !out.Correct && session != nil && out.ErrorsInSession > words.DeferThreshold {
 		rows = append(rows, []models.InlineKeyboardButton{
@@ -419,9 +421,7 @@ func (b *Bot) sendWordsFeedback(ctx context.Context, tgBot *bot.Bot, chatID int6
 				CallbackData: fmt.Sprintf("words:defer:%d:%d", session.ID, wordID)},
 		})
 	}
-	if rows != nil {
-		params.ReplyMarkup = &models.InlineKeyboardMarkup{InlineKeyboard: rows}
-	}
+	params.ReplyMarkup = &models.InlineKeyboardMarkup{InlineKeyboard: rows}
 
 	tgBot.SendMessage(ctx, params)
 

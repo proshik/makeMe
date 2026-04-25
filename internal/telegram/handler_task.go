@@ -233,14 +233,15 @@ func (b *Bot) handleTaskCallback(ctx context.Context, tgBot *bot.Bot, update *mo
 		Text:      feedback,
 		ParseMode: models.ParseModeHTML,
 	}
+	// Always offer the audio button for vocab tasks: handleWordAudioCallback
+	// lazily fetches pronunciation on first click and falls back to a
+	// "not found" reply when the word has no audio.
 	if t.Type == task.TypeVocab && t.Metadata != nil {
-		if audioURL, _ := t.Metadata["audio_url"].(string); audioURL != "" {
-			if wordID := toInt64(t.Metadata["word_id"]); wordID > 0 {
-				feedbackParams.ReplyMarkup = &models.InlineKeyboardMarkup{
-					InlineKeyboard: [][]models.InlineKeyboardButton{
-						{{Text: "🔊 Послушать", CallbackData: fmt.Sprintf("word_audio:%d", wordID)}},
-					},
-				}
+		if wordID := toInt64(t.Metadata["word_id"]); wordID > 0 {
+			feedbackParams.ReplyMarkup = &models.InlineKeyboardMarkup{
+				InlineKeyboard: [][]models.InlineKeyboardButton{
+					{{Text: "🔊 Послушать", CallbackData: fmt.Sprintf("word_audio:%d", wordID)}},
+				},
 			}
 		}
 	}
@@ -425,13 +426,11 @@ func (b *Bot) handleTasksTypingReply(ctx context.Context, tgBot *bot.Bot, chatID
 		ParseMode: models.ParseModeHTML,
 	}
 	if t.Type == task.TypeVocab && t.Metadata != nil {
-		if audioURL, _ := t.Metadata["audio_url"].(string); audioURL != "" {
-			if wordID := toInt64(t.Metadata["word_id"]); wordID > 0 {
-				feedbackParams.ReplyMarkup = &models.InlineKeyboardMarkup{
-					InlineKeyboard: [][]models.InlineKeyboardButton{
-						{{Text: "🔊 Послушать", CallbackData: fmt.Sprintf("word_audio:%d", wordID)}},
-					},
-				}
+		if wordID := toInt64(t.Metadata["word_id"]); wordID > 0 {
+			feedbackParams.ReplyMarkup = &models.InlineKeyboardMarkup{
+				InlineKeyboard: [][]models.InlineKeyboardButton{
+					{{Text: "🔊 Послушать", CallbackData: fmt.Sprintf("word_audio:%d", wordID)}},
+				},
 			}
 		}
 	}
