@@ -50,6 +50,6 @@ func TestHandleProfile_Onboarded(t *testing.T) {
 	assert.Contains(t, body, "B1")
 	assert.Contains(t, body, "баллов")
 	assert.Contains(t, body, "Дней подряд")
-	assert.Contains(t, body, "Выучено слов")
+	assert.Contains(t, body, "интервальных повторениях")
 }
 

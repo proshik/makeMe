@@ -91,7 +91,7 @@ func (b *Bot) handleProfile(ctx context.Context, tgBot *bot.Bot, update *models.
 	sb.WriteString(fmt.Sprintf("🎓 Уровень: %s\n\n", u.Level))
 	sb.WriteString(fmt.Sprintf("⭐ Баллы за месяц: %.1f баллов\n\n", monthlyScore))
 	sb.WriteString(streakLine + "\n\n")
-	sb.WriteString(fmt.Sprintf("📚 Выучено слов в SM-2: %d (стабильно — 3+ повторений)\n", learnedWords))
+	sb.WriteString(fmt.Sprintf("📚 Слов в интервальных повторениях: %d (стабильно — 3+ повторений)\n", learnedWords))
 	if learnedViaWords > 0 || inProgressWords > 0 {
 		sb.WriteString(fmt.Sprintf("✍️ Усвоено через /words: %d\n", learnedViaWords))
 		sb.WriteString(fmt.Sprintf("📖 В работе по словам: %d (продолжай — /words)\n", inProgressWords))

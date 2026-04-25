@@ -178,7 +178,7 @@ func (b *Bot) handleWordsKnow(ctx context.Context, tgBot *bot.Bot, chatID, userI
 	if err == nil {
 		tgBot.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID:    chatID,
-			Text:      fmt.Sprintf("✅ Ок, считаем что ты знаешь <b>%s</b>. Слово ушло в SM-2 повторение.", html.EscapeString(word.English)),
+			Text:      fmt.Sprintf("✅ Ок, считаем что ты знаешь слово <b>%s</b> — <i>%s</i>. Слово ушло в интервальные повторения.", html.EscapeString(word.English), html.EscapeString(word.Russian)),
 			ParseMode: models.ParseModeHTML,
 		})
 	}
@@ -428,7 +428,7 @@ func (b *Bot) sendWordsFeedback(ctx context.Context, tgBot *bot.Bot, chatID int6
 	if out.BecameLearned {
 		tgBot.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID:    chatID,
-			Text:      fmt.Sprintf("🎉 Слово <b>%s</b> выучено! Ушло в SM-2 повторение, дальше встретится в /tasks.", html.EscapeString(word.English)),
+			Text:      fmt.Sprintf("🎉 Слово <b>%s</b> выучено! Ушло в интервальные повторения, дальше встретится в /tasks.", html.EscapeString(word.English)),
 			ParseMode: models.ParseModeHTML,
 		})
 	}
