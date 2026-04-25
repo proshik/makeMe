@@ -8,115 +8,75 @@ import (
 	"makeMe/internal/domain/user"
 )
 
-// nextLevel returns the level above l, or "" if l is C2.
-func nextLevel(l user.Level) user.Level {
-	levels := []user.Level{user.A1, user.A2, user.B1, user.B2, user.C1, user.C2}
-	for i, lv := range levels {
-		if lv == l && i+1 < len(levels) {
-			return levels[i+1]
-		}
-	}
-	return ""
-}
+// ascendingLevels is the order in which /words walks the dictionary: lowest
+// CEFR first, climbing only when the previous level is exhausted (every word
+// either learned or in progress). The user's profile level is intentionally
+// ignored here — the goal is full coverage of the easier vocabulary first.
+var ascendingLevels = []user.Level{user.A1, user.A2, user.B1, user.B2, user.C1, user.C2}
 
-// SelectWords picks SessionSize words for a /words session, prioritizing
-// in-progress words (already started but not learned) over new ones, with
-// a 50/50 split between current and next level. C2 users get all 10 from
-// current level.
+// SelectWords picks up to SessionSize words for a /words session.
 //
-// Each level's quota is HalfSession (=5). For each level we first take up
-// to 5 in-progress, then top up with brand-new words (no progress row,
-// not yet in SM-2 either). If even that doesn't fill the quota at one level,
-// the shortfall is taken from the other level so the total is still up to
-// SessionSize. If the entire dictionary at the user's reach is exhausted,
-// fewer than SessionSize words may be returned — the caller renders what
-// we got and reports session done if zero.
-func SelectWords(ctx context.Context, repo Repository, userID int64, current user.Level) ([]srs.Word, error) {
-	next := nextLevel(current)
+// Order of preference:
+//  1. In-progress words (started but not yet learned), walking levels A1→C2.
+//  2. Brand-new words (no progress row, not in SM-2 either), walking levels A1→C2.
+//
+// We climb to the next level only after the current one is exhausted, so a
+// user who hasn't yet seen all A1 keeps drilling A1 — even if their profile
+// level is, say, B2. The "✅ Я уже знаю это слово" button lets them flag
+// known words explicitly, which is the only way to retire an A1 word
+// without going through the full 4-mode drill.
+//
+// If the entire dictionary is exhausted, fewer than SessionSize words may be
+// returned. The caller renders what we got and treats an empty list as
+// "session done".
+func SelectWords(ctx context.Context, repo Repository, userID int64) ([]srs.Word, error) {
+	picks := make([]srs.Word, 0, SessionSize)
+	seen := make(map[int64]struct{}, SessionSize)
 
-	currentWords, err := pickForLevel(ctx, repo, userID, current, HalfSession)
-	if err != nil {
-		return nil, fmt.Errorf("pick current: %w", err)
-	}
-
-	var nextWords []srs.Word
-	if next != "" {
-		nextWords, err = pickForLevel(ctx, repo, userID, next, HalfSession)
-		if err != nil {
-			return nil, fmt.Errorf("pick next: %w", err)
-		}
-	}
-
-	// Top up shortfalls cross-level so we still get up to SessionSize.
-	currentShort := HalfSession - len(currentWords)
-	nextShort := HalfSession - len(nextWords)
-	if next == "" {
-		// C2: try to take 10 from current alone.
-		if currentShort > 0 {
-			extra, err := pickForLevel(ctx, repo, userID, current, HalfSession+currentShort)
-			if err == nil {
-				currentWords = mergeUnique(currentWords, extra, HalfSession*2)
+	add := func(ws []srs.Word) bool {
+		for _, w := range ws {
+			if len(picks) >= SessionSize {
+				return true
 			}
-		}
-	} else {
-		if currentShort > 0 && len(nextWords) >= HalfSession {
-			extra, err := pickForLevel(ctx, repo, userID, next, currentShort)
-			if err == nil {
-				nextWords = mergeUnique(nextWords, extra, HalfSession+currentShort)
+			if _, dup := seen[w.ID]; dup {
+				continue
 			}
+			seen[w.ID] = struct{}{}
+			picks = append(picks, w)
 		}
-		if nextShort > 0 && len(currentWords) >= HalfSession {
-			extra, err := pickForLevel(ctx, repo, userID, current, nextShort)
-			if err == nil {
-				currentWords = mergeUnique(currentWords, extra, HalfSession+nextShort)
-			}
-		}
+		return len(picks) >= SessionSize
 	}
 
-	out := make([]srs.Word, 0, SessionSize)
-	out = append(out, currentWords...)
-	out = append(out, nextWords...)
-	return out, nil
-}
-
-// pickForLevel returns up to `limit` words for one level: in-progress first,
-// then new words to fill the remainder.
-func pickForLevel(ctx context.Context, repo Repository, userID int64, level user.Level, limit int) ([]srs.Word, error) {
-	if limit <= 0 {
-		return nil, nil
-	}
-	inProgress, err := repo.GetInProgressWordsByLevel(ctx, userID, level, limit)
-	if err != nil {
-		return nil, err
-	}
-	got := len(inProgress)
-	if got >= limit {
-		return inProgress[:limit], nil
-	}
-	fresh, err := repo.GetNewWordsExcludingProgress(ctx, userID, level, limit-got)
-	if err != nil {
-		// Don't fail — some in-progress is better than none.
-		return inProgress, nil
-	}
-	return append(inProgress, fresh...), nil
-}
-
-// mergeUnique appends `add` items to `base` skipping word IDs already present,
-// stopping at `cap`.
-func mergeUnique(base, add []srs.Word, cap int) []srs.Word {
-	seen := make(map[int64]struct{}, len(base))
-	for _, w := range base {
-		seen[w.ID] = struct{}{}
-	}
-	for _, w := range add {
-		if len(base) >= cap {
+	// Phase 1: in-progress, ascending.
+	for _, lvl := range ascendingLevels {
+		need := SessionSize - len(picks)
+		if need <= 0 {
 			break
 		}
-		if _, dup := seen[w.ID]; dup {
+		ws, err := repo.GetInProgressWordsByLevel(ctx, userID, lvl, need)
+		if err != nil {
+			return nil, fmt.Errorf("in-progress %s: %w", lvl, err)
+		}
+		if add(ws) {
+			break
+		}
+	}
+
+	// Phase 2: brand-new words, ascending.
+	for _, lvl := range ascendingLevels {
+		need := SessionSize - len(picks)
+		if need <= 0 {
+			break
+		}
+		ws, err := repo.GetNewWordsExcludingProgress(ctx, userID, lvl, need)
+		if err != nil {
+			// Don't fail the whole pick if a level query fails — keep going.
 			continue
 		}
-		seen[w.ID] = struct{}{}
-		base = append(base, w)
+		if add(ws) {
+			break
+		}
 	}
-	return base
+
+	return picks, nil
 }

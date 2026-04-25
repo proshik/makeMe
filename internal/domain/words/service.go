@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"makeMe/internal/domain/srs"
-	"makeMe/internal/domain/user"
 	"makeMe/internal/textmatch"
 )
 
@@ -40,7 +39,11 @@ func NewService(repo Repository, srsRepo srs.Repository) *Service {
 // with a fresh selection. There is no per-day limit: after CompleteSession
 // the next call creates a new session with a new pick. The `resumed` return
 // flag tells the caller whether an existing open session was returned.
-func (s *Service) StartOrResumeSession(ctx context.Context, userID int64, level user.Level) (session *Session, ws []*srs.Word, resumed bool, err error) {
+//
+// Word selection deliberately ignores the user's profile level — see
+// SelectWords. The user climbs A1 → A2 → … → C2 by exhausting each level
+// before the next one starts feeding into sessions.
+func (s *Service) StartOrResumeSession(ctx context.Context, userID int64) (session *Session, ws []*srs.Word, resumed bool, err error) {
 	if open, err := s.repo.GetOpenSession(ctx, userID); err != nil {
 		return nil, nil, false, err
 	} else if open != nil {
@@ -51,12 +54,12 @@ func (s *Service) StartOrResumeSession(ctx context.Context, userID int64, level 
 		return open, ws, true, nil
 	}
 
-	picked, err := SelectWords(ctx, s.repo, userID, level)
+	picked, err := SelectWords(ctx, s.repo, userID)
 	if err != nil {
 		return nil, nil, false, fmt.Errorf("select words: %w", err)
 	}
 	if len(picked) == 0 {
-		return nil, nil, false, fmt.Errorf("no words available for level %s", level)
+		return nil, nil, false, fmt.Errorf("no words available — every level appears exhausted")
 	}
 
 	ids := make([]int64, len(picked))

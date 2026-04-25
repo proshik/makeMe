@@ -40,7 +40,7 @@ func (b *Bot) handleWords(ctx context.Context, tgBot *bot.Bot, update *models.Up
 	}
 
 	chatID := update.Message.Chat.ID
-	session, _, resumed, err := b.wordsSvc.StartOrResumeSession(ctx, u.ID, u.Level)
+	session, _, resumed, err := b.wordsSvc.StartOrResumeSession(ctx, u.ID)
 	if err != nil {
 		slog.Error("failed to start words session", "user_id", u.ID, "error", err)
 		tgBot.SendMessage(ctx, &bot.SendMessageParams{
