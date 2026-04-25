@@ -132,7 +132,11 @@ func run(ctx context.Context) error {
 		sched.Run(ctx)
 	}()
 
-	r := server.New(tgBot)
+	r := server.New(tgBot, server.AdminConfig{
+		Pool:       pool,
+		DictClient: dictClient,
+		AdminToken: cfg.AdminToken,
+	})
 
 	srv := &http.Server{
 		Addr:         ":" + cfg.Port,

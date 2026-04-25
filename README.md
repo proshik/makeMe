@@ -280,6 +280,34 @@ Copy `.env.example` to `.env` and fill in the values:
 | `SCHEDULER_TIME` | `21:00` | Time to send daily summaries (HH:MM, 24h) |
 | `TIMEZONE` | `Europe/Moscow` | Timezone for the scheduler |
 | `MAX_ROUNDS_PER_DAY` | `5` | Max task rounds a user can run per day (one round = 10 tasks) |
+| `ADMIN_TOKEN` | `(empty)` | Bearer token for `/admin/*` HTTP endpoints. Leave empty to disable them (they return 503). Generate with `openssl rand -hex 32`. |
+
+## Admin Endpoints
+
+Protected by `Authorization: Bearer $ADMIN_TOKEN`. Disabled when `ADMIN_TOKEN` is empty (responds 503).
+
+### `POST /admin/seed-audio`
+
+Bulk-fetches transcription + audio_url from the Free Dictionary API for words at the given CEFR levels and persists them to the `words` table. Idempotent: words that already have `audio_url` are skipped.
+
+Body (JSON):
+```json
+{ "levels": ["A1", "A2"], "delay_ms": 500 }
+```
+
+Response: streamed `application/x-ndjson`, one line per event (start of level / per-word result / final summary). Use `curl -N` so output isn't buffered:
+
+```bash
+curl -N -X POST https://your-host.example.com/admin/seed-audio \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"levels":["A1","A2"],"delay_ms":500}'
+```
+
+For local seeding without HTTP, the same logic ships as `cmd/seed-audio`:
+```bash
+go run ./cmd/seed-audio -levels=A1,A2 -delay-ms=500
+```
 
 ## Development
 

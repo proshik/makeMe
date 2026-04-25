@@ -20,6 +20,7 @@ type Config struct {
 	SchedulerTime         string // daily summary send time, format "HH:MM"
 	Timezone              string // IANA timezone name
 	MaxRoundsPerDay       int    // max daily-task rounds a user can run per day
+	AdminToken            string // bearer token for /admin/* endpoints; empty disables them
 }
 
 func Load() (*Config, error) {
@@ -37,6 +38,7 @@ func Load() (*Config, error) {
 		SchedulerTime:         getEnv("SCHEDULER_TIME", "21:00"),
 		Timezone:              getEnv("TIMEZONE", "Europe/Moscow"),
 		MaxRoundsPerDay:       getEnvInt("MAX_ROUNDS_PER_DAY", 5),
+		AdminToken:            os.Getenv("ADMIN_TOKEN"),
 	}
 
 	if cfg.DatabaseURL == "" {
