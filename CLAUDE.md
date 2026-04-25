@@ -48,9 +48,10 @@ Tasks are generated daily and differ each day.
 
 ## Architecture Notes (TBD)
 
-- Domain-driven design preferred — core domains: `user`, `group`, `task`, `scoring`, `assessment`
+- Domain-driven design preferred — core domains: `user`, `group`, `task`, `scoring`, `assessment`, `words`
 - Client: Telegram bot (webhook mode, integrated into chi router)
-- REST API via chi for internal/admin endpoints if needed
+- REST API via chi serves `/health`, `/webhook`, and `/admin/*` (bearer-token gated, see Workflow Rules)
+- Bulk operational logic (e.g. `internal/audio.Seed`) lives in its own package and is reused by both the HTTP admin handler and a `cmd/<tool>` CLI — never duplicate the logic between them
 
 ## Development Principles
 
@@ -62,14 +63,25 @@ Tasks are generated daily and differ each day.
 ## Workflow Rules
 
 ### Progress Tracking
-- After completing any work, always update `PLAN.md` — mark each completed item with `[x]` and phase header with `[DONE]`
-- After completing any work, always update `README.md` — add new commands, update the database schema, update the typical flow diagram
-- If there is no plan file, mention this to the user and suggest creating one
+- After completing any work, always update `docs/plan.md` — mark each completed item with `[x]` and phase header with `[DONE]`. Top of the file has a `## Реализованные фичи (changelog)` section — prepend new entries there.
+- After completing any work, always update `README.md` — add new commands, update the database schema, update the typical flow diagram, document any new env vars or admin endpoints.
+- If there is no plan file, mention this to the user and suggest creating one.
 
 ### Seed Data — NEVER use migrations for content
 - **Words** (`data/words.json`) and **Grammar questions** (`data/grammar.json`) are seeded **automatically on every app startup** — no manual command needed.
 - Migrations are for **schema changes only** (CREATE TABLE, ALTER TABLE, indexes).
 - Adding or editing words/grammar questions = edit the JSON file and restart the app (or redeploy). Never put INSERT rows for these tables into a migration file.
+
+#### Audio (`words.audio_url`) is NOT in JSON
+- `data/words.json` does not carry `audio_url`. The startup seeder (`UpsertWord`) writes only english/russian/level/example/transcription, and never overwrites `audio_url`.
+- Audio is fetched lazily from the Free Dictionary API: by users tapping the **🔊 Послушать** button, or in bulk via the admin endpoint / CLI.
+- After deploying to a new environment (or after adding many new words), populate audio with `POST /admin/seed-audio` — see README "Production workflow" section. Same logic available offline as `go run ./cmd/seed-audio -levels=...`.
+- Idempotent: re-running skips rows that already have `audio_url`. ~3–5% of common words have no audio in the API at all (`look`, `room`, `sea`, …) — that's expected; the user-facing button replies "Произношение не найдено" for those.
+
+#### Admin endpoints
+- All `/admin/*` endpoints are bearer-token protected via `ADMIN_TOKEN` env. With the env unset, every admin endpoint returns 503 — this is intentional, do not remove the check.
+- Constant-time token compare via `crypto/subtle.ConstantTimeCompare` — keep that pattern when adding more admin endpoints.
+- Don't tunnel admin actions through `/webhook` or other public paths. New admin operations belong under `r.Route("/admin", …)` in `internal/server/server.go`.
 
 #### Grammar `subcategory` values
 Each grammar question carries a `subcategory` used by `/learn` to stratify the per-session sample so one practice covers different aspects of a rule. Allowed values:

@@ -309,6 +309,34 @@ For local seeding without HTTP, the same logic ships as `cmd/seed-audio`:
 go run ./cmd/seed-audio -levels=A1,A2 -delay-ms=500
 ```
 
+#### Production workflow
+
+`audio_url` is **not** part of `data/words.json` and is **not** copied across environments by the on-startup seeder (`UpsertWord` only touches english/russian/level/example/transcription). After deploying to production, populate audio with:
+
+1. Generate and set a token (do this once, store in your secret manager):
+   ```bash
+   openssl rand -hex 32   # → 64 hex chars
+   ```
+   Set the value as `ADMIN_TOKEN` in the production environment and redeploy so the service picks it up.
+
+2. From any machine with HTTPS access to prod, run:
+   ```bash
+   curl -N -X POST https://your-prod.example.com/admin/seed-audio \
+     -H "Authorization: Bearer $ADMIN_TOKEN" \
+     -H "Content-Type: application/json" \
+     -d '{"levels":["A1","A2"],"delay_ms":500}'
+   ```
+   Stream of ndjson events ends with a `{"event":"done", ...}` summary line. ~5 minutes for A1+A2 (~492 words at 500 ms delay).
+
+3. **If 429 appears** (`"status":"failed","error":"unexpected status: 429"`) — Free Dictionary throttled you. Wait 1–2 minutes and re-run with the same body; the run is idempotent so already-populated rows are skipped.
+
+4. **Adding more levels** later (B1–C2): same call, change `levels`. ~608 words across B1–C2, allow ~10 minutes total.
+
+#### Limits to expect
+
+* Free Dictionary returns no audio at all for ~3–5% of common words (e.g. `look`, `room`, `sea`); they end up as `"status":"not_found"` and stay with empty `audio_url`. The user-facing `🔊 Послушать` button will reply "Произношение не найдено" for these — acceptable for v1.
+* Disconnect (closing curl, network drop) is handled: the server cancels the run via `ctx.Done()` so no quota is wasted on a dropped client.
+
 ## Development
 
 ```bash
