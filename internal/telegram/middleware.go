@@ -3,6 +3,7 @@ package telegram
 import (
 	"context"
 	"log/slog"
+	"strings"
 
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
@@ -38,6 +39,14 @@ func (b *Bot) userResolveMiddleware(next bot.HandlerFunc) bot.HandlerFunc {
 		}
 
 		ctx = context.WithValue(ctx, userCtxKey, u)
+
+		// If the user just issued a /command, clear any stale pending typing
+		// prompt so their next text reply isn't accidentally consumed by an
+		// earlier session.
+		if b.pendingRepo != nil && update.Message != nil && strings.HasPrefix(update.Message.Text, "/") {
+			_ = b.pendingRepo.Delete(ctx, u.ID)
+		}
+
 		next(ctx, tgBot, update)
 	}
 }

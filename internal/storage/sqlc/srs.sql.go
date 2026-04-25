@@ -64,6 +64,93 @@ func (q *Queries) GetDueCards(ctx context.Context, arg GetDueCardsParams) ([]Rev
 	return items, nil
 }
 
+const getInProgressWordsByLevel = `-- name: GetInProgressWordsByLevel :many
+SELECT w.id, w.english, w.russian, w.level, w.example, w.transcription, w.audio_url
+FROM words w
+JOIN word_learning_progress wlp ON wlp.word_id = w.id AND wlp.user_id = $1
+WHERE w.level = $2 AND wlp.learned = false
+ORDER BY wlp.updated_at DESC
+LIMIT $3
+`
+
+type GetInProgressWordsByLevelParams struct {
+	UserID int64  `json:"user_id"`
+	Level  string `json:"level"`
+	Limit  int32  `json:"limit"`
+}
+
+func (q *Queries) GetInProgressWordsByLevel(ctx context.Context, arg GetInProgressWordsByLevelParams) ([]Word, error) {
+	rows, err := q.db.Query(ctx, getInProgressWordsByLevel, arg.UserID, arg.Level, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Word{}
+	for rows.Next() {
+		var i Word
+		if err := rows.Scan(
+			&i.ID,
+			&i.English,
+			&i.Russian,
+			&i.Level,
+			&i.Example,
+			&i.Transcription,
+			&i.AudioUrl,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getNewWordsExcludingProgress = `-- name: GetNewWordsExcludingProgress :many
+SELECT w.id, w.english, w.russian, w.level, w.example, w.transcription, w.audio_url
+FROM words w
+LEFT JOIN word_learning_progress wlp ON wlp.word_id = w.id AND wlp.user_id = $1
+LEFT JOIN review_cards rc ON rc.word_id = w.id AND rc.user_id = $1
+WHERE w.level = $2 AND wlp.user_id IS NULL AND rc.id IS NULL
+ORDER BY md5($1::text || w.id::text)
+LIMIT $3
+`
+
+type GetNewWordsExcludingProgressParams struct {
+	UserID int64  `json:"user_id"`
+	Level  string `json:"level"`
+	Limit  int32  `json:"limit"`
+}
+
+func (q *Queries) GetNewWordsExcludingProgress(ctx context.Context, arg GetNewWordsExcludingProgressParams) ([]Word, error) {
+	rows, err := q.db.Query(ctx, getNewWordsExcludingProgress, arg.UserID, arg.Level, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Word{}
+	for rows.Next() {
+		var i Word
+		if err := rows.Scan(
+			&i.ID,
+			&i.English,
+			&i.Russian,
+			&i.Level,
+			&i.Example,
+			&i.Transcription,
+			&i.AudioUrl,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getNewWordsForUser = `-- name: GetNewWordsForUser :many
 SELECT w.id, w.english, w.russian, w.level, w.example, w.transcription, w.audio_url FROM words w
 LEFT JOIN review_cards rc ON rc.word_id = w.id AND rc.user_id = $1
@@ -104,6 +191,33 @@ func (q *Queries) GetNewWordsForUser(ctx context.Context, arg GetNewWordsForUser
 		return nil, err
 	}
 	return items, nil
+}
+
+const getReviewCardByUserWord = `-- name: GetReviewCardByUserWord :one
+SELECT id, user_id, word_id, ease_factor, interval_days, repetitions, next_review_date, updated_at
+FROM review_cards
+WHERE user_id = $1 AND word_id = $2
+`
+
+type GetReviewCardByUserWordParams struct {
+	UserID int64 `json:"user_id"`
+	WordID int64 `json:"word_id"`
+}
+
+func (q *Queries) GetReviewCardByUserWord(ctx context.Context, arg GetReviewCardByUserWordParams) (ReviewCard, error) {
+	row := q.db.QueryRow(ctx, getReviewCardByUserWord, arg.UserID, arg.WordID)
+	var i ReviewCard
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.WordID,
+		&i.EaseFactor,
+		&i.IntervalDays,
+		&i.Repetitions,
+		&i.NextReviewDate,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
 
 const getWordByID = `-- name: GetWordByID :one

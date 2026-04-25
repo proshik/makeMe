@@ -9,6 +9,7 @@ import (
 type Repository interface {
 	GetDueCards(ctx context.Context, userID int64, limit int) ([]ReviewCard, error)
 	UpsertCard(ctx context.Context, card *ReviewCard) error
+	GetCardByUserWord(ctx context.Context, userID, wordID int64) (*ReviewCard, error)
 	GetWordsByLevel(ctx context.Context, level user.Level, limit int) ([]Word, error)
 	GetWordByID(ctx context.Context, id int64) (*Word, error)
 	GetNewWordsForUser(ctx context.Context, userID int64, level user.Level, limit int) ([]Word, error)

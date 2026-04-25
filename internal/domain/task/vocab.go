@@ -73,8 +73,14 @@ func (g *VocabGenerator) wordToTask(ctx context.Context, word *srs.Word, level u
 		return Task{}, fmt.Errorf("get distractors: %w", err)
 	}
 
-	// Randomly pick a subtype; fill_blank requires an example sentence
-	subtypes := []string{VocabSubtypeEnRu, VocabSubtypeRuEn, VocabSubtypeFillBlank}
+	// Randomly pick a subtype; fill_blank requires an example sentence.
+	subtypes := []string{
+		VocabSubtypeEnRu,
+		VocabSubtypeRuEn,
+		VocabSubtypeFillBlank,
+		VocabSubtypeTypingEnRu,
+		VocabSubtypeTypingRuEn,
+	}
 	subtype := subtypes[rand.IntN(len(subtypes))]
 
 	var t Task
@@ -83,6 +89,10 @@ func (g *VocabGenerator) wordToTask(ctx context.Context, word *srs.Word, level u
 		t = buildVocabRuEn(word, distractors)
 	case VocabSubtypeFillBlank:
 		t = buildVocabFillBlank(word, distractors)
+	case VocabSubtypeTypingEnRu:
+		t = buildVocabTypingEnRu(word)
+	case VocabSubtypeTypingRuEn:
+		t = buildVocabTypingRuEn(word)
 	default:
 		t = buildVocabEnRu(word, distractors)
 	}
@@ -150,6 +160,43 @@ func buildVocabFillBlank(word *srs.Word, distractors []srs.Word) Task {
 		Answer:  word.English,
 		Metadata: map[string]any{
 			"subtype": VocabSubtypeFillBlank,
+		},
+	}
+}
+
+// buildVocabTypingEnRu builds a typing task: prompt is the English word
+// (with optional transcription/example), the user must type the Russian.
+// Options is empty — typing uses textmatch validation, not multiple choice.
+func buildVocabTypingEnRu(word *srs.Word) Task {
+	prompt := html.EscapeString(word.English)
+	if word.Transcription != "" {
+		prompt = fmt.Sprintf("%s  %s", prompt, html.EscapeString(word.Transcription))
+	}
+	if word.Example != "" {
+		prompt = fmt.Sprintf("%s\n\n<i>%s</i>", prompt, html.EscapeString(word.Example))
+	}
+	return Task{
+		Type:    TypeVocab,
+		Level:   word.Level,
+		Prompt:  prompt,
+		Options: []string{},
+		Answer:  word.Russian,
+		Metadata: map[string]any{
+			"subtype": VocabSubtypeTypingEnRu,
+		},
+	}
+}
+
+// buildVocabTypingRuEn is the mirror: Russian prompt, user types English.
+func buildVocabTypingRuEn(word *srs.Word) Task {
+	return Task{
+		Type:    TypeVocab,
+		Level:   word.Level,
+		Prompt:  html.EscapeString(word.Russian),
+		Options: []string{},
+		Answer:  word.English,
+		Metadata: map[string]any{
+			"subtype": VocabSubtypeTypingRuEn,
 		},
 	}
 }

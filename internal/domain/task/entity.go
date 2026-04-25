@@ -15,10 +15,17 @@ const (
 
 // Vocab subtype constants stored in Task.Metadata["subtype"].
 const (
-	VocabSubtypeEnRu      = "en_ru"
-	VocabSubtypeRuEn      = "ru_en"
-	VocabSubtypeFillBlank = "fill_blank"
+	VocabSubtypeEnRu       = "en_ru"
+	VocabSubtypeRuEn       = "ru_en"
+	VocabSubtypeFillBlank  = "fill_blank"
+	VocabSubtypeTypingEnRu = "typing_en_ru" // user types Russian translation
+	VocabSubtypeTypingRuEn = "typing_ru_en" // user types English translation
 )
+
+// IsVocabTypingSubtype returns true if the subtype is one of the typing modes.
+func IsVocabTypingSubtype(subtype string) bool {
+	return subtype == VocabSubtypeTypingEnRu || subtype == VocabSubtypeTypingRuEn
+}
 
 type DailySet struct {
 	ID        int64

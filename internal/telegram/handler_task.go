@@ -8,11 +8,13 @@ import (
 	"log/slog"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
 
 	"makeMe/internal/domain/task"
+	"makeMe/internal/domain/words"
 )
 
 // pluralRounds returns the Russian plural form for "раунд" matching n.
@@ -138,7 +140,7 @@ func (b *Bot) handleTasks(ctx context.Context, tgBot *bot.Bot, update *models.Up
 
 	answered, total, _ := b.taskSvc.GetProgress(ctx, ds.ID, u.ID)
 	slog.Debug("task shown", "user_id", u.ID, "task_id", nextTask.ID, "type", nextTask.Type, "level", nextTask.Level, "position", answered+1, "total", total)
-	sendTaskQuestion(ctx, tgBot, update.Message.Chat.ID, nextTask, answered+1, total)
+	b.sendTaskQuestion(ctx, tgBot, update.Message.Chat.ID, u.ID, nextTask, answered+1, total)
 }
 
 func (b *Bot) handleTaskCallback(ctx context.Context, tgBot *bot.Bot, update *models.Update) {
@@ -265,7 +267,7 @@ func (b *Bot) handleTaskCallback(ctx context.Context, tgBot *bot.Bot, update *mo
 
 	answered, total, _ := b.taskSvc.GetProgress(ctx, t.DailySetID, u.ID)
 	slog.Debug("task shown", "user_id", u.ID, "task_id", nextTask.ID, "type", nextTask.Type, "level", nextTask.Level, "position", answered+1, "total", total)
-	sendTaskQuestion(ctx, tgBot, chatID, nextTask, answered+1, total)
+	b.sendTaskQuestion(ctx, tgBot, chatID, u.ID, nextTask, answered+1, total)
 }
 
 // vocabTaskLabel returns a display label for a vocab task based on its subtype.
@@ -280,6 +282,8 @@ func vocabTaskLabel(t *task.Task) string {
 		return "📝 Заполни пропуск"
 	case task.VocabSubtypeEnRu:
 		return "📖 Перевод слов"
+	case task.VocabSubtypeTypingEnRu, task.VocabSubtypeTypingRuEn:
+		return "✍️ Введи перевод"
 	default:
 		return "📖 Словарь"
 	}
@@ -300,11 +304,24 @@ func taskInstruction(t *task.Task) string {
 		return "Выберите правильный перевод на русский язык:"
 	case task.VocabSubtypeFillBlank:
 		return "Выберите правильное слово для заполнения пропуска:"
+	case task.VocabSubtypeTypingEnRu:
+		return "Введи правильный перевод на русский язык одним сообщением:"
+	case task.VocabSubtypeTypingRuEn:
+		return "Введи правильный перевод на английский язык одним сообщением:"
 	}
 	return ""
 }
 
-func sendTaskQuestion(ctx context.Context, tgBot *bot.Bot, chatID int64, t *task.Task, current, total int) {
+// vocabSubtype returns the metadata subtype string, or "" if absent.
+func vocabSubtype(t *task.Task) string {
+	if t.Metadata == nil {
+		return ""
+	}
+	s, _ := t.Metadata["subtype"].(string)
+	return s
+}
+
+func (b *Bot) sendTaskQuestion(ctx context.Context, tgBot *bot.Bot, chatID, userID int64, t *task.Task, current, total int) {
 	typeLabel := vocabTaskLabel(t)
 	if t.Type == task.TypeGrammar {
 		typeLabel = "📝 Грамматика"
@@ -318,11 +335,16 @@ func sendTaskQuestion(ctx context.Context, tgBot *bot.Bot, chatID int64, t *task
 		text = fmt.Sprintf("%s — Задание %d/%d\n\n%s", typeLabel, current, total, t.Prompt)
 	}
 
+	subtype := vocabSubtype(t)
+	isTyping := task.IsVocabTypingSubtype(subtype)
+
 	buttons := make([][]models.InlineKeyboardButton, 0, len(t.Options)+1)
-	for i, opt := range t.Options {
-		buttons = append(buttons, []models.InlineKeyboardButton{
-			{Text: opt, CallbackData: fmt.Sprintf("task:%d:%d", t.ID, i)},
-		})
+	if !isTyping {
+		for i, opt := range t.Options {
+			buttons = append(buttons, []models.InlineKeyboardButton{
+				{Text: opt, CallbackData: fmt.Sprintf("task:%d:%d", t.ID, i)},
+			})
+		}
 	}
 	buttons = append(buttons, []models.InlineKeyboardButton{
 		{Text: "🤷 Не знаю", CallbackData: fmt.Sprintf("task:%d:idk", t.ID)},
@@ -336,6 +358,106 @@ func sendTaskQuestion(ctx context.Context, tgBot *bot.Bot, chatID int64, t *task
 			InlineKeyboard: buttons,
 		},
 	})
+
+	// For typing tasks, register a pending typing prompt so the user's next
+	// text reply is routed to handleTasksTypingReply via defaultHandler.
+	if isTyping && b.pendingRepo != nil {
+		pending := &words.PendingTyping{
+			UserID:    userID,
+			ChatID:    chatID,
+			Source:    "tasks",
+			Payload:   words.PendingPayload{TaskID: t.ID},
+			ExpiresAt: time.Now().Add(words.PendingTTL),
+		}
+		if err := b.pendingRepo.Upsert(ctx, pending); err != nil {
+			slog.Error("failed to upsert pending typing for task", "user_id", userID, "task_id", t.ID, "error", err)
+		}
+	}
+}
+
+// handleTasksTypingReply is invoked when the user sends a text reply to a
+// /tasks typing-vocab task. Mirrors handleTaskCallback's post-answer logic
+// (feedback, audio, score recording, next task) but reads the answer from the
+// raw user text instead of an option button.
+func (b *Bot) handleTasksTypingReply(ctx context.Context, tgBot *bot.Bot, chatID, userID int64, raw string, payload words.PendingPayload) {
+	taskID := payload.TaskID
+	if taskID == 0 {
+		return
+	}
+
+	t, err := b.taskSvc.GetTaskByID(ctx, taskID)
+	if err != nil {
+		slog.Error("failed to load task for typing reply", "task_id", taskID, "error", err)
+		return
+	}
+
+	result, err := b.taskSvc.SubmitTypedAnswer(ctx, taskID, userID, raw)
+	if err != nil {
+		if errors.Is(err, task.ErrAlreadyAnswered) {
+			tgBot.SendMessage(ctx, &bot.SendMessageParams{
+				ChatID: chatID,
+				Text:   "Ты уже ответил на это задание.",
+			})
+			return
+		}
+		slog.Error("failed to submit typed answer", "user_id", userID, "task_id", taskID, "error", err)
+		return
+	}
+
+	slog.Info("task typing answered", "user_id", userID, "task_id", taskID, "level", t.Level, "correct", result.Correct, "score", result.Score)
+
+	var feedback string
+	correctPhrases := []string{"✅ Правильно!", "✅ Отлично!", "✅ Молодец!", "✅ В точку!", "✅ Супер!"}
+	if result.Correct {
+		feedback = correctPhrases[taskID%int64(len(correctPhrases))]
+		if b.scoringSvc != nil {
+			if err := b.scoringSvc.RecordScore(ctx, userID, t.GroupID, t.Level, result.Score); err != nil {
+				slog.Error("failed to record score", "user_id", userID, "task_id", taskID, "error", err)
+			}
+		}
+	} else {
+		feedback = buildIncorrectFeedback(t)
+	}
+
+	feedbackParams := &bot.SendMessageParams{
+		ChatID:    chatID,
+		Text:      feedback,
+		ParseMode: models.ParseModeHTML,
+	}
+	if t.Type == task.TypeVocab && t.Metadata != nil {
+		if audioURL, _ := t.Metadata["audio_url"].(string); audioURL != "" {
+			if wordID := toInt64(t.Metadata["word_id"]); wordID > 0 {
+				feedbackParams.ReplyMarkup = &models.InlineKeyboardMarkup{
+					InlineKeyboard: [][]models.InlineKeyboardButton{
+						{{Text: "🔊 Послушать", CallbackData: fmt.Sprintf("word_audio:%d", wordID)}},
+					},
+				}
+			}
+		}
+	}
+	tgBot.SendMessage(ctx, feedbackParams)
+
+	// Move to next task or completion screen.
+	nextTask, _ := b.taskSvc.GetNextUnanswered(ctx, t.DailySetID, userID)
+	if nextTask == nil {
+		_, total, _ := b.taskSvc.GetProgress(ctx, t.DailySetID, userID)
+		correct, _ := b.taskSvc.GetCorrectCount(ctx, t.DailySetID, userID)
+		slog.Info("round completed", "user_id", userID, "daily_set_id", t.DailySetID, "correct", correct, "total", total)
+		var completionText string
+		if correct == total {
+			completionText = fmt.Sprintf("🏆 Все задания выполнены!\n\n✅ Правильных ответов: %d из %d\n\nТы огонь! Загляни в /leaderboard — посмотри, где ты в рейтинге 🔥", correct, total)
+		} else {
+			completionText = fmt.Sprintf("✅ Задания выполнены!\n\n✅ Правильных ответов: %d из %d\n\nЗагляни в /leaderboard — посмотри, где ты в рейтинге 🔥", correct, total)
+		}
+		tgBot.SendMessage(ctx, &bot.SendMessageParams{
+			ChatID: chatID,
+			Text:   completionText,
+		})
+		return
+	}
+
+	answered, total, _ := b.taskSvc.GetProgress(ctx, t.DailySetID, userID)
+	b.sendTaskQuestion(ctx, tgBot, chatID, userID, nextTask, answered+1, total)
 }
 
 func (b *Bot) handleWordAudioCallback(ctx context.Context, tgBot *bot.Bot, update *models.Update) {

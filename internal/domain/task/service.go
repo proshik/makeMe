@@ -8,6 +8,7 @@ import (
 
 	"makeMe/internal/domain/srs"
 	"makeMe/internal/domain/user"
+	"makeMe/internal/textmatch"
 )
 
 const (
@@ -154,6 +155,52 @@ func (s *Service) SubmitAnswer(ctx context.Context, taskID, userID int64, respon
 	// Update SRS card for vocab tasks
 	if task.Type == TypeVocab && task.Metadata != nil {
 		if wordIDRaw, ok := task.Metadata["word_id"]; ok {
+			wordID := toInt64(wordIDRaw)
+			if wordID > 0 {
+				s.updateSRS(ctx, userID, wordID, correct)
+			}
+		}
+	}
+
+	return result, nil
+}
+
+// SubmitTypedAnswer records a typed answer for a vocab typing-subtype task.
+// The raw response is validated via the textmatch package (case/whitespace/
+// ё-fold tolerant, supports ";"-separated alternatives in task.Answer).
+// Stores the user's literal text in task_results so analytics see what they
+// actually typed.
+func (s *Service) SubmitTypedAnswer(ctx context.Context, taskID, userID int64, raw string) (*TaskResult, error) {
+	t, err := s.repo.GetTaskByID(ctx, taskID)
+	if err != nil {
+		return nil, ErrTaskNotFound
+	}
+
+	existing, err := s.repo.GetResult(ctx, taskID, userID)
+	if err == nil && existing != nil {
+		return nil, ErrAlreadyAnswered
+	}
+
+	correct := textmatch.Match(raw, t.Answer)
+	score := 0
+	if correct {
+		score = pointsPerTask
+	}
+
+	result := &TaskResult{
+		TaskID:   taskID,
+		UserID:   userID,
+		Response: raw,
+		Correct:  correct,
+		Score:    score,
+	}
+
+	if err := s.repo.AddResult(ctx, result); err != nil {
+		return nil, fmt.Errorf("add result: %w", err)
+	}
+
+	if t.Type == TypeVocab && t.Metadata != nil {
+		if wordIDRaw, ok := t.Metadata["word_id"]; ok {
 			wordID := toInt64(wordIDRaw)
 			if wordID > 0 {
 				s.updateSRS(ctx, userID, wordID, correct)

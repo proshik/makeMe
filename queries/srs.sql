@@ -41,3 +41,25 @@ ON CONFLICT (user_id, word_id) DO UPDATE
 -- name: CountLearnedWords :one
 SELECT COUNT(*)::int AS count FROM review_cards
 WHERE user_id = $1 AND repetitions >= 3;
+
+-- name: GetInProgressWordsByLevel :many
+SELECT w.id, w.english, w.russian, w.level, w.example, w.transcription, w.audio_url
+FROM words w
+JOIN word_learning_progress wlp ON wlp.word_id = w.id AND wlp.user_id = $1
+WHERE w.level = $2 AND wlp.learned = false
+ORDER BY wlp.updated_at DESC
+LIMIT $3;
+
+-- name: GetNewWordsExcludingProgress :many
+SELECT w.id, w.english, w.russian, w.level, w.example, w.transcription, w.audio_url
+FROM words w
+LEFT JOIN word_learning_progress wlp ON wlp.word_id = w.id AND wlp.user_id = $1
+LEFT JOIN review_cards rc ON rc.word_id = w.id AND rc.user_id = $1
+WHERE w.level = $2 AND wlp.user_id IS NULL AND rc.id IS NULL
+ORDER BY md5($1::text || w.id::text)
+LIMIT $3;
+
+-- name: GetReviewCardByUserWord :one
+SELECT id, user_id, word_id, ease_factor, interval_days, repetitions, next_review_date, updated_at
+FROM review_cards
+WHERE user_id = $1 AND word_id = $2;

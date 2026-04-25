@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"strings"
+	"time"
 
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
@@ -16,6 +18,7 @@ import (
 	"makeMe/internal/domain/srs"
 	"makeMe/internal/domain/task"
 	"makeMe/internal/domain/user"
+	"makeMe/internal/domain/words"
 )
 
 type Bot struct {
@@ -28,9 +31,11 @@ type Bot struct {
 	srsRepo     srs.Repository
 	dictClient  *dictionary.Client
 	grammarRepo task.GrammarRepository
+	wordsSvc    *words.Service
+	pendingRepo words.PendingRepository
 }
 
-func New(token string, userSvc *user.Service, groupSvc *group.Service, assessSvc *assessment.Service, taskSvc *task.Service, scoringSvc *scoring.Service, srsRepo srs.Repository, dictClient *dictionary.Client, grammarRepo task.GrammarRepository, extraOpts ...bot.Option) (*Bot, error) {
+func New(token string, userSvc *user.Service, groupSvc *group.Service, assessSvc *assessment.Service, taskSvc *task.Service, scoringSvc *scoring.Service, srsRepo srs.Repository, dictClient *dictionary.Client, grammarRepo task.GrammarRepository, wordsSvc *words.Service, pendingRepo words.PendingRepository, extraOpts ...bot.Option) (*Bot, error) {
 	b := &Bot{
 		userSvc:     userSvc,
 		groupSvc:    groupSvc,
@@ -40,6 +45,8 @@ func New(token string, userSvc *user.Service, groupSvc *group.Service, assessSvc
 		srsRepo:     srsRepo,
 		dictClient:  dictClient,
 		grammarRepo: grammarRepo,
+		wordsSvc:    wordsSvc,
+		pendingRepo: pendingRepo,
 	}
 
 	opts := []bot.Option{
@@ -68,6 +75,8 @@ func New(token string, userSvc *user.Service, groupSvc *group.Service, assessSvc
 	tgBot.RegisterHandler(bot.HandlerTypeMessageText, "/profile", bot.MatchTypeExact, b.handleProfile)
 	tgBot.RegisterHandler(bot.HandlerTypeMessageText, "/learn", bot.MatchTypeExact, b.handleLearn)
 	tgBot.RegisterHandler(bot.HandlerTypeCallbackQueryData, "learn:", bot.MatchTypePrefix, b.handleLearnCallback)
+	tgBot.RegisterHandler(bot.HandlerTypeMessageText, "/words", bot.MatchTypeExact, b.handleWords)
+	tgBot.RegisterHandler(bot.HandlerTypeCallbackQueryData, "words:", bot.MatchTypePrefix, b.handleWordsCallback)
 
 	b.bot = tgBot
 	return b, nil
@@ -104,12 +113,61 @@ func (b *Bot) SendMessage(ctx context.Context, chatID int64, text string) error 
 	return err
 }
 
+// defaultHandler dispatches plain-text messages that don't match a registered
+// command. If the user has a pending typing prompt, the reply is routed to
+// the appropriate typing handler. Otherwise we show a hint.
 func (b *Bot) defaultHandler(ctx context.Context, tgBot *bot.Bot, update *models.Update) {
-	if update.Message == nil {
+	if update.Message == nil || update.Message.Text == "" {
 		return
 	}
-	tgBot.SendMessage(ctx, &bot.SendMessageParams{
-		ChatID: update.Message.Chat.ID,
-		Text:   "Неизвестная команда. Отправь /start чтобы начать.",
-	})
+	chatID := update.Message.Chat.ID
+	text := update.Message.Text
+
+	// Unknown command (matches "/anything" not registered above) — preserve original behavior.
+	if strings.HasPrefix(text, "/") {
+		tgBot.SendMessage(ctx, &bot.SendMessageParams{
+			ChatID: chatID,
+			Text:   "Неизвестная команда. Отправь /start чтобы начать.",
+		})
+		return
+	}
+
+	u := UserFromContext(ctx)
+	if u == nil {
+		return
+	}
+
+	if b.pendingRepo == nil {
+		// Pending repo not wired (e.g. minimal-deps tests) — fall back to hint.
+		tgBot.SendMessage(ctx, &bot.SendMessageParams{
+			ChatID: chatID,
+			Text:   "Используй команды: /tasks /words /learn /help",
+		})
+		return
+	}
+
+	pending, err := b.pendingRepo.Get(ctx, u.ID)
+	if err != nil {
+		slog.Error("failed to get pending typing", "user_id", u.ID, "error", err)
+		return
+	}
+	if pending == nil {
+		tgBot.SendMessage(ctx, &bot.SendMessageParams{
+			ChatID: chatID,
+			Text:   "Просто текст? Используй команды: /tasks /words /learn /help",
+		})
+		return
+	}
+	if pending.ExpiresAt.Before(time.Now()) {
+		_ = b.pendingRepo.Delete(ctx, u.ID)
+		tgBot.SendMessage(ctx, &bot.SendMessageParams{
+			ChatID: chatID,
+			Text:   "⏰ Время на ответ истекло. Запусти /words или /tasks снова.",
+		})
+		return
+	}
+
+	// Single-use: consume now, regardless of dispatch outcome.
+	_ = b.pendingRepo.Delete(ctx, u.ID)
+	b.handleTypingReply(ctx, tgBot, update, pending)
 }

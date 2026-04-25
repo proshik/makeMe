@@ -160,6 +160,9 @@ func (noopSRSRepo) GetDueCards(ctx context.Context, userID int64, limit int) ([]
 	return nil, nil
 }
 func (noopSRSRepo) UpsertCard(ctx context.Context, card *srs.ReviewCard) error { return nil }
+func (noopSRSRepo) GetCardByUserWord(ctx context.Context, userID, wordID int64) (*srs.ReviewCard, error) {
+	return nil, nil
+}
 func (noopSRSRepo) GetWordsByLevel(ctx context.Context, level user.Level, limit int) ([]srs.Word, error) {
 	return nil, nil
 }

@@ -73,6 +73,15 @@ type Membership struct {
 	JoinedAt pgtype.Timestamptz `json:"joined_at"`
 }
 
+type PendingTypingPrompt struct {
+	UserID    int64              `json:"user_id"`
+	ChatID    int64              `json:"chat_id"`
+	Source    string             `json:"source"`
+	Payload   []byte             `json:"payload"`
+	ExpiresAt pgtype.Timestamptz `json:"expires_at"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+}
+
 type ReviewCard struct {
 	ID             int64              `json:"id"`
 	UserID         int64              `json:"user_id"`
@@ -137,4 +146,29 @@ type Word struct {
 	Example       string `json:"example"`
 	Transcription string `json:"transcription"`
 	AudioUrl      string `json:"audio_url"`
+}
+
+type WordLearningProgress struct {
+	UserID            int64              `json:"user_id"`
+	WordID            int64              `json:"word_id"`
+	EnRuMcCorrect     int16              `json:"en_ru_mc_correct"`
+	RuEnMcCorrect     int16              `json:"ru_en_mc_correct"`
+	EnRuTypingCorrect int16              `json:"en_ru_typing_correct"`
+	RuEnTypingCorrect int16              `json:"ru_en_typing_correct"`
+	Learned           bool               `json:"learned"`
+	LearnedAt         pgtype.Timestamptz `json:"learned_at"`
+	StartedAt         pgtype.Timestamptz `json:"started_at"`
+	UpdatedAt         pgtype.Timestamptz `json:"updated_at"`
+}
+
+type WordsSession struct {
+	ID              int64              `json:"id"`
+	UserID          int64              `json:"user_id"`
+	StartedOn       pgtype.Date        `json:"started_on"`
+	WordIds         []int64            `json:"word_ids"`
+	LastWordID      pgtype.Int8        `json:"last_word_id"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+	CompletedAt     pgtype.Timestamptz `json:"completed_at"`
+	ErrorCounts     []byte             `json:"error_counts"`
+	DeferredWordIds []int64            `json:"deferred_word_ids"`
 }

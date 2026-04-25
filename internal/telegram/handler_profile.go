@@ -61,9 +61,19 @@ func (b *Bot) handleProfile(ctx context.Context, tgBot *bot.Bot, update *models.
 		return
 	}
 
+	var inProgressWords, learnedViaWords int
+	if b.wordsSvc != nil {
+		if cnt, err := b.wordsSvc.CountInProgress(ctx, u.ID); err == nil {
+			inProgressWords = cnt
+		}
+		if cnt, err := b.wordsSvc.CountLearnedViaWords(ctx, u.ID); err == nil {
+			learnedViaWords = cnt
+		}
+	}
+
 	streak := calcStreak(scoreDays)
 
-	slog.Info("profile viewed", "user_id", u.ID, "level", u.Level, "streak", streak, "monthly_score", monthlyScore, "learned_words", learnedWords)
+	slog.Info("profile viewed", "user_id", u.ID, "level", u.Level, "streak", streak, "monthly_score", monthlyScore, "learned_words", learnedWords, "in_progress_words", inProgressWords, "learned_via_words", learnedViaWords)
 
 	var streakLine string
 	switch {
@@ -81,7 +91,11 @@ func (b *Bot) handleProfile(ctx context.Context, tgBot *bot.Bot, update *models.
 	sb.WriteString(fmt.Sprintf("🎓 Уровень: %s\n\n", u.Level))
 	sb.WriteString(fmt.Sprintf("⭐ Баллы за месяц: %.1f баллов\n\n", monthlyScore))
 	sb.WriteString(streakLine + "\n\n")
-	sb.WriteString(fmt.Sprintf("📚 Выучено слов: %d (слово считается выученным после 3 повторений)\n", learnedWords))
+	sb.WriteString(fmt.Sprintf("📚 Выучено слов в SM-2: %d (стабильно — 3+ повторений)\n", learnedWords))
+	if learnedViaWords > 0 || inProgressWords > 0 {
+		sb.WriteString(fmt.Sprintf("✍️ Усвоено через /words: %d\n", learnedViaWords))
+		sb.WriteString(fmt.Sprintf("📖 В работе по словам: %d (продолжай — /words)\n", inProgressWords))
+	}
 
 	tgBot.SendMessage(ctx, &bot.SendMessageParams{
 		ChatID: update.Message.Chat.ID,

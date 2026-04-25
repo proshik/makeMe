@@ -113,6 +113,21 @@ func toReviewCard(row sqlc.ReviewCard) srs.ReviewCard {
 	}
 }
 
+func (r *SRSRepository) GetCardByUserWord(ctx context.Context, userID, wordID int64) (*srs.ReviewCard, error) {
+	row, err := r.q.GetReviewCardByUserWord(ctx, sqlc.GetReviewCardByUserWordParams{
+		UserID: userID,
+		WordID: wordID,
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("get review card by user/word: %w", err)
+	}
+	c := toReviewCard(row)
+	return &c, nil
+}
+
 func (r *SRSRepository) UpdateWordAudio(ctx context.Context, wordID int64, transcription, audioURL string) error {
 	err := r.q.UpdateWordAudio(ctx, sqlc.UpdateWordAudioParams{
 		ID:            wordID,

@@ -28,10 +28,11 @@ Go, PostgreSQL (pgx/sqlc/goose), chi, [go-telegram/bot](https://github.com/go-te
 | `/newgroup Название` | Create a new group. Returns an invite code to share with friends. |
 | `/join КОД` | Join a group by invite code. |
 | `/mygroups` | List all groups you belong to. |
-| `/tasks` | Get today's tasks (3 vocab + 2 grammar). Generates if needed, resumes where you left off. |
+| `/tasks` | Get today's tasks (5 vocab + 5 grammar). Generates if needed, resumes where you left off. Vocab tasks now include MC modes (en→ru, ru→en, fill-blank) plus typing modes where you reply with the translation as a text message. |
+| `/words` | Active-recall learning mode (does NOT count toward the leaderboard). Each session presents 10 words (5 from your level + 5 from the next level). Each word is drilled in 4 modes — EN→RU MC, RU→EN MC, EN→RU typing, RU→EN typing — and is "learned" once you have answered correctly twice in every mode. A wrong answer resets the per-mode counter. Once learned, the word joins the SM-2 cycle in `/tasks`. There's no per-day cap on sessions — finish one and run `/words` again for a new set. If a particular word just isn't sticking and you accumulate more than 5 mistakes on it within the session, a "⏭ Defer until tomorrow" button appears in the feedback — tap it to exclude that word from the rest of this session (progress is preserved; the word reappears in your next /words session). |
 | `/learn` | Browse grammar topics at your level (and the next one). Each practice session shows up to 20 questions with a stratified mix of subtypes (affirmative / negative / interrogative / spelling). |
 | `/leaderboard` | Today's group leaderboard. Add `week` or `month` for other periods. |
-| `/profile` | Your level, monthly score, daily streak, and number of learned words. |
+| `/profile` | Your level, monthly score, daily streak, words stable in SM-2, words usvoено via /words, and how many words are still in progress. |
 
 ## Typical Flow
 
@@ -57,13 +58,25 @@ User A (B2)                         User B (B1)
   │                                   │  "Ты вступил в группу «English Club»!"
   │                                   │
   ├─ /tasks                           ├─ /tasks
-  │  "📖 Словарь — Задание 1/5"       │  "📝 Грамматика — Задание 1/5"
-  │  "ephemeral  /ɪˈfem.ər.əl/"        │  "She ___ a teacher."
+  │  "📖 Словарь — Задание 1/10"      │  "📝 Грамматика — Задание 1/10"
+  │  "ephemeral  /ɪˈfem.ər.əl/"       │  "She ___ a teacher."
   │  [эфемерный] [вездесущий] ...     │  [is] [are] [am] [be]
   │  [🔊 Послушать]                   │
-  │  "✅ Правильно! +10 баллов"       │  "❌ Неправильно. Ответ: is"
-  │  ... (5 tasks) ...                │  ... (5 tasks) ...
-  │  "Все задания выполнены! (5/5)"   │  "Все задания выполнены! (5/5)"
+  │  "✅ Правильно! +11.5 баллов"     │  "❌ Неправильно. Ответ: is"
+  │  ─ task 3: typing subtype ─        │  ... (10 tasks) ...
+  │  "✍️ Введи перевод: HOUSE"        │
+  │  Bob types: "дом" → ✅            │
+  │  ... (10 tasks) ...                │
+  │  "Все задания выполнены! (10/10)" │
+  │                                   │
+  ├─ /words                           │
+  │  "📚 Учим слова — 10 слов"        │
+  │  "📖 1/10 · EN→RU выбор"          │
+  │  [приоритет] [главный] ...        │
+  │  → en_ru_mc count = 1             │
+  │  ... 4 modes per word, twice ...  │
+  │  "🎉 Слово priority выучено!"     │
+  │   (auto-promoted to SM-2)         │
   │                                   │
   ├─ /leaderboard                     ├─ /leaderboard week
   │  "🏆 English Club — сегодня"      │  "🏆 English Club — неделя"
@@ -208,6 +221,36 @@ grammar_questions
 grammar_categories
 ├── name            TEXT PK        (category name, e.g. "Present Simple")
 └── explanation     TEXT NOT NULL  (theory shown in /learn)
+
+word_learning_progress  (per-mode counters for /words)
+├── user_id              BIGINT FK → users(id) ON DELETE CASCADE
+├── word_id              BIGINT FK → words(id) ON DELETE CASCADE
+├── en_ru_mc_correct     SMALLINT NOT NULL DEFAULT 0  (0..2)
+├── ru_en_mc_correct     SMALLINT NOT NULL DEFAULT 0
+├── en_ru_typing_correct SMALLINT NOT NULL DEFAULT 0
+├── ru_en_typing_correct SMALLINT NOT NULL DEFAULT 0
+├── learned              BOOLEAN NOT NULL DEFAULT FALSE
+├── learned_at           TIMESTAMPTZ
+├── started_at           TIMESTAMPTZ NOT NULL DEFAULT now()
+├── updated_at           TIMESTAMPTZ NOT NULL DEFAULT now()
+└── PK(user_id, word_id)
+
+words_sessions  (the 10-word picks for /words; one open at a time)
+├── id              BIGSERIAL PK
+├── user_id         BIGINT FK → users(id) ON DELETE CASCADE
+├── started_on      DATE NOT NULL
+├── word_ids        BIGINT[] NOT NULL  (the 10 picks)
+├── last_word_id    BIGINT             (anti-repeat cursor)
+├── created_at      TIMESTAMPTZ
+└── completed_at    TIMESTAMPTZ        (NULL while open; UNIQUE per user when NULL)
+
+pending_typing_prompts  (waiting for the user's typed reply, both /words and /tasks)
+├── user_id    BIGINT PK FK → users(id) ON DELETE CASCADE
+├── chat_id    BIGINT NOT NULL
+├── source     TEXT NOT NULL  ('words' | 'tasks')
+├── payload    JSONB NOT NULL  ({session_id, word_id, mode} for words; {task_id} for tasks)
+├── expires_at TIMESTAMPTZ NOT NULL
+└── created_at TIMESTAMPTZ
 ```
 
 Level coefficients for normalized scores: A1=0.6, A2=0.8, B1=1.0, B2=1.15, C1=1.3, C2=1.5
@@ -218,6 +261,9 @@ Relations:
 - `users` 1 ←→ N `review_cards` N ←→ 1 `words`
 - `users` 1 ←→ N `daily_sets` N ←→ 1 `groups`
 - `daily_sets` 1 ←→ N `tasks` 1 ←→ 1 `task_results`
+- `users` 1 ←→ N `word_learning_progress` N ←→ 1 `words`
+- `users` 1 ←→ N `words_sessions`
+- `users` 1 ←→ 0..1 `pending_typing_prompts`
 - `groups.created_by` → `users.id`
 
 ## Environment Variables

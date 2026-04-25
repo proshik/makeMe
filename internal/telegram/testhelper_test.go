@@ -30,6 +30,7 @@ import (
 	"makeMe/internal/domain/scoring"
 	"makeMe/internal/domain/task"
 	"makeMe/internal/domain/user"
+	"makeMe/internal/domain/words"
 	"makeMe/internal/storage/postgres"
 	"makeMe/internal/storage/sqlc"
 	"makeMe/internal/telegram"
@@ -46,6 +47,9 @@ type testEnv struct {
 	taskSvc     *task.Service
 	scoringSvc  *scoring.Service
 	srsRepo     *postgres.SRSRepository
+	wordsSvc    *words.Service
+	wordsRepo   *postgres.WordsRepository
+	pendingRepo *postgres.PendingTypingRepository
 	tgBot       *telegram.Bot
 	webhookURL  string
 	wiremockURL string
@@ -126,10 +130,14 @@ func setupTestEnvWithMaxRounds(t *testing.T, maxRounds int) *testEnv {
 	scoringRepo := postgres.NewScoringRepository(queries)
 	scoringSvc := scoring.NewService(scoringRepo)
 
+	wordsRepo := postgres.NewWordsRepository(queries)
+	pendingRepo := postgres.NewPendingTypingRepository(queries)
+	wordsSvc := words.NewService(wordsRepo, srsRepo)
+
 	// Use nil dictClient so tests never call the real external dictionary API.
 	// The handler already guards on dictClient != nil and falls back to "not found".
 	// Create bot with WireMock as Telegram API
-	tgBot, err := telegram.New("test-token", userSvc, groupSvc, assessSvc, taskSvc, scoringSvc, srsRepo, nil, grammarRepo,
+	tgBot, err := telegram.New("test-token", userSvc, groupSvc, assessSvc, taskSvc, scoringSvc, srsRepo, nil, grammarRepo, wordsSvc, pendingRepo,
 		bot.WithServerURL(wiremockURL),
 	)
 	require.NoError(t, err)
@@ -153,6 +161,9 @@ func setupTestEnvWithMaxRounds(t *testing.T, maxRounds int) *testEnv {
 		taskSvc:     taskSvc,
 		scoringSvc:  scoringSvc,
 		srsRepo:     srsRepo,
+		wordsSvc:    wordsSvc,
+		wordsRepo:   wordsRepo,
+		pendingRepo: pendingRepo,
 		tgBot:       tgBot,
 		webhookURL:  srv.URL + "/webhook",
 		wiremockURL: wiremockURL,
