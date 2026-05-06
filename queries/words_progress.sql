@@ -92,3 +92,13 @@ WHERE user_id = $1 AND learned = false;
 -- name: CountLearnedViaWordsForUser :one
 SELECT COUNT(*)::int AS count FROM word_learning_progress
 WHERE user_id = $1 AND learned = true;
+
+-- name: CountWordsByLevelForUser :many
+SELECT w.level,
+       COUNT(*) FILTER (WHERE wlp.learned = TRUE)::int AS learned,
+       COUNT(*)::int                                   AS total
+FROM words w
+LEFT JOIN word_learning_progress wlp
+       ON wlp.word_id = w.id AND wlp.user_id = $1
+GROUP BY w.level
+ORDER BY w.level;

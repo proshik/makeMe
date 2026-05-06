@@ -45,6 +45,7 @@ func (f *fakeRepo) MarkLearned(context.Context, int64, int64) error             
 func (f *fakeRepo) MarkAlreadyKnown(context.Context, int64, int64) error                       { return nil }
 func (f *fakeRepo) CountInProgress(context.Context, int64) (int, error)                        { return 0, nil }
 func (f *fakeRepo) CountLearnedViaWords(context.Context, int64) (int, error)                   { return 0, nil }
+func (f *fakeRepo) CountWordsByLevel(context.Context, int64) ([]LevelProgress, error)           { return nil, nil }
 func (f *fakeRepo) CreateSession(context.Context, int64, time.Time, []int64) (*Session, error) {
 	return nil, nil
 }

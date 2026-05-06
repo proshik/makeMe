@@ -22,6 +22,7 @@ type StatusView struct {
 	ModesTotal       int // WordsInSession * 4 * ThresholdPerMode
 	LearnedAllTime   int // life-time count from word_learning_progress
 	LearnedThisRound int // already learned among current session's word_ids
+	ByLevel          []LevelProgress // per-CEFR-level learned/total; nil on query error
 }
 
 // Service is the high-level facade for /words mode.
@@ -102,7 +103,30 @@ func (s *Service) Status(ctx context.Context, userID int64, session *Session) (S
 	if total, err := s.repo.CountLearnedViaWords(ctx, userID); err == nil {
 		view.LearnedAllTime = total
 	}
+	if levels, err := s.LevelProgress(ctx, userID); err == nil {
+		view.ByLevel = levels
+	}
 	return view, nil
+}
+
+// LevelProgress returns per-CEFR-level (learned, total) tuples for the user.
+// Levels with Total = 0 (no words seeded yet for that level) are dropped, so
+// callers can render the result as-is. The result is recomputed live on every
+// call — when new words are added to data/words.json and seeded into the words
+// table at startup, the denominator updates automatically.
+func (s *Service) LevelProgress(ctx context.Context, userID int64) ([]LevelProgress, error) {
+	rows, err := s.repo.CountWordsByLevel(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]LevelProgress, 0, len(rows))
+	for _, lp := range rows {
+		if lp.Total == 0 {
+			continue
+		}
+		out = append(out, lp)
+	}
+	return out, nil
 }
 
 // NextSlot returns the next slot to display for an open session, plus the

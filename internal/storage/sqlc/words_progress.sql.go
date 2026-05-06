@@ -77,6 +77,43 @@ func (q *Queries) CountLearnedViaWordsForUser(ctx context.Context, userID int64)
 	return count, err
 }
 
+const countWordsByLevelForUser = `-- name: CountWordsByLevelForUser :many
+SELECT w.level,
+       COUNT(*) FILTER (WHERE wlp.learned = TRUE)::int AS learned,
+       COUNT(*)::int                                   AS total
+FROM words w
+LEFT JOIN word_learning_progress wlp
+       ON wlp.word_id = w.id AND wlp.user_id = $1
+GROUP BY w.level
+ORDER BY w.level
+`
+
+type CountWordsByLevelForUserRow struct {
+	Level   string `json:"level"`
+	Learned int32  `json:"learned"`
+	Total   int32  `json:"total"`
+}
+
+func (q *Queries) CountWordsByLevelForUser(ctx context.Context, userID int64) ([]CountWordsByLevelForUserRow, error) {
+	rows, err := q.db.Query(ctx, countWordsByLevelForUser, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []CountWordsByLevelForUserRow{}
+	for rows.Next() {
+		var i CountWordsByLevelForUserRow
+		if err := rows.Scan(&i.Level, &i.Learned, &i.Total); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getWordProgress = `-- name: GetWordProgress :one
 SELECT user_id, word_id, en_ru_mc_correct, ru_en_mc_correct,
        en_ru_typing_correct, ru_en_typing_correct,

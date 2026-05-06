@@ -88,13 +88,32 @@ func (b *Bot) handleProfile(ctx context.Context, tgBot *bot.Bot, update *models.
 	}
 
 	var sb strings.Builder
+
+	// Identity
 	sb.WriteString(fmt.Sprintf("🎓 Уровень: %s\n\n", u.Level))
-	sb.WriteString(fmt.Sprintf("⭐ Баллы за месяц: %.1f баллов\n\n", monthlyScore))
+
+	// Leaderboard-relevant stats: monthly score and the daily activity streak
+	// belong together — both feed the user's standing in their group.
+	sb.WriteString(fmt.Sprintf("⭐ Баллы за месяц: %.1f баллов\n", monthlyScore))
 	sb.WriteString(streakLine + "\n\n")
-	sb.WriteString(fmt.Sprintf("📚 Слов в интервальных повторениях: %d (стабильно — 3+ повторений)\n", learnedWords))
+
+	// Vocabulary section: aggregate counts under one header.
+	sb.WriteString("📚 Слова\n")
+	sb.WriteString(fmt.Sprintf("🧠 В интервальных повторениях: %d (стабильно — 3+ повторений)\n", learnedWords))
 	if learnedViaWords > 0 || inProgressWords > 0 {
 		sb.WriteString(fmt.Sprintf("✍️ Усвоено через /words: %d\n", learnedViaWords))
-		sb.WriteString(fmt.Sprintf("📖 В работе по словам: %d (продолжай — /words)\n", inProgressWords))
+		sb.WriteString(fmt.Sprintf("📖 В работе: %d (продолжай — /words)\n", inProgressWords))
+	}
+
+	// Per-level breakdown — separate paragraph since it's a different shape
+	// (per-CEFR-level rows vs the aggregate counts above).
+	if b.wordsSvc != nil {
+		if levels, err := b.wordsSvc.LevelProgress(ctx, u.ID); err == nil {
+			if block := formatLevelProgress(levels); block != "" {
+				sb.WriteString("\n")
+				sb.WriteString(block)
+			}
+		}
 	}
 
 	tgBot.SendMessage(ctx, &bot.SendMessageParams{

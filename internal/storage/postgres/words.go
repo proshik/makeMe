@@ -159,6 +159,22 @@ func (r *WordsRepository) CountLearnedViaWords(ctx context.Context, userID int64
 	return int(c), nil
 }
 
+func (r *WordsRepository) CountWordsByLevel(ctx context.Context, userID int64) ([]words.LevelProgress, error) {
+	rows, err := r.q.CountWordsByLevelForUser(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("count words by level: %w", err)
+	}
+	out := make([]words.LevelProgress, 0, len(rows))
+	for _, row := range rows {
+		out = append(out, words.LevelProgress{
+			Level:   row.Level,
+			Learned: int(row.Learned),
+			Total:   int(row.Total),
+		})
+	}
+	return out, nil
+}
+
 // --- Sessions ---
 
 func (r *WordsRepository) CreateSession(ctx context.Context, userID int64, startedOn time.Time, wordIDs []int64) (*words.Session, error) {

@@ -110,6 +110,15 @@ type Outcome struct {
 	ErrorsInSession int // running count of wrong/skip answers on this word in this session
 }
 
+// LevelProgress describes how many words at one CEFR level are learned out of
+// the total available in the app's corpus for that level. Levels with Total = 0
+// (no words seeded yet) are filtered out by the service before reaching callers.
+type LevelProgress struct {
+	Level   string // "A1" .. "C2"
+	Learned int
+	Total   int
+}
+
 // PendingTyping is the lookup payload stored when waiting for a typed reply.
 type PendingTyping struct {
 	UserID    int64

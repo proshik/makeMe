@@ -24,6 +24,7 @@ type Repository interface {
 	MarkAlreadyKnown(ctx context.Context, userID, wordID int64) error
 	CountInProgress(ctx context.Context, userID int64) (int, error)
 	CountLearnedViaWords(ctx context.Context, userID int64) (int, error)
+	CountWordsByLevel(ctx context.Context, userID int64) ([]LevelProgress, error)
 
 	// Sessions
 	CreateSession(ctx context.Context, userID int64, startedOn time.Time, wordIDs []int64) (*Session, error)

@@ -55,15 +55,20 @@ func (b *Bot) handleWords(ctx context.Context, tgBot *bot.Bot, update *models.Up
 		slog.Warn("failed to compute status", "user_id", u.ID, "error", err)
 	}
 
-	intro := fmt.Sprintf(
+	var introB strings.Builder
+	introB.WriteString(fmt.Sprintf(
 		"📚 <b>Учим слова</b>\n\n"+
-			"Слов в сессии: %d\nПрогресс: %d/%d показов\nВсего выучено: %d\n\n"+
-			"<i>Каждое слово учится в 4 режимах: EN→RU и RU→EN с выбором, плюс ввод полного перевода в обе стороны.</i>",
+			"Слов в сессии: %d\nПрогресс: %d/%d показов\nВсего выучено: %d\n\n",
 		view.WordsInSession, view.ModesCompleted, view.ModesTotal, view.LearnedAllTime,
-	)
+	))
+	if levelBlock := formatLevelProgress(view.ByLevel); levelBlock != "" {
+		introB.WriteString(levelBlock)
+		introB.WriteString("\n")
+	}
+	introB.WriteString("<i>Каждое слово учится в 4 режимах: EN→RU и RU→EN с выбором, плюс ввод полного перевода в обе стороны.</i>")
 	tgBot.SendMessage(ctx, &bot.SendMessageParams{
 		ChatID:    chatID,
-		Text:      intro,
+		Text:      introB.String(),
 		ParseMode: models.ParseModeHTML,
 	})
 
