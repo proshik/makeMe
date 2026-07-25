@@ -9,7 +9,7 @@ A gamified English learning platform for Russian speakers. Users join groups and
 ### Groups
 - Users form groups (2+ people)
 - Groups compete collectively and individually
-- Daily, weekly, and monthly leaderboards per group
+- Daily, weekly, and monthly leaderboards per group — **target state**; only `day` and `month` are implemented (see Project Status)
 
 ### Daily Task System
 Each day, every group member receives a set of tasks covering:
@@ -46,12 +46,14 @@ Tasks are generated daily and differ each day.
 - **Telegram bot:** github.com/go-telegram/bot (+ github.com/go-telegram/ui for widgets)
 - **Config:** environment variables + .env
 
-## Architecture Notes (TBD)
+## Architecture Notes
 
-- Domain-driven design preferred — core domains: `user`, `group`, `task`, `scoring`, `assessment`, `words`
+- Domain-driven design — core domains under `internal/domain/`: `user`, `group`, `task`, `scoring`, `assessment`, `srs`, `words`
+- Supporting packages: `internal/textmatch` (fuzzy answer comparison for typing modes), `internal/dictionary` (Free Dictionary API client), `internal/audio` (bulk audio seeding), `internal/scheduler` (daily summaries + reassessment reminders), `internal/storage/{postgres,sqlc}`, `internal/telegram`, `internal/server`
 - Client: Telegram bot (webhook mode, integrated into chi router)
 - REST API via chi serves `/health`, `/webhook`, and `/admin/*` (bearer-token gated, see Workflow Rules)
 - Bulk operational logic (e.g. `internal/audio.Seed`) lives in its own package and is reused by both the HTTP admin handler and a `cmd/<tool>` CLI — never duplicate the logic between them
+- Domain packages define repository interfaces; `internal/storage/postgres` implements them over sqlc-generated code. Never let `internal/domain/*` import sqlc types.
 
 ## Development Principles
 
@@ -68,9 +70,14 @@ Tasks are generated daily and differ each day.
 - If there is no plan file, mention this to the user and suggest creating one.
 
 ### Seed Data — NEVER use migrations for content
-- **Words** (`data/words.json`) and **Grammar questions** (`data/grammar.json`) are seeded **automatically on every app startup** — no manual command needed.
+- Three files are seeded **automatically on every app startup** — no manual command needed:
+  - **Words** — `data/words.json` (env `WORDS_FILE`)
+  - **Grammar questions** — `data/grammar.json` (env `GRAMMAR_QUESTIONS_FILE`)
+  - **Grammar category theory** — `data/grammar_categories.json` (env `GRAMMAR_CATEGORIES_FILE`), the explanations `/learn` shows above each topic
 - Migrations are for **schema changes only** (CREATE TABLE, ALTER TABLE, indexes).
-- Adding or editing words/grammar questions = edit the JSON file and restart the app (or redeploy). Never put INSERT rows for these tables into a migration file.
+- Adding or editing this content = edit the JSON file and restart the app (or redeploy). Never put INSERT rows for these tables into a migration file.
+- Migrations `00006`, `00011`, `00014`, `00015`, `00017` predate this rule and still carry content INSERTs. Leave them alone (they are already applied everywhere) — but never add another one like them.
+- A seed file that is missing or fails to parse is logged via `slog.Warn` and skipped; startup continues. Check the logs after a deploy if content looks stale.
 
 #### Audio (`words.audio_url`) is NOT in JSON
 - `data/words.json` does not carry `audio_url`. The startup seeder (`UpsertWord`) writes only english/russian/level/example/transcription, and never overwrites `audio_url`.
@@ -82,6 +89,13 @@ Tasks are generated daily and differ each day.
 - All `/admin/*` endpoints are bearer-token protected via `ADMIN_TOKEN` env. With the env unset, every admin endpoint returns 503 — this is intentional, do not remove the check.
 - Constant-time token compare via `crypto/subtle.ConstantTimeCompare` — keep that pattern when adding more admin endpoints.
 - Don't tunnel admin actions through `/webhook` or other public paths. New admin operations belong under `r.Route("/admin", …)` in `internal/server/server.go`.
+
+### Web UI assets
+- Nothing on a page may come from a third-party origin. Everything is served from `internal/web/static/` via `embed.FS`, which is what lets the CSP stay at `default-src 'self'`. Two tests enforce this — don't work around them by relaxing the CSP.
+- **`script-src 'self'` has no `'unsafe-inline'`, and that constrains the templates:** no inline `<script>`, no `on*=""` handlers, no htmx `hx-on` / `js:` expressions. Put behaviour in `internal/web/static/js/app.js` and trigger it from a `data-action` attribute. Two tests fail on inline scripts or handlers. `style-src` does keep `'unsafe-inline'` — inline `style=""` for design tokens is an accepted trade-off, style injection being far less dangerous than script execution.
+- **Tailwind is pre-built, never the browser compiler.** `cdn.tailwindcss.com` is the Play CDN and is development-only by Tailwind's own docs. Run `make css` (standalone CLI, no Node) after editing anything under `internal/web/templates/`, and commit the regenerated `internal/web/static/tailwind.css` — `//go:embed` needs it present at compile time. CI runs `make css-check` and fails on drift.
+- `tailwind.config.js` zeroes `borderRadius` and `boxShadow` at the theme level, not via `extend`, so radius/shadow utilities don't exist. That's deliberate: the «Табло» design system forbids them. Don't re-enable.
+- Design system lives in `internal/web/static/app.css`; the approved mockup is `design-concepts/tablo.html`. No emoji in the web UI — states are carried by colour, weight and plate. The Telegram bot keeps its emoji, since there is no CSS there.
 
 #### Grammar `subcategory` values
 Each grammar question carries a `subcategory` used by `/learn` to stratify the per-session sample so one practice covers different aspects of a rule. Allowed values:
@@ -106,4 +120,17 @@ Pick one of the above when adding new entries. Unknown values fall back to `"gen
 
 ## Project Status
 
-Phase 1 (skeleton & infra) complete. See `PLAN.md` for detailed progress.
+Phases 1–10.6 are complete — see `docs/plan.md` (the changelog at the top of that file is the authoritative feature list).
+
+Shipped and working end to end:
+- `/start`, `/help`, `/assess` (30 adaptive questions: 1–15 vocabulary, 16–30 grammar)
+- `/newgroup`, `/join`, `/mygroups`, `/leaderboard` (day + month only — see below), `/profile`
+- `/tasks` — 5 vocab + 5 grammar per round, up to `MAX_ROUNDS_PER_DAY` rounds, solo group auto-created
+- `/words` — active-recall mode, 10 words per session, 4 modes × 2 correct answers, strictly ascending A1→C2 selection
+- `/learn` — grammar theory + up to 20 stratified questions per topic
+- Scheduler (daily summary at `SCHEDULER_TIME`, reassessment reminder after 30 days), `POST /admin/seed-audio`
+
+Known gaps worth knowing before you touch these areas:
+- **No weekly period exists.** `scoring.Service.Award` only upserts rows under the `"day"` and `"month"` period keys, and `/leaderboard` is registered `MatchTypeExact` — it accepts no text arguments. Periods switch via a single inline toggle button. Adding a week means new period keys plus new UI, not just a label.
+
+Not yet started (see plan phases 11–17): translation tasks, streak rewards, weekly/monthly group summaries, automatic level re-evaluation, listening tasks, personal word lists.

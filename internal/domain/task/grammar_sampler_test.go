@@ -134,27 +134,6 @@ func TestStratifiedSample_MissingSubcategoryTreatedAsGeneral(t *testing.T) {
 	}
 }
 
-func TestLearnSessionSeed_Deterministic(t *testing.T) {
-	a := LearnSessionSeed(42, "Past Simple", "2026-04-24")
-	b := LearnSessionSeed(42, "Past Simple", "2026-04-24")
-	if a != b {
-		t.Fatalf("same inputs should produce same seed: %d vs %d", a, b)
-	}
-}
-
-func TestLearnSessionSeed_ChangesWithInputs(t *testing.T) {
-	base := LearnSessionSeed(42, "Past Simple", "2026-04-24")
-	if LearnSessionSeed(43, "Past Simple", "2026-04-24") == base {
-		t.Fatalf("different user should change seed")
-	}
-	if LearnSessionSeed(42, "Present Simple", "2026-04-24") == base {
-		t.Fatalf("different category should change seed")
-	}
-	if LearnSessionSeed(42, "Past Simple", "2026-04-25") == base {
-		t.Fatalf("different day should change seed")
-	}
-}
-
 func idsOf(qs []GrammarQuestion) []int64 {
 	ids := make([]int64, len(qs))
 	for i, q := range qs {

@@ -1,10 +1,8 @@
 package task
 
 import (
-	"hash/fnv"
 	"math/rand/v2"
 	"sort"
-	"strconv"
 )
 
 // StratifiedSample returns up to limit questions chosen round-robin from
@@ -61,17 +59,4 @@ func StratifiedSample(qs []GrammarQuestion, seed int64, limit int) []GrammarQues
 		}
 	}
 	return out
-}
-
-// LearnSessionSeed returns a deterministic seed for /learn sampling, stable
-// within a single UTC day per (user, category) so the question order does
-// not change between callbacks in the same session.
-func LearnSessionSeed(userID int64, category, day string) int64 {
-	h := fnv.New64a()
-	h.Write([]byte(strconv.FormatInt(userID, 10)))
-	h.Write([]byte{'|'})
-	h.Write([]byte(category))
-	h.Write([]byte{'|'})
-	h.Write([]byte(day))
-	return int64(h.Sum64())
 }
