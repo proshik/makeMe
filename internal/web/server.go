@@ -274,5 +274,10 @@ func (s *Server) render(w http.ResponseWriter, name string, data any) {
 // what to do, without leaking which internal step broke.
 func (s *Server) renderError(w http.ResponseWriter, message string) {
 	w.WriteHeader(http.StatusInternalServerError)
-	s.render(w, "error.html", map[string]string{"Message": message})
+	s.render(w, "error.html", errorPage{Message: message})
+}
+
+type errorPage struct {
+	chrome
+	Message string
 }

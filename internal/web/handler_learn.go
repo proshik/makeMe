@@ -22,7 +22,7 @@ type learnTopic struct {
 }
 
 type learnIndexPage struct {
-	User   *user.User
+	chrome
 	Groups []learnLevelGroup
 }
 
@@ -32,7 +32,7 @@ type learnLevelGroup struct {
 }
 
 type learnTopicPage struct {
-	User        *user.User
+	chrome
 	Topic       string
 	Explanation string
 	Total       int
@@ -75,7 +75,7 @@ func (s *Server) handleLearn(w http.ResponseWriter, r *http.Request) {
 		levels = append(levels, next)
 	}
 
-	page := learnIndexPage{User: u}
+	page := learnIndexPage{chrome: chrome{User: u, Section: SectionLearn}}
 	for _, level := range levels {
 		cats, err := s.grammarRepo.GetCategoriesByLevel(r.Context(), level)
 		if err != nil {
@@ -126,7 +126,7 @@ func (s *Server) handleLearnTopic(w http.ResponseWriter, r *http.Request) {
 	// входе в тему, поэтому порядок перемешивается, как и в боте.
 	seed := int64(rand.Uint32())
 	s.render(w, "learn_topic.html", learnTopicPage{
-		User:        u,
+		chrome:      chrome{User: u, Section: SectionLearn},
 		Topic:       topic,
 		Explanation: explanation,
 		Total:       len(sampleFor(questions, seed)),

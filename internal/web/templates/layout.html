@@ -12,17 +12,50 @@
 <script src="{{asset "/static/js/app.js"}}" defer></script>
 {{end}}
 
+{{/*
+  Шапка разведена на два уровня, потому что в ней три разных класса вещей.
+  Слева — места, куда пользователь ходит заниматься. Справа — он сам: профиль,
+  группы, оформление, выход. Раньше всё это лежало одним рядом из семи ссылок,
+  где «Выйти» стояло вплотную к «Грамматике», а на узком экране всё сваливалось
+  в две строки кашей.
+
+  Меню аккаунта — нативный <details>, а не скрипт: CSP запрещает инлайновые
+  обработчики, а disclosure работает с клавиатуры и без JS вообще.
+*/}}
 {{define "nav"}}
-<header class="max-w-[860px] mx-auto px-6 pt-8 pb-6 flex items-baseline justify-between gap-6">
-  <a href="/" class="font-display text-2xl font-semibold no-underline">makeMe</a>
-  <nav class="flex items-baseline gap-5 text-sm flex-wrap">
-    <a href="/tasks">Задания</a>
-    <a href="/words">Слова</a>
-    <a href="/learn">Грамматика</a>
-    <a href="/leaderboard">Рейтинг</a>
-    <a href="/profile">Профиль</a>
-    <button type="button" data-action="toggle-theme" class="text-sm underline">Тема</button>
-    <a href="/logout">Выйти</a>
-  </nav>
+<header class="topbar">
+  <div class="topbar-inner">
+
+    <a href="/" class="brand no-underline">makeMe</a>
+
+    {{if .User}}
+    <nav class="primary" aria-label="Разделы">
+      <a href="/tasks"       class="navlink"{{if eq .Section "tasks"}} aria-current="page"{{end}}>Задания</a>
+      <a href="/words"       class="navlink"{{if eq .Section "words"}} aria-current="page"{{end}}>Слова</a>
+      <a href="/learn"       class="navlink"{{if eq .Section "learn"}} aria-current="page"{{end}}>Грамматика</a>
+      <a href="/leaderboard" class="navlink"{{if eq .Section "leaderboard"}} aria-current="page"{{end}}>Рейтинг</a>
+    </nav>
+
+    <details class="account" data-account>
+      <summary>
+        <span class="account-name">{{.User.FirstName}}</span>
+        {{if .User.Onboarded}}<span class="account-level">{{.User.Level}}</span>{{end}}
+      </summary>
+      <div class="account-menu">
+        <a href="/profile" class="account-item"{{if eq .Section "account"}} aria-current="page"{{end}}>Профиль</a>
+        <a href="/groups"  class="account-item">Группы</a>
+        <hr class="account-sep">
+        <button type="button" class="account-item" data-action="toggle-theme" data-theme-label>
+          Сменить оформление
+        </button>
+        <hr class="account-sep">
+        <a href="/logout" class="account-item">Выйти</a>
+      </div>
+    </details>
+    {{else}}
+    <a href="/login" class="navlink">Войти</a>
+    {{end}}
+
+  </div>
 </header>
 {{end}}

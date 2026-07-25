@@ -10,12 +10,11 @@ import (
 
 	"makeMe/internal/domain/group"
 	"makeMe/internal/domain/scoring"
-	"makeMe/internal/domain/user"
 	"makeMe/internal/domain/words"
 )
 
 type profilePage struct {
-	User *user.User
+	chrome
 
 	MonthlyScore float64
 	Streak       int
@@ -34,7 +33,7 @@ func (s *Server) handleProfile(w http.ResponseWriter, r *http.Request) {
 	u := UserFromContext(r.Context())
 	ctx := r.Context()
 
-	page := profilePage{User: u}
+	page := profilePage{chrome: chrome{User: u, Section: SectionAccount}}
 
 	now := time.Now()
 	if score, err := s.scoringSvc.GetMonthlyScore(ctx, u.ID, now.Format("2006-01")); err == nil {
@@ -72,7 +71,7 @@ func (s *Server) handleProfile(w http.ResponseWriter, r *http.Request) {
 // --- leaderboard ---------------------------------------------------------
 
 type leaderboardPage struct {
-	User    *user.User
+	chrome
 	Groups  []group.Group
 	Group   *group.Group
 	Period  string // "day" | "month"
@@ -91,7 +90,8 @@ func (s *Server) handleLeaderboard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	page := leaderboardPage{User: u, Groups: groups, MeID: u.ID, Period: "day"}
+	page := leaderboardPage{chrome: chrome{User: u, Section: SectionLeaderboard},
+		Groups: groups, MeID: u.ID, Period: "day"}
 	if p := r.URL.Query().Get("period"); p == "month" {
 		page.Period = p
 	}
@@ -133,7 +133,7 @@ func (s *Server) handleLeaderboard(w http.ResponseWriter, r *http.Request) {
 // --- groups --------------------------------------------------------------
 
 type groupsPage struct {
-	User    *user.User
+	chrome
 	Groups  []group.Group
 	Error   string
 	Created *group.Group
@@ -203,7 +203,7 @@ func (s *Server) handleGroupJoin(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) renderGroups(w http.ResponseWriter, r *http.Request, page groupsPage) {
 	u := UserFromContext(r.Context())
-	page.User = u
+	page.chrome = chrome{User: u, Section: SectionAccount}
 	if groups, err := s.groupSvc.ListByUser(r.Context(), u.ID); err == nil {
 		page.Groups = groups
 	} else {

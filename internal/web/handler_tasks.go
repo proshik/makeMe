@@ -31,7 +31,7 @@ type taskView struct {
 
 // tasksPage wraps a slot for the full-page render.
 type tasksPage struct {
-	User *user.User
+	chrome
 	Slot *taskView
 
 	// Exactly one of these is set when there is no slot to answer.
@@ -62,7 +62,7 @@ func (s *Server) handleTasks(w http.ResponseWriter, r *http.Request) {
 	u := UserFromContext(r.Context())
 
 	if !u.Onboarded {
-		s.render(w, "tasks.html", tasksPage{User: u, NeedsLevel: true})
+		s.render(w, "tasks.html", tasksPage{chrome: tasksChrome(u), NeedsLevel: true})
 		return
 	}
 
@@ -70,7 +70,7 @@ func (s *Server) handleTasks(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if errors.Is(err, task.ErrDailyLimitReached) {
 			s.render(w, "tasks.html", tasksPage{
-				User: u, LimitHit: true, MaxRounds: s.taskSvc.MaxRounds(),
+				chrome: tasksChrome(u), LimitHit: true, MaxRounds: s.taskSvc.MaxRounds(),
 			})
 			return
 		}
@@ -79,7 +79,7 @@ func (s *Server) handleTasks(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	page := tasksPage{User: u, MaxRounds: s.taskSvc.MaxRounds()}
+	page := tasksPage{chrome: tasksChrome(u), MaxRounds: s.taskSvc.MaxRounds()}
 	slot, summary, err := s.nextSlot(r, u, ds)
 	if err != nil {
 		slog.Error("web: next task", "user_id", u.ID, "error", err)

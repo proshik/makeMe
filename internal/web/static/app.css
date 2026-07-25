@@ -183,3 +183,128 @@ a { color: inherit; text-underline-offset: 4px; }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }
+
+/* ── Шапка ────────────────────────────────────────────────────────────
+   Два уровня: слева разделы, куда пользователь ходит заниматься, справа —
+   он сам. Рейка отделена от контента линией, иначе навигация висит в
+   воздухе и читается как часть страницы. */
+.topbar {
+  background: var(--panel);
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: 2.5rem;
+}
+.topbar-inner {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  display: flex;
+  align-items: stretch;
+  gap: 1.5rem;
+  min-height: 56px;
+}
+
+.brand {
+  font-family: 'Oswald', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  flex: none;
+}
+
+/* Разделы. На узком экране ряд не переносится, а прокручивается — перенос
+   ломал шапку на две строки и путал уровни местами. */
+.primary {
+  display: flex;
+  align-items: stretch;
+  gap: .25rem;
+  flex: 1;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.primary::-webkit-scrollbar { display: none; }
+
+.navlink {
+  display: flex;
+  align-items: center;
+  padding: 0 .85rem;
+  font-size: .95rem;
+  color: var(--dim);
+  text-decoration: none;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  transition: color .12s, border-color .12s;
+}
+.navlink:hover { color: var(--chalk); }
+.navlink:focus-visible { outline: 2px solid var(--amber); outline-offset: -2px; }
+/* Текущий раздел: янтарная подсветка снизу — та же индикация, что у
+   загоревшейся створки, и её видно без опоры на цвет текста. */
+.navlink[aria-current="page"] {
+  color: var(--chalk);
+  border-bottom-color: var(--amber);
+}
+
+/* ── Меню аккаунта ── */
+.account { position: relative; flex: none; display: flex; align-items: center; }
+.account > summary {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .35rem .6rem;
+  cursor: pointer;
+  list-style: none;
+  background: var(--cell);
+  border: 1px solid var(--rule);
+  white-space: nowrap;
+}
+.account > summary::-webkit-details-marker { display: none; }
+.account > summary:hover { background: var(--cell-2); }
+.account > summary:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+.account-name  { font-size: .9rem; }
+.account-level {
+  font-family: 'Oswald', sans-serif;
+  font-size: .7rem;
+  padding: .1rem .35rem;
+  background: var(--amber);
+  color: var(--btn-ink);
+}
+
+.account-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 200px;
+  z-index: 20;
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  padding: .35rem 0;
+}
+.account-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: .6rem 1rem;
+  font-size: .92rem;
+  font-family: inherit;
+  color: var(--chalk);
+  background: none;
+  border: 0;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.account-item:hover { background: var(--cell); }
+.account-item:focus-visible { outline: 2px solid var(--amber); outline-offset: -2px; }
+.account-item[aria-current="page"] { color: var(--amber-ink); }
+.account-sep { border: 0; border-top: 1px solid var(--rule); margin: .35rem 0; }
+
+/* Порог подобран по факту, а не на глаз: при 606px четыре раздела вылезали
+   за край на 20px, потому что имя в чипе занимало место. Имя уходит первым —
+   разделы важнее, а своё имя пользователь и так знает; уровень остаётся, он
+   несёт информацию. */
+@media (max-width: 720px) {
+  .account-name { display: none; }
+  .brand { font-size: 1.15rem; }
+  .navlink { padding: 0 .6rem; font-size: .88rem; }
+  .topbar-inner { gap: .75rem; padding: 0 1rem; }
+}

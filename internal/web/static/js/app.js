@@ -11,7 +11,16 @@
   'use strict';
 
   // Переключатель темы: [data-theme] на <html> плюс localStorage, чтобы
-  // выбор пережил перезагрузку.
+  // выбор пережил перезагрузку. Подпись называет действие, а не текущее
+  // состояние — так понятнее, что произойдёт по нажатию.
+  function themeLabel() {
+    var dark = document.documentElement.dataset.theme !== 'light';
+    var el = document.querySelector('[data-theme-label]');
+    if (el) el.textContent = dark ? 'Светлое оформление' : 'Тёмное оформление';
+  }
+  document.addEventListener('DOMContentLoaded', themeLabel);
+  themeLabel();
+
   document.addEventListener('click', function (e) {
     var el = e.target.closest('[data-action="toggle-theme"]');
     if (!el) return;
@@ -19,6 +28,21 @@
     var next = root.dataset.theme === 'light' ? 'dark' : 'light';
     root.dataset.theme = next;
     localStorage.setItem('makeme-theme', next);
+    themeLabel();
+  });
+
+  // <details> сам по себе не закрывается по клику снаружи и по Escape —
+  // без этого меню аккаунта остаётся висеть поверх страницы.
+  function closeAccount(except) {
+    document.querySelectorAll('[data-account][open]').forEach(function (d) {
+      if (d !== except) d.open = false;
+    });
+  }
+  document.addEventListener('click', function (e) {
+    closeAccount(e.target.closest('[data-account]'));
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeAccount(null);
   });
 
   // Мгновенная отметка выбранного варианта: ответ уходит на сервер и вернётся

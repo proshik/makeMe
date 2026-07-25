@@ -8,7 +8,6 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"makeMe/internal/domain/user"
 	"makeMe/internal/domain/words"
 )
 
@@ -39,7 +38,7 @@ type modeCount struct {
 }
 
 type wordsPage struct {
-	User       *user.User
+	chrome
 	Slot       *wordSlot
 	Status     *words.StatusView
 	Done       bool
@@ -65,7 +64,7 @@ func (s *Server) handleWords(w http.ResponseWriter, r *http.Request) {
 	u := UserFromContext(r.Context())
 
 	if !u.Onboarded {
-		s.render(w, "words.html", wordsPage{User: u, NeedsLevel: true})
+		s.render(w, "words.html", wordsPage{chrome: wordsChrome(u), NeedsLevel: true})
 		return
 	}
 
@@ -88,7 +87,7 @@ func (s *Server) handleWords(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s.render(w, "words.html", wordsPage{User: u, Slot: slot, Status: &status, Done: done})
+	s.render(w, "words.html", wordsPage{chrome: wordsChrome(u), Slot: slot, Status: &status, Done: done})
 }
 
 // handleWordsNext renders the next slot as a fragment.

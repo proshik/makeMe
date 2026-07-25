@@ -576,3 +576,107 @@ func TestPluralHelperPicksRussianForms(t *testing.T) {
 		}
 	}
 }
+
+// --- navigation ----------------------------------------------------------
+
+func (e *testEnv) signedInGet(t *testing.T, path string) *httptest.ResponseRecorder {
+	t.Helper()
+	u, _ := e.repo.Create(context.Background(), 777, "alice", "Алиса")
+	token, _ := e.jwt.Create(u.ID)
+	req := httptest.NewRequest(http.MethodGet, path, nil)
+	req.AddCookie(&http.Cookie{Name: authCookie, Value: token})
+	return e.do(t, req)
+}
+
+// The header separates places to work from the account. Personal and utility
+// items must not sit in the primary rail next to the learning sections —
+// that flat row was the whole problem with the old nav.
+func TestNavSeparatesSectionsFromAccount(t *testing.T) {
+	env := newTestEnv(t, 777, "Алиса", "alice")
+	body := env.signedInGet(t, "/").Body.String()
+
+	primary := between(t, body, `<nav class="primary"`, `</nav>`)
+	for _, want := range []string{"/tasks", "/words", "/learn", "/leaderboard"} {
+		if !strings.Contains(primary, want) {
+			t.Errorf("primary nav is missing %s", want)
+		}
+	}
+	for _, unwanted := range []string{"/logout", "/profile", "/groups", "toggle-theme"} {
+		if strings.Contains(primary, unwanted) {
+			t.Errorf("%s belongs in the account menu, not the primary rail", unwanted)
+		}
+	}
+
+	menu := between(t, body, `<div class="account-menu"`, `</details>`)
+	for _, want := range []string{"/profile", "/groups", "/logout", "toggle-theme"} {
+		if !strings.Contains(menu, want) {
+			t.Errorf("account menu is missing %s", want)
+		}
+	}
+}
+
+// Without a current marker the user cannot tell where they are.
+func TestNavMarksCurrentSection(t *testing.T) {
+	env := newTestEnv(t, 777, "Алиса", "alice")
+
+	for path, expected := range map[string]string{
+		"/tasks": `href="/tasks"`,
+		"/words": `href="/words"`,
+	} {
+		body := env.signedInGet(t, path).Body.String()
+		i := strings.Index(body, expected)
+		if i < 0 {
+			t.Fatalf("%s: link not rendered", path)
+		}
+		// aria-current sits on the same tag as the href.
+		tag := body[i:]
+		if end := strings.Index(tag, ">"); end >= 0 {
+			tag = tag[:end]
+		}
+		if !strings.Contains(tag, `aria-current="page"`) {
+			t.Errorf("%s: current section is not marked (%s)", path, tag)
+		}
+	}
+}
+
+// The account menu is a native <details>, which works without JavaScript —
+// necessary because the CSP forbids inline handlers.
+func TestAccountMenuNeedsNoScript(t *testing.T) {
+	env := newTestEnv(t, 777, "Алиса", "alice")
+	body := env.signedInGet(t, "/").Body.String()
+
+	if !strings.Contains(body, "<details class=\"account\"") {
+		t.Error("account menu should be a native disclosure element")
+	}
+	if !strings.Contains(body, "<summary>") {
+		t.Error("disclosure has no summary, so it cannot be opened by keyboard")
+	}
+}
+
+// An anonymous visitor hitting a bad URL must be offered a way in, not an
+// account menu for a user who is not signed in.
+func TestNavForAnonymousVisitorOffersLogin(t *testing.T) {
+	env := newTestEnv(t, 1, "Алиса", "alice")
+	body := env.do(t, httptest.NewRequest(http.MethodGet, "/no-such-page", nil)).Body.String()
+
+	if strings.Contains(body, `class="account"`) {
+		t.Error("account menu rendered for an anonymous visitor")
+	}
+	if !strings.Contains(body, `href="/login"`) {
+		t.Error("anonymous visitor is offered no way to sign in")
+	}
+}
+
+func between(t *testing.T, body, start, end string) string {
+	t.Helper()
+	i := strings.Index(body, start)
+	if i < 0 {
+		t.Fatalf("marker %q not found", start)
+	}
+	rest := body[i:]
+	j := strings.Index(rest, end)
+	if j < 0 {
+		t.Fatalf("closing marker %q not found", end)
+	}
+	return rest[:j]
+}

@@ -26,7 +26,7 @@ type assessResult struct {
 }
 
 type assessPage struct {
-	User   *user.User
+	chrome
 	Slot   *assessSlot
 	Result *assessResult
 }
@@ -48,8 +48,8 @@ func (s *Server) handleAssess(w http.ResponseWriter, r *http.Request) {
 	}
 
 	s.render(w, "assess.html", assessPage{
-		User: u,
-		Slot: s.buildAssessSlot(question, answered),
+		chrome: chrome{User: u},
+		Slot:   s.buildAssessSlot(question, answered),
 	})
 }
 

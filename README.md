@@ -346,6 +346,14 @@ Asset URLs carry a `?v=` token derived from a hash of every embedded file, so `C
 
 Session cookies are `HttpOnly`, `Secure`, `SameSite=Lax` — Lax is the CSRF defence for cookie auth, which is why the POST handlers carry no separate CSRF token. The `id_token` signature is deliberately not verified: it arrives from Telegram's token endpoint over TLS server-to-server, and there is no public JWKS to check against; `exp`, `aud` and `iss` are validated as defence in depth.
 
+### Navigation
+
+The header carries two levels, because it holds two different kinds of thing. On the left are places to work — Задания, Слова, Грамматика, Рейтинг — with the current one marked by an amber underline and `aria-current="page"`. On the right is the user: a chip with their name and level opening a menu with Профиль, Группы, appearance and Выйти.
+
+That menu is a native `<details>`, not a scripted dropdown: `script-src 'self'` forbids inline handlers, and a disclosure element is keyboard-accessible with no JavaScript at all. `app.js` adds only what `<details>` lacks — closing on an outside click and on Escape.
+
+Below 720px the account name is hidden (the level chip stays, since it carries information) and the sections scroll horizontally rather than wrapping. The breakpoint is measured, not guessed: at 606px the four sections overflowed by 20px while the name still occupied the chip.
+
 ### Assets are self-hosted, and Tailwind is pre-built
 
 Everything the pages load comes from our own origin (`internal/web/static/`, embedded into the binary): the built Tailwind stylesheet, htmx 2.0.4, and the four fonts of the «Табло» system — Oswald, IBM Plex Sans, IBM Plex Mono, and Charis SIL for IPA transcriptions.
