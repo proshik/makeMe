@@ -35,6 +35,8 @@ import (
 	"makeMe/internal/domain/scoring"
 	"makeMe/internal/domain/task"
 	"makeMe/internal/domain/user"
+	"makeMe/internal/domain/words"
+	"makeMe/internal/seed"
 	"makeMe/internal/storage/postgres"
 	"makeMe/internal/storage/sqlc"
 	"makeMe/internal/web"
@@ -60,6 +62,10 @@ func main() {
 	}
 	defer pool.Close()
 
+	// Реальный контент из data/*.json, иначе в UI видны только 10 слов на
+	// уровень из миграций и нет ни транскрипций, ни грамматики.
+	seed.All(ctx, dbURL, "data/words.json", "data/grammar_categories.json", "data/grammar.json")
+
 	q := sqlc.New(pool)
 	userSvc := user.NewService(postgres.NewUserRepository(q))
 	groupSvc := group.NewService(postgres.NewGroupRepository(q))
@@ -71,6 +77,7 @@ func main() {
 	)
 	scoringSvc := scoring.NewService(postgres.NewScoringRepository(q))
 	assessSvc := assessment.NewService(postgres.NewAssessmentRepository(q), userSvc, srsRepo, grammarRepo)
+	wordsSvc := words.NewService(postgres.NewWordsRepository(q), srsRepo)
 
 	stub := stubOIDC()
 	defer stub.Close()
@@ -83,7 +90,7 @@ func main() {
 
 	srv, err := web.New(web.Deps{
 		UserSvc: userSvc, GroupSvc: groupSvc, TaskSvc: taskSvc,
-		ScoringSvc: scoringSvc, SRSRepo: srsRepo, AssessSvc: assessSvc,
+		ScoringSvc: scoringSvc, SRSRepo: srsRepo, AssessSvc: assessSvc, WordsSvc: wordsSvc,
 	}, jwtSvc, web.NewOIDCClient(stub.URL, "client-1", "secret",
 		"http://localhost"+previewAddr+"/auth/telegram/callback"), false)
 	if err != nil {

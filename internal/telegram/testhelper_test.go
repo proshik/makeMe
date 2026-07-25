@@ -111,7 +111,6 @@ func setupTestEnvWithMaxRounds(t *testing.T, maxRounds int) *testEnv {
 	userRepo := postgres.NewUserRepository(queries)
 	userSvc := user.NewService(userRepo)
 
-
 	groupRepo := postgres.NewGroupRepository(queries)
 	groupSvc := group.NewService(groupRepo)
 
@@ -259,9 +258,9 @@ func (e *testEnv) sendUpdate(t *testing.T, update models.Update) {
 	t.Helper()
 
 	const (
-		pollInterval  = 50 * time.Millisecond
-		stableNeeded  = 3 // consecutive stable polls before we consider processing done
-		totalTimeout  = 10 * time.Second
+		pollInterval = 50 * time.Millisecond
+		stableNeeded = 3 // consecutive stable polls before we consider processing done
+		totalTimeout = 10 * time.Second
 	)
 
 	initialCount := e.countAllWireMockRequests(t)

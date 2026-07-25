@@ -23,6 +23,7 @@ import (
 	"makeMe/internal/domain/srs"
 	"makeMe/internal/domain/task"
 	"makeMe/internal/domain/user"
+	"makeMe/internal/domain/words"
 )
 
 //go:embed templates/*.html templates/fragments/*.html
@@ -38,6 +39,7 @@ type Deps struct {
 	UserSvc    *user.Service
 	GroupSvc   *group.Service
 	AssessSvc  *assessment.Service
+	WordsSvc   *words.Service
 	TaskSvc    *task.Service
 	ScoringSvc *scoring.Service
 	SRSRepo    srs.Repository
@@ -47,6 +49,7 @@ type Server struct {
 	userSvc    *user.Service
 	groupSvc   *group.Service
 	assessSvc  *assessment.Service
+	wordsSvc   *words.Service
 	taskSvc    *task.Service
 	scoringSvc *scoring.Service
 	srsRepo    srs.Repository
@@ -72,6 +75,7 @@ func New(deps Deps, jwtSvc *JWTService, oidc *OIDCClient, cookieSecure bool) (*S
 		userSvc:      deps.UserSvc,
 		groupSvc:     deps.GroupSvc,
 		assessSvc:    deps.AssessSvc,
+		wordsSvc:     deps.WordsSvc,
 		taskSvc:      deps.TaskSvc,
 		scoringSvc:   deps.ScoringSvc,
 		srsRepo:      deps.SRSRepo,
@@ -115,6 +119,12 @@ func (s *Server) Mount(r chi.Router) {
 
 		priv.Get("/assess", s.handleAssess)
 		priv.Post("/assess/answer", s.handleAssessAnswer)
+
+		priv.Get("/words", s.handleWords)
+		priv.Get("/words/next", s.handleWordsNext)
+		priv.Post("/words/{id}/answer", s.handleWordsAnswer)
+		priv.Post("/words/{id}/know", s.handleWordsKnow)
+		priv.Post("/words/{id}/defer", s.handleWordsDefer)
 	})
 }
 
@@ -174,6 +184,21 @@ func templateFuncs(staticVersion string) template.FuncMap {
 			return out
 		},
 		"inc": func(i int) int { return i + 1 },
+		// filled renders a done-out-of-need tally as a slice of booleans, one
+		// per flap.
+		"filled": func(done, need int) []bool {
+			out := make([]bool, need)
+			for i := range out {
+				out[i] = i < done
+			}
+			return out
+		},
+		"percent": func(part, total int) int {
+			if total <= 0 {
+				return 0
+			}
+			return part * 100 / total
+		},
 		// chars splits a short string into one flap per character.
 		"chars": func(v any) []string {
 			out := []string{}

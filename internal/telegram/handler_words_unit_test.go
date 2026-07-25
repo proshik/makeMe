@@ -67,7 +67,7 @@ func TestBuildMCOptions_CorrectIdxFound(t *testing.T) {
 		{English: "car", Russian: "машина", Level: user.B1},
 		{English: "book", Russian: "книга", Level: user.B1},
 	}
-	options, idx := buildMCOptions(correct, distractors, englishPicker)
+	options, idx := words.BuildMCOptions(correct, distractors, words.ModeRuEnMC)
 	if len(options) != 4 {
 		t.Fatalf("expected 4 options, got %d", len(options))
 	}
@@ -84,7 +84,7 @@ func TestBuildMCOptions_FiltersDuplicates(t *testing.T) {
 		{English: "car"},
 		{English: "book"},
 	}
-	options, idx := buildMCOptions(correct, distractors, englishPicker)
+	options, idx := words.BuildMCOptions(correct, distractors, words.ModeRuEnMC)
 	if len(options) != 4 {
 		t.Fatalf("expected 4 options, got %d (likely failed to skip dup)", len(options))
 	}

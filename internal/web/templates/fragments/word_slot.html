@@ -1,0 +1,76 @@
+{{/* Одно слово в одном режиме. Заголовок не содержит порядкового номера
+     слова — он был бы спойлером: по номеру угадывается, какое слово идёт. */}}
+{{define "word_slot"}}
+<div id="wordslot">
+  <section class="panel p-7">
+
+    <div class="flex items-center justify-between mb-6 gap-4 flex-wrap">
+      <span class="font-mono text-xs" style="color:var(--dim)">{{.Instruction}}</span>
+      <div class="flex items-baseline gap-2">
+        <span class="font-mono text-xs" style="color:var(--dim)">показ</span>
+        <span class="flap-row">
+          {{range digits .Shown 2}}<span class="flap text-base">{{.}}</span>{{end}}
+        </span>
+        <span class="font-mono text-xs" style="color:var(--dim)">из {{.Total}}</span>
+      </div>
+    </div>
+
+    {{/* Четыре режима: по две горящие створки на каждый — тогда слово выучено. */}}
+    <div class="flex gap-5 mb-8 flex-wrap">
+      {{range .Counts}}
+      <div>
+        <p class="font-mono text-[.68rem] mb-1" style="color:var(--dim)">{{.Label}}</p>
+        <div class="steps" role="img" aria-label="{{.Done}} из {{.Need}}">
+          {{range filled .Done .Need}}<span {{if .}}data-on="1"{{end}}></span>{{end}}
+        </div>
+      </div>
+      {{end}}
+    </div>
+
+    <p class="font-display text-6xl leading-none mb-3" style="font-weight:500">{{.Prompt}}</p>
+    {{if .Transcript}}<p class="ipa text-2xl mb-3">{{.Transcript}}</p>{{end}}
+    {{if .Example}}<p class="text-base mb-8" style="color:var(--dim)"><i>{{.Example}}</i></p>{{else}}<div class="mb-8"></div>{{end}}
+
+    <form hx-post="/words/{{.WordID}}/answer" hx-target="#wordslot" hx-swap="outerHTML">
+      <input type="hidden" name="mode" value="{{.Mode}}">
+
+      {{if .Typing}}
+        <input class="field mb-3" type="text" name="answer" autocomplete="off"
+               autocapitalize="off" spellcheck="false" autofocus
+               placeholder="перевод" aria-label="{{.Instruction}}">
+        <p class="font-mono text-xs mb-7" style="color:var(--dim)">Регистр и «ё» не важны</p>
+        <div class="flex items-center gap-3 flex-wrap">
+          <button type="submit" class="btn">Проверить</button>
+          <button type="submit" name="skip" value="1" class="btn btn-ghost">Не знаю</button>
+        </div>
+      {{else}}
+        <div class="grid gap-[3px] mb-7">
+          {{range $i, $opt := .Options}}
+          <button type="submit" name="answer" value="{{$opt}}" class="opt">
+            <span class="lamp"></span>
+            <span class="key">{{inc $i}}</span>
+            <span class="val">{{$opt}}</span>
+          </button>
+          {{end}}
+        </div>
+        <div class="flex items-center gap-3 flex-wrap">
+          <button type="submit" name="skip" value="1" class="btn btn-ghost">Не знаю</button>
+        </div>
+      {{end}}
+    </form>
+
+    <div class="rule pt-5 mt-6 flex items-center gap-3 flex-wrap">
+      <button class="btn btn-ghost"
+              hx-post="/words/{{.WordID}}/know" hx-target="#wordslot" hx-swap="outerHTML">
+        Уже знаю это слово
+      </button>
+      {{if .AudioURL}}
+      <button type="button" class="btn btn-ghost" data-action="play-audio" data-src="{{.AudioURL}}">
+        Послушать
+      </button>
+      {{end}}
+    </div>
+
+  </section>
+</div>
+{{end}}

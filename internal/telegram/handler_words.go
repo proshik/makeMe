@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"html"
 	"log/slog"
-	"math/rand/v2"
 	"strconv"
 	"strings"
 	"time"
@@ -13,7 +12,6 @@ import (
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
 
-	"makeMe/internal/domain/srs"
 	"makeMe/internal/domain/words"
 )
 
@@ -297,11 +295,7 @@ func (b *Bot) sendWordsMCSlot(ctx context.Context, tgBot *bot.Bot, chatID int64,
 		slog.Error("failed to get distractors", "level", slot.Word.Level, "error", err)
 		return
 	}
-	pick := russianPicker
-	if slot.Mode == words.ModeRuEnMC {
-		pick = englishPicker
-	}
-	options, correctIdx := buildMCOptions(correct, distractors, pick)
+	options, correctIdx := words.BuildMCOptions(correct, distractors, slot.Mode)
 
 	modeCode := words.EncodeMode(slot.Mode)
 	buttons := make([][]models.InlineKeyboardButton, 0, len(options)+2)
@@ -546,36 +540,6 @@ func typingPrompt(slot *words.Slot) string {
 	}
 	return ""
 }
-
-// buildMCOptions assembles 4 shuffled options (1 correct + 3 distractors) and
-// returns both the option list and the index of the correct one.
-func buildMCOptions(correct string, distractors []srs.Word, pick func(srs.Word) string) ([]string, int) {
-	options := []string{correct}
-	for _, d := range distractors {
-		v := pick(d)
-		if v == correct {
-			continue
-		}
-		options = append(options, v)
-		if len(options) >= 4 {
-			break
-		}
-	}
-	rand.Shuffle(len(options), func(i, j int) {
-		options[i], options[j] = options[j], options[i]
-	})
-	correctIdx := 0
-	for i, o := range options {
-		if o == correct {
-			correctIdx = i
-			break
-		}
-	}
-	return options, correctIdx
-}
-
-func russianPicker(w srs.Word) string { return w.Russian }
-func englishPicker(w srs.Word) string { return w.English }
 
 // --- callback parsers ---
 

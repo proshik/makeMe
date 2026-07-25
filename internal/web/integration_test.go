@@ -26,8 +26,10 @@ import (
 	"makeMe/internal/domain/assessment"
 	"makeMe/internal/domain/group"
 	"makeMe/internal/domain/scoring"
+	"makeMe/internal/domain/srs"
 	"makeMe/internal/domain/task"
 	"makeMe/internal/domain/user"
+	"makeMe/internal/domain/words"
 	"makeMe/internal/storage/postgres"
 	"makeMe/internal/storage/sqlc"
 )
@@ -41,6 +43,8 @@ type dbEnv struct {
 	userSvc   *user.Service
 	taskSvc   *task.Service
 	assessSvc *assessment.Service
+	wordsSvc  *words.Service
+	srsRepo   srs.Repository
 	pool      *pgxpool.Pool
 }
 
@@ -84,6 +88,7 @@ func setupDBEnv(t *testing.T) *dbEnv {
 	)
 	scoringSvc := scoring.NewService(postgres.NewScoringRepository(q))
 	assessSvc := assessment.NewService(postgres.NewAssessmentRepository(q), userSvc, srsRepo, grammarRepo)
+	wordsSvc := words.NewService(postgres.NewWordsRepository(q), srsRepo)
 
 	jwtSvc, err := NewJWTService(testSecret(t), 24)
 	require.NoError(t, err)
@@ -92,7 +97,7 @@ func setupDBEnv(t *testing.T) *dbEnv {
 	// minted directly.
 	srv, err := New(Deps{
 		UserSvc: userSvc, GroupSvc: groupSvc, TaskSvc: taskSvc,
-		ScoringSvc: scoringSvc, SRSRepo: srsRepo, AssessSvc: assessSvc,
+		ScoringSvc: scoringSvc, SRSRepo: srsRepo, AssessSvc: assessSvc, WordsSvc: wordsSvc,
 	}, jwtSvc, NewOIDCClient("http://unused", "client-1", "secret", "http://app/cb"), false)
 	require.NoError(t, err)
 
@@ -100,7 +105,7 @@ func setupDBEnv(t *testing.T) *dbEnv {
 	srv.Mount(r)
 
 	return &dbEnv{router: r, jwt: jwtSvc, userSvc: userSvc, taskSvc: taskSvc,
-		assessSvc: assessSvc, pool: pool}
+		assessSvc: assessSvc, wordsSvc: wordsSvc, srsRepo: srsRepo, pool: pool}
 }
 
 // signedIn creates an onboarded user and returns them with a session cookie.
@@ -460,4 +465,198 @@ func TestAssessStartedInBotResumesInBrowser(t *testing.T) {
 	require.NoError(t, env.pool.QueryRow(ctx,
 		`SELECT count(*) FROM assessment_sessions WHERE user_id = $1`, u.ID).Scan(&sessions))
 	require.Equal(t, 1, sessions, "the browser must resume the session, not open a second one")
+}
+
+// --- words ---------------------------------------------------------------
+
+// currentWordSlot lifts the word id and mode out of a rendered drill.
+func currentWordSlot(t *testing.T, body string) (id string, mode string) {
+	t.Helper()
+	const marker = `hx-post="/words/`
+	i := strings.Index(body, marker)
+	require.GreaterOrEqual(t, i, 0, "no word form in the rendered slot")
+	rest := body[i+len(marker):]
+	id = rest[:strings.Index(rest, "/answer")]
+
+	const mm = `name="mode" value="`
+	j := strings.Index(body, mm)
+	require.GreaterOrEqual(t, j, 0, "slot carries no mode")
+	rest = body[j+len(mm):]
+	return id, rest[:strings.Index(rest, `"`)]
+}
+
+func TestWordsOpensSessionWithTenWords(t *testing.T) {
+	env := setupDBEnv(t)
+	u, cookie := env.signedIn(t, 300, user.A1)
+
+	rr := env.get(t, "/words", cookie)
+	require.Equal(t, http.StatusOK, rr.Code)
+	require.Contains(t, rr.Body.String(), "слов в сессии")
+	require.Contains(t, rr.Body.String(), "по уровням")
+
+	session, err := env.wordsSvc.RepoOpenSession(context.Background(), u.ID)
+	require.NoError(t, err)
+	require.NotNil(t, session)
+	require.Len(t, session.WordIDs, 10, "a session is ten words")
+}
+
+func TestWordsCorrectAnswerAdvancesModeCounter(t *testing.T) {
+	env := setupDBEnv(t)
+	u, cookie := env.signedIn(t, 301, user.A1)
+	ctx := context.Background()
+
+	body := env.get(t, "/words", cookie).Body.String()
+	id, mode := currentWordSlot(t, body)
+	wordID := taskIDFrom(t, id)
+
+	word, err := env.srsRepo.GetWordByID(ctx, wordID)
+	require.NoError(t, err)
+	expected := words.ExpectedAnswer(word, words.Mode(mode))
+
+	fb := env.postForm(t, "/words/"+id+"/answer",
+		url.Values{"mode": {mode}, "answer": {expected}}.Encode(), cookie)
+	require.Equal(t, http.StatusOK, fb.Code)
+	require.Contains(t, fb.Body.String(), "Верно")
+
+	progress, err := env.wordsSvc.RepoGetProgress(ctx, u.ID, wordID)
+	require.NoError(t, err)
+	require.Equal(t, 1, progress.Counts[words.Mode(mode)], "one correct answer counts once")
+}
+
+// A wrong answer resets the counter for that mode — that is the core of the
+// drill, and it is easy to break without noticing.
+func TestWordsWrongAnswerResetsModeCounter(t *testing.T) {
+	env := setupDBEnv(t)
+	u, cookie := env.signedIn(t, 302, user.A1)
+	ctx := context.Background()
+
+	body := env.get(t, "/words", cookie).Body.String()
+	id, mode := currentWordSlot(t, body)
+	wordID := taskIDFrom(t, id)
+
+	word, err := env.srsRepo.GetWordByID(ctx, wordID)
+	require.NoError(t, err)
+	expected := words.ExpectedAnswer(word, words.Mode(mode))
+
+	env.postForm(t, "/words/"+id+"/answer",
+		url.Values{"mode": {mode}, "answer": {expected}}.Encode(), cookie)
+
+	fb := env.postForm(t, "/words/"+id+"/answer",
+		url.Values{"mode": {mode}, "answer": {"заведомо неверно"}}.Encode(), cookie)
+	require.Contains(t, fb.Body.String(), "Неверно")
+
+	progress, err := env.wordsSvc.RepoGetProgress(ctx, u.ID, wordID)
+	require.NoError(t, err)
+	require.Equal(t, 0, progress.Counts[words.Mode(mode)], "a wrong answer must reset the mode")
+}
+
+// "Уже знаю это слово" is the fast path for a B2 speaker meeting A1 words: it
+// retires the word and drops it straight into spaced repetition.
+func TestWordsAlreadyKnownRetiresWordIntoSRS(t *testing.T) {
+	env := setupDBEnv(t)
+	u, cookie := env.signedIn(t, 303, user.A1)
+	ctx := context.Background()
+
+	body := env.get(t, "/words", cookie).Body.String()
+	id, _ := currentWordSlot(t, body)
+	wordID := taskIDFrom(t, id)
+
+	rr := env.postForm(t, "/words/"+id+"/know", "", cookie)
+	require.Equal(t, http.StatusOK, rr.Code)
+
+	progress, err := env.wordsSvc.RepoGetProgress(ctx, u.ID, wordID)
+	require.NoError(t, err)
+	require.True(t, progress.Learned, "the word must be marked learned")
+
+	var cards int
+	require.NoError(t, env.pool.QueryRow(ctx,
+		`SELECT count(*) FROM review_cards WHERE user_id = $1 AND word_id = $2`,
+		u.ID, wordID).Scan(&cards))
+	require.Equal(t, 1, cards, "a retired word must enter spaced repetition")
+}
+
+// The defer affordance only appears once a word has really stopped sticking —
+// showing it earlier would invite skipping anything mildly hard.
+func TestWordsDeferOfferedOnlyAfterThreshold(t *testing.T) {
+	env := setupDBEnv(t)
+	_, cookie := env.signedIn(t, 304, user.A1)
+
+	body := env.get(t, "/words", cookie).Body.String()
+	id, mode := currentWordSlot(t, body)
+
+	var lastBody string
+	for i := 0; i <= words.DeferThreshold; i++ {
+		fb := env.postForm(t, "/words/"+id+"/answer",
+			url.Values{"mode": {mode}, "answer": {"заведомо неверно"}}.Encode(), cookie)
+		require.Equal(t, http.StatusOK, fb.Code)
+		lastBody = fb.Body.String()
+		if i < words.DeferThreshold {
+			require.NotContains(t, lastBody, "Отложить до завтра",
+				"defer must not be offered at mistake %d", i+1)
+		}
+	}
+	require.Contains(t, lastBody, "Отложить до завтра",
+		"defer must appear past the threshold")
+}
+
+func TestWordsDeferRemovesWordFromSession(t *testing.T) {
+	env := setupDBEnv(t)
+	u, cookie := env.signedIn(t, 305, user.A1)
+	ctx := context.Background()
+
+	body := env.get(t, "/words", cookie).Body.String()
+	id, _ := currentWordSlot(t, body)
+	wordID := taskIDFrom(t, id)
+
+	rr := env.postForm(t, "/words/"+id+"/defer", "", cookie)
+	require.Equal(t, http.StatusOK, rr.Code)
+
+	session, err := env.wordsSvc.RepoOpenSession(ctx, u.ID)
+	require.NoError(t, err)
+	require.True(t, session.IsDeferred(wordID), "the word must be excluded from the rest of the session")
+	require.Len(t, session.WordIDs, 10, "deferring keeps the pick intact, it only skips the word")
+}
+
+// /words must not touch the leaderboard — that is its one behavioural
+// difference from /tasks, and it is invisible in the UI.
+func TestWordsDoNotScore(t *testing.T) {
+	env := setupDBEnv(t)
+	u, cookie := env.signedIn(t, 306, user.A1)
+	ctx := context.Background()
+
+	body := env.get(t, "/words", cookie).Body.String()
+	id, mode := currentWordSlot(t, body)
+	word, err := env.srsRepo.GetWordByID(ctx, taskIDFrom(t, id))
+	require.NoError(t, err)
+
+	env.postForm(t, "/words/"+id+"/answer",
+		url.Values{"mode": {mode}, "answer": {words.ExpectedAnswer(word, words.Mode(mode))}}.Encode(), cookie)
+
+	var rows int
+	require.NoError(t, env.pool.QueryRow(ctx,
+		`SELECT count(*) FROM scores WHERE user_id = $1`, u.ID).Scan(&rows))
+	require.Zero(t, rows, "/words must never write a score row")
+}
+
+// A session opened in the bot is the same session the browser continues: the
+// partial index guarantees one open session per user.
+func TestWordsSessionSharedWithBot(t *testing.T) {
+	env := setupDBEnv(t)
+	u, cookie := env.signedIn(t, 307, user.A1)
+	ctx := context.Background()
+
+	botSession, _, _, err := env.wordsSvc.StartOrResumeSession(ctx, u.ID)
+	require.NoError(t, err)
+
+	env.get(t, "/words", cookie)
+
+	webSession, err := env.wordsSvc.RepoOpenSession(ctx, u.ID)
+	require.NoError(t, err)
+	require.Equal(t, botSession.ID, webSession.ID, "the browser must continue the bot's session")
+
+	var sessions int
+	require.NoError(t, env.pool.QueryRow(ctx,
+		`SELECT count(*) FROM words_sessions WHERE user_id = $1 AND completed_at IS NULL`,
+		u.ID).Scan(&sessions))
+	require.Equal(t, 1, sessions)
 }

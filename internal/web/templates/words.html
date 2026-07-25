@@ -1,0 +1,86 @@
+{{define "words_done"}}
+<div id="wordslot">
+  <section class="panel p-7">
+    <h1 class="font-display text-3xl font-semibold mb-4">Сессия закрыта</h1>
+    <p class="text-base mb-7" style="color:var(--dim)">
+      Все слова этой десятки отработаны. Дневного лимита здесь нет — можно взять
+      следующую прямо сейчас.
+    </p>
+    <div class="flex gap-3 flex-wrap">
+      <a href="/words" class="btn no-underline">Следующая десятка</a>
+      <a href="/tasks" class="btn btn-ghost no-underline">К заданиям</a>
+    </div>
+  </section>
+</div>
+{{end}}
+
+{{define "words.html"}}<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+{{template "head" "Слова"}}
+</head>
+<body>
+{{template "nav"}}
+
+<main class="max-w-[860px] mx-auto px-6 pb-16">
+
+  {{if .NeedsLevel}}
+    <section class="panel p-7">
+      <h1 class="font-display text-3xl font-semibold mb-4">Сначала — тест на уровень</h1>
+      <p class="text-base mb-7" style="color:var(--dim)">
+        Слова подбираются от простых к сложным, но стартовую точку задаёт тест.
+      </p>
+      <a href="/assess" class="btn inline-block no-underline">Пройти тест</a>
+    </section>
+
+  {{else}}
+
+    {{if .Status}}
+    <section class="panel p-7 mb-8">
+      <div class="flex items-baseline justify-between gap-6 mb-7 flex-wrap">
+        <div>
+          <p class="font-mono text-xs mb-2" style="color:var(--dim)">слов в сессии</p>
+          <span class="flap-row">
+            {{range digits .Status.WordsInSession 2}}<span class="flap flap-amber text-3xl">{{.}}</span>{{end}}
+          </span>
+        </div>
+        <div>
+          <p class="font-mono text-xs mb-2" style="color:var(--dim)">выучено всего</p>
+          <span class="flap-row">
+            {{range digits .Status.LearnedAllTime 3}}<span class="flap text-3xl">{{.}}</span>{{end}}
+          </span>
+        </div>
+      </div>
+
+      {{if .Status.ByLevel}}
+      {{/* Знаменатель считается живьём из таблицы words, поэтому пополнение
+           словаря сразу видно в прогрессе. */}}
+      <div class="rule pt-6">
+        <p class="font-mono text-xs mb-4" style="color:var(--dim)">по уровням</p>
+        <div class="grid gap-2">
+          {{range .Status.ByLevel}}
+          <div class="flex items-center gap-4">
+            <span class="font-mono text-xs" style="width:2.5em; color:var(--dim)">{{.Level}}</span>
+            <div class="flex-1" style="height:6px; background:var(--cell)">
+              <div style="height:6px; width:{{percent .Learned .Total}}%; background:var(--amber)"></div>
+            </div>
+            <span class="font-mono text-xs num" style="color:var(--dim)">{{.Learned}} / {{.Total}}</span>
+          </div>
+          {{end}}
+        </div>
+      </div>
+      {{end}}
+    </section>
+    {{end}}
+
+    {{if .Done}}
+      {{template "words_done"}}
+    {{else if .Slot}}
+      {{template "word_slot" .Slot}}
+    {{end}}
+
+  {{end}}
+
+</main>
+</body>
+</html>{{end}}

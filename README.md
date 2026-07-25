@@ -322,6 +322,13 @@ The web UI is optional: with `APP_BASE_URL`, `TELEGRAM_CLIENT_ID`, `TELEGRAM_CLI
 | `POST /tasks/{id}/answer` | Records a choice, a typed answer or a skip via `task.Service`, scores it, and returns the feedback fragment. |
 | `GET /assess` | Starts or resumes the 30-question level test. The current level is deliberately not shown during the run — it moves adaptively after every answer, and showing it would turn the test into a game against the system. |
 | `POST /assess/answer` | Records an option or a skip, returns the next question or the result — level, score, and a per-question breakdown so the verdict is justified. |
+| `GET /words` | Opens or resumes the ten-word active-recall session, with per-mode tallies and live per-CEFR-level progress. |
+| `GET /words/next` | Next drill as a fragment. Completing the last one closes the session, so the following visit picks a fresh ten. |
+| `POST /words/{id}/answer` | Records a choice, a typed answer or a skip. Multiple-choice correctness is decided server-side from the submitted text — the correct index is never sent to the browser. |
+| `POST /words/{id}/know` | Retires a word the user already knows across all four modes and drops it into spaced repetition. |
+| `POST /words/{id}/defer` | Drops a word from the rest of the session, keeping its progress. Offered only past `words.DeferThreshold` mistakes on that word. |
+
+`/words` writes no score rows — not contributing to the leaderboard is its one behavioural difference from `/tasks`, and a test guards it.
 | `GET /static/*` | Self-hosted assets, served from the binary via `embed.FS`. |
 
 Asset URLs carry a `?v=` token derived from a hash of every embedded file, so `Cache-Control: immutable` is safe — a new build produces new URLs. Without it a deploy would leave browsers on the previous stylesheet for a year.

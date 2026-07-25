@@ -94,4 +94,3 @@ func TestHandleProfile_LevelProgressBlock(t *testing.T) {
 	// Section header for the words group should appear above the per-level block.
 	assert.Contains(t, body, "📚 Слова")
 }
-

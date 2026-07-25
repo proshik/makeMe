@@ -1,0 +1,52 @@
+{{/* Ответ на слово. В отличие от заданий баллов здесь нет — /words не идёт
+     в зачёт лидерборда, и показывать нулевой счёт значило бы врать. */}}
+{{define "word_feedback"}}
+<div id="wordslot">
+  <section class="panel p-7">
+
+    <div class="flex items-stretch mb-6" style="background:var(--cell)">
+      <span style="width:8px; flex:none; background:{{if .Correct}}var(--right){{else}}var(--wrong){{end}}"></span>
+      <div class="px-5 py-4">
+        <p class="font-display text-2xl" style="font-weight:500; color:{{if .Correct}}var(--right){{else}}var(--wrong){{end}}">
+          {{if .Correct}}Верно{{else if .Skipped}}Пропущено{{else}}Неверно{{end}}
+        </p>
+        {{if not .Correct}}
+        <p class="mt-2 text-base">Правильный ответ: <span class="font-semibold">{{.Expected}}</span></p>
+        {{end}}
+      </div>
+    </div>
+
+    <div class="mb-7">
+      <p class="font-display text-4xl leading-none mb-2" style="font-weight:500">{{.English}}</p>
+      {{if .Transcript}}<p class="ipa text-xl mb-2">{{.Transcript}}</p>{{end}}
+      <p class="text-lg" style="color:var(--dim)">{{.Russian}}</p>
+    </div>
+
+    {{if .Learned}}
+    <div class="flex items-stretch mb-7" style="background:var(--cell)">
+      <span style="width:8px; flex:none; background:var(--amber)"></span>
+      <p class="px-5 py-4 text-base">
+        Слово выучено во всех четырёх режимах и ушло в интервальные повторения —
+        дальше оно будет возвращаться в заданиях.
+      </p>
+    </div>
+    {{end}}
+
+    <div class="flex items-center gap-3 flex-wrap">
+      <button class="btn" hx-get="/words/next" hx-target="#wordslot" hx-swap="outerHTML">Дальше</button>
+      {{if .AudioURL}}
+      <button type="button" class="btn btn-ghost" data-action="play-audio" data-src="{{.AudioURL}}">Послушать</button>
+      {{end}}
+      {{if .OfferDefer}}
+      {{/* Появляется только когда слово упорно не даётся: больше пяти ошибок
+           за сессию. Прогресс сохраняется, слово вернётся в следующий раз. */}}
+      <button class="btn btn-ghost"
+              hx-post="/words/{{.WordID}}/defer" hx-target="#wordslot" hx-swap="outerHTML">
+        Отложить до завтра
+      </button>
+      {{end}}
+    </div>
+
+  </section>
+</div>
+{{end}}
