@@ -27,6 +27,13 @@ import (
 	"makeMe/internal/domain/words"
 )
 
+// Realtime is the subset of the hub the web adapter needs. Declaring it here
+// rather than importing the concrete type keeps the adapter testable and lets
+// a different transport be swapped in later.
+type Realtime interface {
+	Serve(w http.ResponseWriter, r *http.Request, userID, groupID int64)
+}
+
 //go:embed templates/*.html templates/fragments/*.html
 var templateFS embed.FS
 
@@ -42,6 +49,7 @@ type Deps struct {
 	AssessSvc   *assessment.Service
 	WordsSvc    *words.Service
 	GrammarRepo task.GrammarRepository
+	Hub         Realtime
 	TaskSvc     *task.Service
 	ScoringSvc  *scoring.Service
 	SRSRepo     srs.Repository
@@ -53,6 +61,7 @@ type Server struct {
 	assessSvc   *assessment.Service
 	wordsSvc    *words.Service
 	grammarRepo task.GrammarRepository
+	hub         Realtime
 	taskSvc     *task.Service
 	scoringSvc  *scoring.Service
 	srsRepo     srs.Repository
@@ -80,6 +89,7 @@ func New(deps Deps, jwtSvc *JWTService, oidc *OIDCClient, cookieSecure bool) (*S
 		assessSvc:    deps.AssessSvc,
 		wordsSvc:     deps.WordsSvc,
 		grammarRepo:  deps.GrammarRepo,
+		hub:          deps.Hub,
 		taskSvc:      deps.TaskSvc,
 		scoringSvc:   deps.ScoringSvc,
 		srsRepo:      deps.SRSRepo,
@@ -141,10 +151,13 @@ func (s *Server) Mount(r chi.Router) {
 		priv.Post("/learn/answer", s.handleLearnAnswer)
 
 		priv.Get("/leaderboard", s.handleLeaderboard)
+		priv.Get("/leaderboard/table", s.handleLeaderboardTable)
 		priv.Get("/profile", s.handleProfile)
 		priv.Get("/groups", s.handleGroups)
 		priv.Post("/groups/create", s.handleGroupCreate)
 		priv.Post("/groups/join", s.handleGroupJoin)
+
+		priv.Get("/ws", s.handleWS)
 	})
 }
 

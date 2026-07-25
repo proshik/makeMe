@@ -1,0 +1,12 @@
+{{/* Показывается скриптом, когда из сокета пришло «прогресс изменился».
+     Ничего не подменяет само: на этих страницах пользователь может печатать
+     ответ, и вырвать у него слот под руками — худшее, что можно сделать. */}}
+{{define "live_note"}}
+<div class="live-note" data-live-note>
+  <span class="lamp"></span>
+  <div class="live-note-body">
+    <p class="text-base flex-1">Прогресс изменился в другом месте — возможно, в Telegram.</p>
+    <button type="button" class="btn" data-action="reload">Обновить</button>
+  </div>
+</div>
+{{end}}

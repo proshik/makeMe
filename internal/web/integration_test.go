@@ -13,6 +13,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/coder/websocket"
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/pressly/goose/v3"
@@ -30,6 +31,7 @@ import (
 	"makeMe/internal/domain/task"
 	"makeMe/internal/domain/user"
 	"makeMe/internal/domain/words"
+	"makeMe/internal/realtime"
 	"makeMe/internal/storage/postgres"
 	"makeMe/internal/storage/sqlc"
 )
@@ -46,6 +48,7 @@ type dbEnv struct {
 	wordsSvc    *words.Service
 	srsRepo     srs.Repository
 	grammarRepo task.GrammarRepository
+	hub         *realtime.Hub
 	pool        *pgxpool.Pool
 }
 
@@ -88,6 +91,8 @@ func setupDBEnv(t *testing.T) *dbEnv {
 		task.NewVocabGenerator(srsRepo), task.NewGrammarGenerator(grammarRepo),
 	)
 	scoringSvc := scoring.NewService(postgres.NewScoringRepository(q))
+	hub := realtime.New()
+	taskSvc.SetNotifier(hub)
 	assessSvc := assessment.NewService(postgres.NewAssessmentRepository(q), userSvc, srsRepo, grammarRepo)
 	wordsSvc := words.NewService(postgres.NewWordsRepository(q), srsRepo)
 
@@ -98,7 +103,7 @@ func setupDBEnv(t *testing.T) *dbEnv {
 	// minted directly.
 	srv, err := New(Deps{
 		UserSvc: userSvc, GroupSvc: groupSvc, TaskSvc: taskSvc,
-		ScoringSvc: scoringSvc, SRSRepo: srsRepo, AssessSvc: assessSvc, WordsSvc: wordsSvc, GrammarRepo: grammarRepo,
+		ScoringSvc: scoringSvc, SRSRepo: srsRepo, AssessSvc: assessSvc, WordsSvc: wordsSvc, GrammarRepo: grammarRepo, Hub: hub,
 	}, jwtSvc, NewOIDCClient("http://unused", "client-1", "secret", "http://app/cb"), false)
 	require.NoError(t, err)
 
@@ -107,7 +112,7 @@ func setupDBEnv(t *testing.T) *dbEnv {
 
 	return &dbEnv{router: r, jwt: jwtSvc, userSvc: userSvc, taskSvc: taskSvc,
 		assessSvc: assessSvc, wordsSvc: wordsSvc, srsRepo: srsRepo,
-		grammarRepo: grammarRepo, pool: pool}
+		grammarRepo: grammarRepo, hub: hub, pool: pool}
 }
 
 // signedIn creates an onboarded user and returns them with a session cookie.
@@ -982,4 +987,117 @@ func inviteCodeFrom(t *testing.T, body string) string {
 	require.GreaterOrEqual(t, i, 0, "no invite code in the response")
 	rest := body[i+len(marker):]
 	return rest[:strings.Index(rest, "<")]
+}
+
+// --- realtime ------------------------------------------------------------
+
+// The headline claim of the phase: answer in the bot, the browser tab hears
+// about it. Exercised end to end over a real socket against a real database.
+func TestSocketDeliversProgressFromTheOtherChannel(t *testing.T) {
+	env := setupDBEnv(t)
+	u, cookie := env.signedIn(t, 600, user.A1)
+	ctx := context.Background()
+
+	srv := httptest.NewServer(env.router)
+	t.Cleanup(srv.Close)
+
+	conn, _, err := websocket.Dial(ctx, "ws"+strings.TrimPrefix(srv.URL, "http")+"/ws",
+		&websocket.DialOptions{HTTPHeader: http.Header{"Cookie": {cookie.String()}}})
+	require.NoError(t, err)
+	defer conn.CloseNow()
+
+	// Give the hub a moment to register the connection before publishing.
+	require.Eventually(t, func() bool { return env.hub.Connections() == 1 },
+		2*time.Second, 20*time.Millisecond)
+
+	// "The bot": answer through the domain service, with no web request.
+	groupSvc := group.NewService(postgres.NewGroupRepository(sqlc.New(env.pool)))
+	g, err := groupSvc.Create(ctx, "Соло", u.ID)
+	require.NoError(t, err)
+	ds, err := env.taskSvc.GenerateDaily(ctx, u.ID, g.ID, user.A1)
+	require.NoError(t, err)
+	next, err := env.taskSvc.GetNextUnanswered(ctx, ds.ID, u.ID)
+	require.NoError(t, err)
+	_, err = env.taskSvc.SubmitAnswer(ctx, next.ID, u.ID, next.Answer)
+	require.NoError(t, err)
+
+	readCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
+	_, data, err := conn.Read(readCtx)
+	require.NoError(t, err, "the tab should be told its progress moved")
+	require.Equal(t, realtime.EventProgress, string(data))
+}
+
+func TestSocketRequiresAuthentication(t *testing.T) {
+	env := setupDBEnv(t)
+	srv := httptest.NewServer(env.router)
+	t.Cleanup(srv.Close)
+
+	_, _, err := websocket.Dial(context.Background(),
+		"ws"+strings.TrimPrefix(srv.URL, "http")+"/ws", nil)
+	require.Error(t, err, "an anonymous socket must not be upgraded")
+}
+
+// The fragment the socket triggers must render the same standings the full
+// page does — otherwise a live update would quietly disagree with a reload.
+func TestLeaderboardTableFragmentMatchesPage(t *testing.T) {
+	env := setupDBEnv(t)
+	_, cookie := env.signedIn(t, 601, user.A1)
+	ctx := context.Background()
+
+	body := env.get(t, "/tasks", cookie).Body.String()
+	id := currentTaskID(t, body)
+	tk, err := env.taskSvc.GetTaskByID(ctx, taskIDFrom(t, id))
+	require.NoError(t, err)
+	env.postForm(t, "/tasks/"+id+"/answer", answerForm(tk.Answer), cookie)
+
+	full := env.get(t, "/leaderboard", cookie)
+	require.Equal(t, http.StatusOK, full.Code)
+	require.Contains(t, full.Body.String(), `id="standings"`)
+	require.Contains(t, full.Body.String(), `hx-trigger="makeme:leaderboard from:body"`)
+
+	fragment := env.get(t, "/leaderboard/table", cookie)
+	require.Equal(t, http.StatusOK, fragment.Code)
+	require.Contains(t, fragment.Body.String(), "— вы")
+	// The fragment is a piece of a page, not a page.
+	require.NotContains(t, fragment.Body.String(), "<!DOCTYPE html>")
+}
+
+// http.Server's WriteTimeout is the usual suspect for sockets that die on a
+// timer, and the production server sets one. It does not apply here: net/http
+// clears deadlines when a connection is hijacked, which websocket.Accept does.
+// This test pins that down with a WriteTimeout far shorter than the socket's
+// life, so the day someone raises or lowers the production value, or swaps the
+// websocket library, the assumption is rechecked rather than assumed.
+func TestSocketOutlivesWriteTimeout(t *testing.T) {
+	env := setupDBEnv(t)
+	_, cookie := env.signedIn(t, 602, user.A1)
+	ctx := context.Background()
+
+	srv := httptest.NewUnstartedServer(env.router)
+	srv.Config.WriteTimeout = 200 * time.Millisecond
+	srv.Config.ReadTimeout = 200 * time.Millisecond
+	srv.Start()
+	t.Cleanup(srv.Close)
+
+	conn, _, err := websocket.Dial(ctx, "ws"+strings.TrimPrefix(srv.URL, "http")+"/ws",
+		&websocket.DialOptions{HTTPHeader: http.Header{"Cookie": {cookie.String()}}})
+	require.NoError(t, err)
+	defer conn.CloseNow()
+
+	require.Eventually(t, func() bool { return env.hub.Connections() == 1 },
+		2*time.Second, 20*time.Millisecond)
+
+	// Well past the write deadline the connection would have inherited.
+	time.Sleep(1 * time.Second)
+
+	// A write after the deadline is the actual proof: readyState alone would
+	// stay OPEN on the client even if the server side had gone.
+	env.hub.TaskAnswered(ctx, task.AnswerEvent{UserID: mustUserID(t, env, 602)})
+
+	readCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
+	_, data, err := conn.Read(readCtx)
+	require.NoError(t, err, "the socket must still be writable past WriteTimeout")
+	require.Equal(t, realtime.EventProgress, string(data))
 }

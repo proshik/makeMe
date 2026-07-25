@@ -43,31 +43,7 @@
       </div>
       {{end}}
 
-      {{if .Entries}}
-      <div style="border-top:1px solid var(--rule)">
-        {{range .Entries}}
-        <div class="flex items-center gap-5 py-4"
-             style="border-bottom:1px solid var(--rule)">
-          <span class="flap {{if le .Rank 3}}flap-amber{{end}} text-2xl">{{.Rank}}</span>
-          <span class="flex-1 font-display text-xl" style="font-weight:500">
-            {{.FirstName}}{{if eq .UserID $.MeID}} <span class="font-mono text-xs" style="color:var(--dim)">— вы</span>{{end}}
-          </span>
-          <span class="flap-row">
-            {{range chars (score1 .Normalized)}}<span class="flap text-2xl">{{.}}</span>{{end}}
-          </span>
-        </div>
-        {{end}}
-      </div>
-      <p class="font-mono text-xs mt-6" style="color:var(--dim)">
-        Баллы нормированы по уровню задания — A1&nbsp;×&nbsp;0,6 … C2&nbsp;×&nbsp;1,5,
-        чтобы игроки разных уровней соревновались честно.
-      </p>
-      {{else}}
-      <p class="text-base" style="color:var(--dim)">
-        {{if eq .Period "day"}}Сегодня в группе ещё никто не занимался.{{else}}В этом месяце в группе ещё нет результатов.{{end}}
-        <a href="/tasks">Начните первым.</a>
-      </p>
-      {{end}}
+      {{template "leaderboard_table" .}}
 
     </section>
   {{end}}

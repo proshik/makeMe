@@ -346,6 +346,20 @@ Asset URLs carry a `?v=` token derived from a hash of every embedded file, so `C
 
 Session cookies are `HttpOnly`, `Secure`, `SameSite=Lax` — Lax is the CSRF defence for cookie auth, which is why the POST handlers carry no separate CSRF token. The `id_token` signature is deliberately not verified: it arrives from Telegram's token endpoint over TLS server-to-server, and there is no public JWKS to check against; `exp`, `aud` and `iss` are validated as defence in depth.
 
+### Live updates
+
+`GET /ws` is a WebSocket carrying event names, not rendered HTML. A tab may be on any page, so the server cannot know what to swap; it says what changed and the client refetches through the ordinary handlers, keeping one rendering path for both the first load and the update.
+
+Two events exist. `progress` goes to the user's own sessions when they answer anywhere. `leaderboard` goes to everyone in the group, and to the user themselves, but only when the answer actually scored — a wrong answer cannot move the standings.
+
+What each page does with an event is a deliberate split. The leaderboard refetches itself (`hx-trigger="makeme:leaderboard from:body"`): it is a passive page with nothing to lose. Tasks and words only reveal a notice offering to reload — pulling the slot out from under someone who is typing an answer is worse than showing them something slightly stale.
+
+Three things this needed that are easy to miss:
+
+- `http.Server`'s `WriteTimeout` is the usual suspect for a socket that dies on a timer, and this server sets one — but it does not apply. `net/http` clears both deadlines when a connection is hijacked, which `websocket.Accept` does. `TestSocketOutlivesWriteTimeout` pins that down against a deliberately short timeout, so the assumption is rechecked if the value or the library ever changes.
+- The hub cannot tell sessions apart, so the tab that answered also receives `progress`. Threading a socket identity through a domain event would drag transport into the domain; the client suppresses the notice for three seconds after its own request instead.
+- The hub is in-process, so events reach only sessions on this instance. The domain talks to `task.Notifier`, not to the hub, so a Postgres `LISTEN/NOTIFY` implementation can replace it without the domain noticing.
+
 ### Navigation
 
 The header carries two levels, because it holds two different kinds of thing. On the left are places to work — Задания, Слова, Грамматика, Рейтинг — with the current one marked by an amber underline and `aria-current="page"`. On the right is the user: a chip with their name and level opening a menu with Профиль, Группы, appearance and Выйти.

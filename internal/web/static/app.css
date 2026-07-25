@@ -308,3 +308,22 @@ a { color: inherit; text-underline-offset: 4px; }
   .navlink { padding: 0 .6rem; font-size: .88rem; }
   .topbar-inner { gap: .75rem; padding: 0 1rem; }
 }
+
+/* Уведомление «изменилось в другом месте». Появляется, когда пришло событие
+   из сокета на странице, где идёт ввод: подменять содержимое под руками
+   пользователя хуже, чем показать устаревшее и предложить обновить. */
+.live-note {
+  display: none;
+  align-items: stretch;
+  margin-bottom: 1.5rem;
+  background: var(--cell);
+}
+.live-note[data-shown="1"] { display: flex; }
+.live-note .lamp { width: 8px; flex: none; background: var(--amber); }
+.live-note-body {
+  padding: .9rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}

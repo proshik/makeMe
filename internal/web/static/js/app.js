@@ -68,6 +68,35 @@
     });
   });
 
+  // Событие «прогресс изменился» на странице с вводом только показывает
+  // предложение обновить. Автоподмена вырвала бы слот из-под рук у человека,
+  // который в этот момент печатает ответ.
+  //
+  // Своё же действие баннером не отмечаем: хаб не различает сессии и шлёт
+  // событие всем вкладкам пользователя, включая ту, что и ответила. Тащить
+  // идентификатор сокета в доменное событие ради этого неправильно, поэтому
+  // подавляем на клиенте — окно после собственного запроса.
+  // Засекаем на beforeRequest, а не на afterRequest: сервер публикует событие
+  // внутри обработки запроса, поэтому сообщение из сокета успевает прийти
+  // раньше, чем htmx отчитается о завершении.
+  var LOCAL_QUIET_MS = 3000;
+  var lastLocalChange = 0;
+  document.body.addEventListener('htmx:beforeRequest', function () {
+    lastLocalChange = Date.now();
+  });
+  document.body.addEventListener('htmx:afterRequest', function () {
+    lastLocalChange = Date.now();
+  });
+
+  document.body.addEventListener('makeme:progress', function () {
+    if (Date.now() - lastLocalChange < LOCAL_QUIET_MS) return;
+    var note = document.querySelector('[data-live-note]');
+    if (note) note.dataset.shown = '1';
+  });
+  document.addEventListener('click', function (e) {
+    if (e.target.closest('[data-action="reload"]')) location.reload();
+  });
+
   // Фокус в поле ввода после подмены слота, иначе печатать можно только
   // после клика мышью.
   document.body.addEventListener('htmx:afterSwap', function (e) {

@@ -36,6 +36,7 @@ import (
 	"makeMe/internal/domain/task"
 	"makeMe/internal/domain/user"
 	"makeMe/internal/domain/words"
+	"makeMe/internal/realtime"
 	"makeMe/internal/seed"
 	"makeMe/internal/storage/postgres"
 	"makeMe/internal/storage/sqlc"
@@ -76,6 +77,8 @@ func main() {
 		task.NewVocabGenerator(srsRepo), task.NewGrammarGenerator(grammarRepo),
 	)
 	scoringSvc := scoring.NewService(postgres.NewScoringRepository(q))
+	hub := realtime.New()
+	taskSvc.SetNotifier(hub)
 	assessSvc := assessment.NewService(postgres.NewAssessmentRepository(q), userSvc, srsRepo, grammarRepo)
 	wordsSvc := words.NewService(postgres.NewWordsRepository(q), srsRepo)
 
@@ -90,7 +93,7 @@ func main() {
 
 	srv, err := web.New(web.Deps{
 		UserSvc: userSvc, GroupSvc: groupSvc, TaskSvc: taskSvc,
-		ScoringSvc: scoringSvc, SRSRepo: srsRepo, AssessSvc: assessSvc, WordsSvc: wordsSvc, GrammarRepo: grammarRepo,
+		ScoringSvc: scoringSvc, SRSRepo: srsRepo, AssessSvc: assessSvc, Hub: hub, WordsSvc: wordsSvc, GrammarRepo: grammarRepo,
 	}, jwtSvc, web.NewOIDCClient(stub.URL, "client-1", "secret",
 		"http://localhost"+previewAddr+"/auth/telegram/callback"), false)
 	if err != nil {
@@ -120,8 +123,20 @@ func main() {
 	})
 	srv.Mount(r)
 
+	// Таймауты копируют прод намеренно: без WriteTimeout превью не воспроизводит
+	// главный подводный камень сокета — соединение, которое рвётся ровно на
+	// десятой секунде. Проверять живучесть сокета на сервере без таймаутов
+	// бессмысленно.
+	httpSrv := &http.Server{
+		Addr:         previewAddr,
+		Handler:      r,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		IdleTimeout:  60 * time.Second,
+	}
+
 	fmt.Println("preview on http://localhost" + previewAddr + "/login  (shortcut: /dev/session)")
-	log.Fatal(http.ListenAndServe(previewAddr, r))
+	log.Fatal(httpSrv.ListenAndServe())
 }
 
 func migrate(dbURL string) error {

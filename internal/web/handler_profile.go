@@ -80,24 +80,33 @@ type leaderboardPage struct {
 }
 
 func (s *Server) handleLeaderboard(w http.ResponseWriter, r *http.Request) {
+	page, ok := s.leaderboardData(r)
+	if !ok {
+		s.renderError(w, "Не удалось загрузить рейтинг. Попробуйте позже.")
+		return
+	}
+	s.render(w, "leaderboard.html", page)
+}
+
+// leaderboardData assembles the page for both the full render and the fragment
+// the socket refreshes, so the two can never disagree.
+func (s *Server) leaderboardData(r *http.Request) (leaderboardPage, bool) {
 	u := UserFromContext(r.Context())
 	ctx := r.Context()
 
 	groups, err := s.groupSvc.ListByUser(ctx, u.ID)
 	if err != nil {
 		slog.Error("web: list groups", "user_id", u.ID, "error", err)
-		s.renderError(w, "Не удалось загрузить рейтинг. Попробуйте позже.")
-		return
+		return leaderboardPage{}, false
 	}
 
 	page := leaderboardPage{chrome: chrome{User: u, Section: SectionLeaderboard},
 		Groups: groups, MeID: u.ID, Period: "day"}
-	if p := r.URL.Query().Get("period"); p == "month" {
-		page.Period = p
+	if r.URL.Query().Get("period") == "month" {
+		page.Period = "month"
 	}
 	if len(groups) == 0 {
-		s.render(w, "leaderboard.html", page)
-		return
+		return page, true
 	}
 
 	// Default to the first group; an explicit ?group= wins, but only if the
@@ -122,12 +131,22 @@ func (s *Server) handleLeaderboard(w http.ResponseWriter, r *http.Request) {
 	entries, err := s.scoringSvc.GetLeaderboard(ctx, selected.ID, page.Period, periodKey)
 	if err != nil {
 		slog.Error("web: leaderboard", "group_id", selected.ID, "error", err)
-		s.renderError(w, "Не удалось загрузить рейтинг. Попробуйте позже.")
-		return
+		return leaderboardPage{}, false
 	}
 	page.Entries = entries
 
-	s.render(w, "leaderboard.html", page)
+	return page, true
+}
+
+// handleLeaderboardTable re-renders just the standings. It is what the socket
+// event triggers, so a live update travels the same code path as a page load.
+func (s *Server) handleLeaderboardTable(w http.ResponseWriter, r *http.Request) {
+	page, ok := s.leaderboardData(r)
+	if !ok || page.Group == nil {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+	s.render(w, "leaderboard_table", page)
 }
 
 // --- groups --------------------------------------------------------------

@@ -29,7 +29,13 @@ type Service struct {
 	srsRepo    srs.Repository
 	maxRounds  int
 	generators []TaskGenerator
+	notifier   Notifier
 }
+
+// SetNotifier attaches a listener for answer events. Optional by design: the
+// service is fully functional without one, so tests and a bot-only deployment
+// need not provide it.
+func (s *Service) SetNotifier(n Notifier) { s.notifier = n }
 
 func NewService(repo Repository, srsRepo srs.Repository, maxRounds int, generators ...TaskGenerator) *Service {
 	return &Service{
@@ -162,6 +168,8 @@ func (s *Service) SubmitAnswer(ctx context.Context, taskID, userID int64, respon
 		}
 	}
 
+	s.notify(ctx, AnswerEvent{UserID: userID, GroupID: task.GroupID, Scored: result.Score > 0})
+
 	return result, nil
 }
 
@@ -208,6 +216,8 @@ func (s *Service) SubmitTypedAnswer(ctx context.Context, taskID, userID int64, r
 		}
 	}
 
+	s.notify(ctx, AnswerEvent{UserID: userID, GroupID: t.GroupID, Scored: result.Score > 0})
+
 	return result, nil
 }
 
@@ -246,6 +256,8 @@ func (s *Service) SubmitSkip(ctx context.Context, taskID, userID int64) (*TaskRe
 			}
 		}
 	}
+
+	s.notify(ctx, AnswerEvent{UserID: userID, GroupID: task.GroupID, Scored: false})
 
 	return result, nil
 }

@@ -3,6 +3,7 @@ module makeMe
 go 1.26
 
 require (
+	github.com/coder/websocket v1.8.15
 	github.com/go-chi/chi/v5 v5.2.5
 	github.com/go-telegram/bot v1.20.0
 	github.com/golang-jwt/jwt/v5 v5.3.1

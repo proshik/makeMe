@@ -13,6 +13,6 @@ type Repository interface {
 	GetTaskByID(ctx context.Context, taskID int64) (*Task, error)
 	AddResult(ctx context.Context, result *TaskResult) error
 	GetResult(ctx context.Context, taskID, userID int64) (*TaskResult, error)
-	CountResults(ctx context.Context, dailySetID, userID int64) (int, int, error)        // answered, total
+	CountResults(ctx context.Context, dailySetID, userID int64) (int, int, error)   // answered, total
 	CountCorrectResults(ctx context.Context, dailySetID, userID int64) (int, error) // correct
 }

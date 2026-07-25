@@ -24,6 +24,7 @@ import (
 	"makeMe/internal/domain/task"
 	"makeMe/internal/domain/user"
 	"makeMe/internal/domain/words"
+	"makeMe/internal/realtime"
 	"makeMe/internal/scheduler"
 	"makeMe/internal/seed"
 	"makeMe/internal/server"
@@ -83,6 +84,11 @@ func run(ctx context.Context) error {
 	vocabGen := task.NewVocabGenerator(srsRepo)
 	grammarGen := task.NewGrammarGenerator(grammarRepo)
 	taskSvc := task.NewService(taskRepo, srsRepo, cfg.MaxRoundsPerDay, vocabGen, grammarGen)
+
+	// The hub is optional plumbing: with the web UI disabled nothing connects
+	// to it, and the task service works the same without a notifier.
+	hub := realtime.New()
+	taskSvc.SetNotifier(hub)
 
 	scoringRepo := postgres.NewScoringRepository(queries)
 	scoringSvc := scoring.NewService(scoringRepo)
