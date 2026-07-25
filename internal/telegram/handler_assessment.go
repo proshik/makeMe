@@ -223,7 +223,7 @@ func buildLevelStats(answers []*assessment.Answer) map[user.Level]levelStat {
 }
 
 func formatLevelJustification(stats map[user.Level]levelStat) string {
-	allLevels := []user.Level{user.A1, user.A2, user.B1, user.B2, user.C1, user.C2}
+	allLevels := user.AllLevels()
 	var sb strings.Builder
 	for _, lv := range allLevels {
 		s, ok := stats[lv]

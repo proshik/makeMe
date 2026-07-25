@@ -33,29 +33,31 @@ func (f *fakeRepo) GetNewWordsExcludingProgress(_ context.Context, _ int64, leve
 }
 
 // Methods below are unused by selector_test but required by the interface.
-func (f *fakeRepo) GetProgress(context.Context, int64, int64) (*Progress, error)                {
+func (f *fakeRepo) GetProgress(context.Context, int64, int64) (*Progress, error) {
 	return nil, nil
 }
 func (f *fakeRepo) BulkGetProgress(context.Context, int64, []int64) (map[int64]Progress, error) {
 	return nil, nil
 }
-func (f *fakeRepo) IncProgress(context.Context, int64, int64, Mode) error                      { return nil }
-func (f *fakeRepo) ResetProgress(context.Context, int64, int64, Mode) error                    { return nil }
-func (f *fakeRepo) MarkLearned(context.Context, int64, int64) error                            { return nil }
-func (f *fakeRepo) MarkAlreadyKnown(context.Context, int64, int64) error                       { return nil }
-func (f *fakeRepo) CountInProgress(context.Context, int64) (int, error)                        { return 0, nil }
-func (f *fakeRepo) CountLearnedViaWords(context.Context, int64) (int, error)                   { return 0, nil }
-func (f *fakeRepo) CountWordsByLevel(context.Context, int64) ([]LevelProgress, error)           { return nil, nil }
+func (f *fakeRepo) IncProgress(context.Context, int64, int64, Mode) error    { return nil }
+func (f *fakeRepo) ResetProgress(context.Context, int64, int64, Mode) error  { return nil }
+func (f *fakeRepo) MarkLearned(context.Context, int64, int64) error          { return nil }
+func (f *fakeRepo) MarkAlreadyKnown(context.Context, int64, int64) error     { return nil }
+func (f *fakeRepo) CountInProgress(context.Context, int64) (int, error)      { return 0, nil }
+func (f *fakeRepo) CountLearnedViaWords(context.Context, int64) (int, error) { return 0, nil }
+func (f *fakeRepo) CountWordsByLevel(context.Context, int64) ([]LevelProgress, error) {
+	return nil, nil
+}
 func (f *fakeRepo) CreateSession(context.Context, int64, time.Time, []int64) (*Session, error) {
 	return nil, nil
 }
-func (f *fakeRepo) GetOpenSession(context.Context, int64) (*Session, error)            { return nil, nil }
-func (f *fakeRepo) GetSessionByID(context.Context, int64) (*Session, error)            { return nil, nil }
-func (f *fakeRepo) UpdateLastWord(context.Context, int64, int64) error                 { return nil }
-func (f *fakeRepo) CompleteSession(context.Context, int64) error                       { return nil }
-func (f *fakeRepo) IncSessionWordError(context.Context, int64, int64) error            { return nil }
-func (f *fakeRepo) GetSessionWordError(context.Context, int64, int64) (int, error)     { return 0, nil }
-func (f *fakeRepo) DeferSessionWord(context.Context, int64, int64) error               { return nil }
+func (f *fakeRepo) GetOpenSession(context.Context, int64) (*Session, error)        { return nil, nil }
+func (f *fakeRepo) GetSessionByID(context.Context, int64) (*Session, error)        { return nil, nil }
+func (f *fakeRepo) UpdateLastWord(context.Context, int64, int64) error             { return nil }
+func (f *fakeRepo) CompleteSession(context.Context, int64) error                   { return nil }
+func (f *fakeRepo) IncSessionWordError(context.Context, int64, int64) error        { return nil }
+func (f *fakeRepo) GetSessionWordError(context.Context, int64, int64) (int, error) { return 0, nil }
+func (f *fakeRepo) DeferSessionWord(context.Context, int64, int64) error           { return nil }
 
 func mkWords(ids ...int64) []srs.Word {
 	out := make([]srs.Word, len(ids))

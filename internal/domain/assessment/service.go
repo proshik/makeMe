@@ -25,8 +25,9 @@ var (
 	ErrSessionComplete = errors.New("assessment session already completed")
 )
 
-// levels ordered by difficulty for navigation.
-var levels = []user.Level{user.A1, user.A2, user.B1, user.B2, user.C1, user.C2}
+// levels is the CEFR ladder, taken from the domain rather than restated here.
+// Assigned once at init, so the defensive copy AllLevels returns costs nothing.
+var levels = user.AllLevels()
 
 type Service struct {
 	repo        Repository
@@ -399,13 +400,15 @@ func adjustLevel(current user.Level, correct bool, consecutive int) (user.Level,
 	return current, newConsecutive
 }
 
+// levelIndex is deliberately not user.Level.Index(): that returns -1 for an
+// unknown level, which would index out of bounds in the arithmetic below.
+// Here an unrecognised level falls back to the middle of the ladder, so a
+// corrupted session keeps asking answerable questions instead of crashing.
 func levelIndex(l user.Level) int {
-	for i, lv := range levels {
-		if lv == l {
-			return i
-		}
+	if i := l.Index(); i >= 0 {
+		return i
 	}
-	return 2 // default B1
+	return 2 // B1 — the middle of the ladder
 }
 
 // determineLevel picks the highest consecutive level (starting from A1) where

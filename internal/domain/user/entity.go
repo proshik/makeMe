@@ -35,6 +35,26 @@ func (l Level) Index() int {
 	return -1
 }
 
+// Next returns the level one step up, or ("", false) at C2 or for an unknown
+// level. Callers get an explicit "there is no next" rather than a zero value
+// that would silently read as A1.
+func (l Level) Next() (Level, bool) {
+	i := l.Index()
+	if i < 0 || i+1 >= len(orderedLevels) {
+		return "", false
+	}
+	return orderedLevels[i+1], true
+}
+
+// Prev is the mirror of Next: one step down, or ("", false) at A1.
+func (l Level) Prev() (Level, bool) {
+	i := l.Index()
+	if i <= 0 {
+		return "", false
+	}
+	return orderedLevels[i-1], true
+}
+
 // AtLeast reports whether l is at or above other. An unknown level is below
 // everything, so an unset user level never lights up a progress scale.
 func (l Level) AtLeast(other Level) bool {

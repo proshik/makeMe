@@ -16,10 +16,10 @@ import (
 type EventType string
 
 const (
-	EventStart   EventType = "start"   // beginning of a level
-	EventWord    EventType = "word"    // per-word result
-	EventDone    EventType = "done"    // overall summary at the end
-	EventError   EventType = "error"   // unexpected error (level fetch failure, etc.)
+	EventStart EventType = "start" // beginning of a level
+	EventWord  EventType = "word"  // per-word result
+	EventDone  EventType = "done"  // overall summary at the end
+	EventError EventType = "error" // unexpected error (level fetch failure, etc.)
 )
 
 // WordStatus describes the per-word outcome.
@@ -49,8 +49,8 @@ type Event struct {
 
 // Options controls a Seed run.
 type Options struct {
-	Levels  []string      // CEFR levels, e.g. ["A1","A2"]
-	Delay   time.Duration // pause between API calls (>=100ms recommended to avoid 429)
+	Levels []string      // CEFR levels, e.g. ["A1","A2"]
+	Delay  time.Duration // pause between API calls (>=100ms recommended to avoid 429)
 }
 
 // Seed scans the words table, fetches missing audio from the dictionary API,

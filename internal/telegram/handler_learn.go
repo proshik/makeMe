@@ -18,17 +18,6 @@ import (
 
 const learnPracticeLimit = 20
 
-// nextLevel returns the next CEFR level above l, or ("", false) for C2.
-func nextLevel(l user.Level) (user.Level, bool) {
-	levels := []user.Level{user.A1, user.A2, user.B1, user.B2, user.C1, user.C2}
-	for i, lv := range levels {
-		if lv == l && i+1 < len(levels) {
-			return levels[i+1], true
-		}
-	}
-	return "", false
-}
-
 func (b *Bot) handleLearn(ctx context.Context, tgBot *bot.Bot, update *models.Update) {
 	if update.Message == nil {
 		return
@@ -94,7 +83,7 @@ func (b *Bot) sendLearnMenu(ctx context.Context, tgBot *bot.Bot, chatID int64, l
 		return
 	}
 
-	next, hasNext := nextLevel(level)
+	next, hasNext := level.Next()
 	var nextCats []task.GrammarCategory
 	if hasNext {
 		nextCats, err = b.grammarRepo.GetCategoriesByLevel(ctx, next)

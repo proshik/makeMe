@@ -11,17 +11,17 @@ import (
 )
 
 var (
-	ErrSessionNotFound = errors.New("words session not found")
+	ErrSessionNotFound  = errors.New("words session not found")
 	ErrWordNotInSession = errors.New("word not in session")
 )
 
 // StatusView is the lightweight summary shown when /words is invoked.
 type StatusView struct {
 	WordsInSession   int
-	ModesCompleted   int // sum of min(counts, 2) over all words+modes; max = WordsInSession*4*2
-	ModesTotal       int // WordsInSession * 4 * ThresholdPerMode
-	LearnedAllTime   int // life-time count from word_learning_progress
-	LearnedThisRound int // already learned among current session's word_ids
+	ModesCompleted   int             // sum of min(counts, 2) over all words+modes; max = WordsInSession*4*2
+	ModesTotal       int             // WordsInSession * 4 * ThresholdPerMode
+	LearnedAllTime   int             // life-time count from word_learning_progress
+	LearnedThisRound int             // already learned among current session's word_ids
 	ByLevel          []LevelProgress // per-CEFR-level learned/total; nil on query error
 }
 

@@ -71,7 +71,7 @@ func (s *Server) handleLearn(w http.ResponseWriter, r *http.Request) {
 	// The user's level and the one above it: enough to practise what they are
 	// on and to look ahead, without listing the whole ladder.
 	levels := []user.Level{u.Level}
-	if next, ok := nextLevel(u.Level); ok {
+	if next, ok := u.Level.Next(); ok {
 		levels = append(levels, next)
 	}
 
@@ -271,12 +271,4 @@ func topicOf(r *http.Request) string {
 		return r.FormValue("name")
 	}
 	return r.URL.Query().Get("name")
-}
-
-func nextLevel(l user.Level) (user.Level, bool) {
-	levels := user.AllLevels()
-	if i := l.Index(); i >= 0 && i+1 < len(levels) {
-		return levels[i+1], true
-	}
-	return "", false
 }

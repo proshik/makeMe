@@ -10,28 +10,6 @@ import (
 	"makeMe/internal/domain/user"
 )
 
-func TestNextLevel(t *testing.T) {
-	cases := []struct {
-		in      user.Level
-		wantOut user.Level
-		wantOK  bool
-	}{
-		{user.A1, user.A2, true},
-		{user.A2, user.B1, true},
-		{user.B1, user.B2, true},
-		{user.B2, user.C1, true},
-		{user.C1, user.C2, true},
-		{user.C2, "", false},
-	}
-	for _, tc := range cases {
-		t.Run(string(tc.in), func(t *testing.T) {
-			got, ok := nextLevel(tc.in)
-			assert.Equal(t, tc.wantOut, got)
-			assert.Equal(t, tc.wantOK, ok)
-		})
-	}
-}
-
 func TestParseLearnCat(t *testing.T) {
 	level, idx, ok := parseLearnCat("learn:cat:B1:3")
 	require.True(t, ok)

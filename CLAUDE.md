@@ -53,6 +53,7 @@ Tasks are generated daily and differ each day.
 - Client: Telegram bot (webhook mode, integrated into chi router)
 - REST API via chi serves `/health`, `/webhook`, and `/admin/*` (bearer-token gated, see Workflow Rules)
 - Bulk operational logic (e.g. `internal/audio.Seed`) lives in its own package and is reused by both the HTTP admin handler and a `cmd/<tool>` CLI — never duplicate the logic between them
+- **The CEFR ladder lives in one place: `user.AllLevels()`, `Level.Index/Next/Prev/AtLeast`.** It used to be restated in four files, so changing the ladder meant finding all of them. Don't write `[]user.Level{user.A1, ...}` again — a test asserts `AllLevels` returns a copy, so callers cannot reorder the canonical one either.
 - Domain packages define repository interfaces; `internal/storage/postgres` implements them over sqlc-generated code. Never let `internal/domain/*` import sqlc types.
 
 ## Development Principles

@@ -227,14 +227,14 @@ func (r *WordsRepository) CompleteSession(ctx context.Context, sessionID int64) 
 
 func (r *WordsRepository) IncSessionWordError(ctx context.Context, sessionID, wordID int64) error {
 	return r.q.IncSessionWordError(ctx, sqlc.IncSessionWordErrorParams{
-		ID:     sessionID,
+		ID:      sessionID,
 		Column2: fmt.Sprintf("%d", wordID),
 	})
 }
 
 func (r *WordsRepository) GetSessionWordError(ctx context.Context, sessionID, wordID int64) (int, error) {
 	c, err := r.q.GetSessionWordError(ctx, sqlc.GetSessionWordErrorParams{
-		ID:     sessionID,
+		ID:      sessionID,
 		Column2: fmt.Sprintf("%d", wordID),
 	})
 	if err != nil {

@@ -122,7 +122,7 @@ func TestSubmitAnswer_UsesShownQuestion(t *testing.T) {
 	// Submit Q1's correct option.
 	_, nextQ, answers, err := svc.SubmitAnswer(ctx, 1, shownQ.CorrectOption)
 	require.NoError(t, err)
-	require.Nil(t, answers)   // session not complete yet
+	require.Nil(t, answers)  // session not complete yet
 	require.NotNil(t, nextQ) // next question is ready
 
 	// The stored answer must reference the SHOWN question, not any random new one.
@@ -247,5 +247,39 @@ func TestDetermineLevel(t *testing.T) {
 				t.Errorf("determineLevel() = %s, want %s", got, tt.want)
 			}
 		})
+	}
+}
+
+// levelIndex must not inherit user.Level.Index()'s -1 for unknown values: the
+// adaptive arithmetic indexes the ladder directly, and -1 would panic. A
+// corrupted session should keep asking answerable questions instead.
+func TestLevelIndexFallsBackToMiddleForUnknown(t *testing.T) {
+	for _, l := range []user.Level{"", "Z9", "b1"} {
+		if got := levelIndex(l); got != 2 {
+			t.Errorf("levelIndex(%q) = %d, want 2 (B1)", l, got)
+		}
+	}
+	// Known levels still map to their real position.
+	for i, l := range user.AllLevels() {
+		if got := levelIndex(l); got != i {
+			t.Errorf("levelIndex(%q) = %d, want %d", l, got, i)
+		}
+	}
+}
+
+// adjustLevel does index arithmetic on the ladder; the ends must clamp rather
+// than run off it.
+func TestAdjustLevelClampsAtTheEnds(t *testing.T) {
+	if got, _ := adjustLevel(user.A1, false, 0); got != user.A1 {
+		t.Errorf("a wrong answer at A1 = %q, want A1 (nothing below)", got)
+	}
+	if got, _ := adjustLevel(user.C2, true, 1); got != user.C2 {
+		t.Errorf("a second correct answer at C2 = %q, want C2 (nothing above)", got)
+	}
+	if got, _ := adjustLevel(user.B1, true, 1); got != user.B2 {
+		t.Errorf("two correct answers at B1 = %q, want B2", got)
+	}
+	if got, _ := adjustLevel(user.B1, false, 0); got != user.A2 {
+		t.Errorf("a wrong answer at B1 = %q, want A2", got)
 	}
 }

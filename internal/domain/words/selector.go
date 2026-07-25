@@ -12,7 +12,7 @@ import (
 // CEFR first, climbing only when the previous level is exhausted (every word
 // either learned or in progress). The user's profile level is intentionally
 // ignored here — the goal is full coverage of the easier vocabulary first.
-var ascendingLevels = []user.Level{user.A1, user.A2, user.B1, user.B2, user.C1, user.C2}
+var ascendingLevels = user.AllLevels()
 
 // SelectWords picks up to SessionSize words for a /words session.
 //
