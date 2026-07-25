@@ -107,6 +107,10 @@ func (s *Server) Mount(r chi.Router) {
 		pub.Get("/logout", s.handleLogout)
 	})
 
+	// Своя 404 вместо голого chi-ответа: у той нет ни навигации, ни выхода,
+	// и она игнорирует тему.
+	r.NotFound(securityHeaders(http.HandlerFunc(s.handleNotFound)).ServeHTTP)
+
 	r.Group(func(priv chi.Router) {
 		priv.Use(securityHeaders)
 		priv.Use(s.requireAuth)

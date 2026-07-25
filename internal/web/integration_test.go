@@ -660,3 +660,55 @@ func TestWordsSessionSharedWithBot(t *testing.T) {
 		u.ID).Scan(&sessions))
 	require.Equal(t, 1, sessions)
 }
+
+// A "type it in English" task must not display the English word — that would
+// hand over the answer, and the transcription would hand over the
+// pronunciation with it. Same for the RU→EN choice task.
+func TestVocabTasksNeverShowTheAnswerSide(t *testing.T) {
+	env := setupDBEnv(t)
+	_, cookie := env.signedIn(t, 108, user.A1)
+	ctx := context.Background()
+
+	checked := map[string]bool{}
+	for i := 0; i < 40 && len(checked) < 2; i++ {
+		body := env.get(t, "/tasks", cookie).Body.String()
+		if !strings.Contains(body, `hx-post="/tasks/`) {
+			break
+		}
+		id := currentTaskID(t, body)
+		tk, err := env.taskSvc.GetTaskByID(ctx, taskIDFrom(t, id))
+		require.NoError(t, err)
+
+		subtype, _ := tk.Metadata["subtype"].(string)
+		if subtype == task.VocabSubtypeRuEn || subtype == task.VocabSubtypeTypingRuEn {
+			word, err := env.srsRepo.GetWordByID(ctx, int64(tk.Metadata["word_id"].(float64)))
+			require.NoError(t, err)
+
+			// The prompt area must carry the Russian side, not the English one.
+			require.Contains(t, body, word.Russian,
+				"%s must prompt with the Russian word", subtype)
+			if subtype == task.VocabSubtypeTypingRuEn {
+				require.NotContains(t, body, ">"+word.English+"<",
+					"%s must not display the English answer", subtype)
+				if word.Transcription != "" {
+					require.NotContains(t, body, word.Transcription,
+						"%s must not display the transcription of the answer", subtype)
+				}
+			}
+			checked[subtype] = true
+		}
+
+		// Move past this task so the next iteration sees a different one.
+		_, err = env.taskSvc.SubmitSkip(ctx, tk.ID, mustUserID(t, env, 108))
+		require.NoError(t, err)
+	}
+
+	require.NotEmpty(t, checked, "no RU→EN vocab task appeared in 40 draws")
+}
+
+func mustUserID(t *testing.T, env *dbEnv, telegramID int64) int64 {
+	t.Helper()
+	u, err := env.userSvc.GetByTelegramID(context.Background(), telegramID)
+	require.NoError(t, err)
+	return u.ID
+}

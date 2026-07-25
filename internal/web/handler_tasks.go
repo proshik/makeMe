@@ -24,7 +24,8 @@ type taskView struct {
 	Instruction string
 	Typing      bool
 	Word        string // headword for vocab tasks, shown at display size
-	Transcript  string // IPA, when known
+	Transcript  string // IPA — only when the English side is the prompt
+	Example     string // example sentence, same condition as Transcript
 	AudioURL    string
 }
 
@@ -157,14 +158,28 @@ func (s *Server) buildTaskView(r *http.Request, t *task.Task, round, position, t
 		Typing:      isTyping(t),
 	}
 
-	// Vocab tasks carry a word id; pull the headword so the card can show it at
-	// display size with its transcription, the way the mockup does.
+	// Vocab tasks carry a word id; pull the record so the card can show the
+	// headword at display size.
+	//
+	// Which side is shown depends on the subtype, and getting it wrong is not
+	// cosmetic: showing the English word for a "type it in English" task hands
+	// over the answer, and the transcription hands over the pronunciation with
+	// it. Fill-blank is its own case — the prompt is the blanked sentence, and
+	// showing the word alongside it would defeat the exercise.
 	if t.Type == task.TypeVocab && t.Metadata != nil {
 		if id := metaInt64(t.Metadata["word_id"]); id > 0 {
 			if word, err := s.srsRepo.GetWordByID(r.Context(), id); err == nil && word != nil {
-				v.Word = word.English
-				v.Transcript = word.Transcription
 				v.AudioURL = word.AudioURL
+				switch t.Metadata["subtype"] {
+				case task.VocabSubtypeRuEn, task.VocabSubtypeTypingRuEn:
+					v.Word = word.Russian
+				case task.VocabSubtypeFillBlank:
+					// Prompt already carries the blanked sentence.
+				default:
+					v.Word = word.English
+					v.Transcript = word.Transcription
+					v.Example = word.Example
+				}
 			}
 		}
 	}

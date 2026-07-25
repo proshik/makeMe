@@ -1,0 +1,28 @@
+{{define "notfound.html"}}<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+{{template "head" "Страница не найдена"}}
+</head>
+<body>
+{{template "nav"}}
+<main class="max-w-[860px] mx-auto px-6 pb-16">
+  <section class="panel p-7">
+    <div class="flex items-baseline gap-4 mb-6">
+      <span class="flap-row">
+        <span class="flap text-4xl">4</span><span class="flap text-4xl">0</span><span class="flap text-4xl">4</span>
+      </span>
+    </div>
+    <h1 class="font-display text-3xl font-semibold mb-4">Такой страницы нет</h1>
+    <p class="text-base mb-7" style="color:var(--dim)">
+      Возможно, раздел ещё не готов — грамматика, рейтинг и профиль пока доступны
+      только в Telegram-боте.
+    </p>
+    <div class="flex gap-3 flex-wrap">
+      <a href="/tasks" class="btn no-underline">К заданиям</a>
+      <a href="/words" class="btn btn-ghost no-underline">Учить слова</a>
+      <a href="/" class="btn btn-ghost no-underline">На главную</a>
+    </div>
+  </section>
+</main>
+</body>
+</html>{{end}}

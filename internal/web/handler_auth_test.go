@@ -536,3 +536,42 @@ func TestPagesReferenceNoExternalOrigins(t *testing.T) {
 		}
 	}
 }
+
+// A mistyped URL must land on the site's own 404, not chi's bare text page —
+// that one has no navigation and no way back.
+func TestUnknownURLRendersStyled404(t *testing.T) {
+	env := newTestEnv(t, 1, "Алиса", "alice")
+	rr := env.do(t, httptest.NewRequest(http.MethodGet, "/no-such-page", nil))
+
+	if rr.Code != http.StatusNotFound {
+		t.Fatalf("status = %d, want 404", rr.Code)
+	}
+	body := rr.Body.String()
+	if strings.Contains(body, "404 page not found") {
+		t.Error("chi's bare 404 is being served")
+	}
+	if !strings.Contains(body, "Такой страницы нет") {
+		t.Error("the styled 404 page was not rendered")
+	}
+	if !strings.Contains(body, "/tasks") {
+		t.Error("the 404 page offers no way back")
+	}
+}
+
+// The menu must not link to sections that do not exist yet — promising them
+// and dropping the user on a 404 is worse than not showing a link.
+func TestNavDoesNotLinkToUnbuiltSections(t *testing.T) {
+	env := newTestEnv(t, 777, "Алиса", "alice")
+
+	u, _ := env.repo.Create(context.Background(), 777, "alice", "Алиса")
+	token, _ := env.jwt.Create(u.ID)
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	req.AddCookie(&http.Cookie{Name: authCookie, Value: token})
+
+	body := env.do(t, req).Body.String()
+	for _, path := range []string{`href="/learn"`, `href="/leaderboard"`, `href="/profile"`} {
+		if strings.Contains(body, path) {
+			t.Errorf("nav links to %s, which is not implemented in the web UI", path)
+		}
+	}
+}

@@ -27,7 +27,8 @@
     {{if .Word}}
       {{/* Словарная карточка: слово крупно, транскрипция под ним. */}}
       <p class="font-display text-6xl leading-none mb-3" style="font-weight:500">{{.Word}}</p>
-      {{if .Transcript}}<p class="ipa text-2xl mb-8">{{.Transcript}}</p>{{else}}<div class="mb-8"></div>{{end}}
+      {{if .Transcript}}<p class="ipa text-2xl mb-2">{{.Transcript}}</p>{{end}}
+      {{if .Example}}<p class="text-base mb-8" style="color:var(--dim)"><i>{{.Example}}</i></p>{{else}}<div class="mb-8"></div>{{end}}
     {{else}}
       <p class="font-display text-3xl leading-snug mb-8" style="font-weight:400">{{.Task.Prompt}}</p>
     {{end}}
