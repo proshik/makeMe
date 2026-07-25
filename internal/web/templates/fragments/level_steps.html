@@ -1,0 +1,13 @@
+{{/*
+  Шкала CEFR: шесть створок, горящие — пройденные включая текущую.
+  Принимает user.Level (строка "A1".."C2"). Используется и на странице,
+  и внутри фрагментов, которые приезжают по htmx.
+*/}}
+{{define "levelSteps"}}
+<div class="steps" role="img" aria-label="Уровень {{if .}}{{.}}{{else}}не определён{{end}}">
+  {{$lvl := .}}
+  {{range $i, $name := levels}}
+    <span {{if levelReached $lvl $name}}data-on="1"{{end}}>{{$name}}</span>
+  {{end}}
+</div>
+{{end}}

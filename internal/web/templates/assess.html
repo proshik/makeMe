@@ -1,0 +1,17 @@
+{{define "assess.html"}}<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+{{template "head" "Тест на уровень"}}
+</head>
+<body>
+{{template "nav"}}
+
+<main class="max-w-[860px] mx-auto px-6 pb-16">
+  {{if .Result}}
+    {{template "assess_result" .Result}}
+  {{else}}
+    {{template "assess_slot" .Slot}}
+  {{end}}
+</main>
+</body>
+</html>{{end}}

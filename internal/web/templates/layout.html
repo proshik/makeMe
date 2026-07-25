@@ -1,0 +1,28 @@
+{{define "head"}}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{.}} — makeMe</title>
+<!-- Порядок важен: сначала база и утилиты Tailwind, поверх — дизайн-система. -->
+<link rel="stylesheet" href="{{asset "/static/tailwind.css"}}">
+<link rel="stylesheet" href="{{asset "/static/vendor/fonts.css"}}">
+<link rel="stylesheet" href="{{asset "/static/app.css"}}">
+<!-- Без defer: должен отработать до первой отрисовки, иначе тема мигает. -->
+<script src="{{asset "/static/js/theme-init.js"}}"></script>
+<script src="{{asset "/static/vendor/htmx.min.js"}}" defer></script>
+<script src="{{asset "/static/js/app.js"}}" defer></script>
+{{end}}
+
+{{define "nav"}}
+<header class="max-w-[860px] mx-auto px-6 pt-8 pb-6 flex items-baseline justify-between gap-6">
+  <a href="/" class="font-display text-2xl font-semibold no-underline">makeMe</a>
+  <nav class="flex items-baseline gap-5 text-sm flex-wrap">
+    <a href="/tasks">Задания</a>
+    <a href="/words">Слова</a>
+    <a href="/learn">Грамматика</a>
+    <a href="/leaderboard">Рейтинг</a>
+    <a href="/profile">Профиль</a>
+    <button type="button" data-action="toggle-theme" class="text-sm underline">Тема</button>
+    <a href="/logout">Выйти</a>
+  </nav>
+</header>
+{{end}}

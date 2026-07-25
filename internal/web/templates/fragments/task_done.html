@@ -1,0 +1,31 @@
+{{/* Итог раунда — переиспользуется в двух местах, поэтому разнесён на
+     внутренность (round_summary) и обёртку со слотом (task_done). */}}
+{{define "round_summary"}}
+<div class="flex items-baseline gap-4 mb-6 flex-wrap">
+  <span class="font-mono text-xs" style="color:var(--dim)">верных ответов</span>
+  <span class="flap-row">
+    {{range digits .Correct 2}}<span class="flap flap-amber text-3xl">{{.}}</span>{{end}}
+  </span>
+  <span class="font-mono text-sm" style="color:var(--dim)">из {{.Total}}</span>
+</div>
+<p class="text-base mb-7" style="color:var(--dim)">
+  {{if eq .Correct .Total}}
+    Раунд пройден без ошибок.
+  {{else}}
+    Раунд закрыт. Слова из ошибок вернутся в повторениях.
+  {{end}}
+</p>
+<div class="flex gap-3 flex-wrap">
+  <a href="/tasks" class="btn no-underline">Ещё раунд</a>
+  <a href="/words" class="btn btn-ghost no-underline">Учить слова</a>
+  <a href="/leaderboard" class="btn btn-ghost no-underline">Рейтинг</a>
+</div>
+{{end}}
+
+{{define "task_done"}}
+<div id="slot">
+  <section class="panel p-7">
+    {{template "round_summary" .}}
+  </section>
+</div>
+{{end}}

@@ -14,8 +14,8 @@ import (
 	"syscall"
 	"time"
 
-	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jackc/pgx/v5/pgxpool"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
 
 	"makeMe/internal/config"
@@ -31,6 +31,7 @@ import (
 	"makeMe/internal/storage/postgres"
 	"makeMe/internal/storage/sqlc"
 	"makeMe/internal/telegram"
+	"makeMe/internal/web"
 )
 
 func main() {
@@ -132,11 +133,23 @@ func run(ctx context.Context) error {
 		sched.Run(ctx)
 	}()
 
+	webSrv, err := buildWebServer(cfg, web.Deps{
+		UserSvc:    userSvc,
+		GroupSvc:   groupSvc,
+		AssessSvc:  assessSvc,
+		TaskSvc:    taskSvc,
+		ScoringSvc: scoringSvc,
+		SRSRepo:    srsRepo,
+	})
+	if err != nil {
+		return err
+	}
+
 	r := server.New(tgBot, server.AdminConfig{
 		Pool:       pool,
 		DictClient: dictClient,
 		AdminToken: cfg.AdminToken,
-	})
+	}, webSrv)
 
 	srv := &http.Server{
 		Addr:         ":" + cfg.Port,
@@ -161,6 +174,35 @@ func run(ctx context.Context) error {
 
 	wg.Wait()
 	return nil
+}
+
+// buildWebServer wires the browser UI. It returns (nil, nil) when the web
+// credentials are absent — that is a supported deployment, not an error: the
+// bot runs on its own and /login simply isn't mounted.
+func buildWebServer(cfg *config.Config, deps web.Deps) (*web.Server, error) {
+	if !cfg.WebEnabled() {
+		slog.Warn("web UI disabled: set APP_BASE_URL, TELEGRAM_CLIENT_ID, TELEGRAM_CLIENT_SECRET and JWT_SECRET to enable it")
+		return nil, nil
+	}
+
+	jwtSvc, err := web.NewJWTService(cfg.JWTSecret, cfg.JWTTTLHours)
+	if err != nil {
+		return nil, fmt.Errorf("web: %w", err)
+	}
+
+	oidc := web.NewOIDCClient(
+		cfg.TelegramOAuthBaseURL,
+		cfg.TelegramClientID,
+		cfg.TelegramClientSecret,
+		cfg.RedirectURI(),
+	)
+
+	srv, err := web.New(deps, jwtSvc, oidc, cfg.CookieSecure)
+	if err != nil {
+		return nil, fmt.Errorf("web: %w", err)
+	}
+	slog.Info("web UI enabled", "base_url", cfg.AppBaseURL, "redirect_uri", cfg.RedirectURI())
+	return srv, nil
 }
 
 type wordEntry struct {

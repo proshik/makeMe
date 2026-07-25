@@ -15,8 +15,10 @@ seed
 # OS
 .DS_Store
 
-# Go
-vendor/
+# Go — только корневой vendor/ самого модуля.
+# Без ведущего слэша правило съедало бы internal/web/static/vendor/ с зашитыми
+# ассетами, и на чистом клоне //go:embed не собрался бы.
+/vendor/
 
 # sqlc generated (optional: uncomment if you prefer to regenerate on build)
 # internal/storage/sqlc/

@@ -1,0 +1,42 @@
+{{define "home.html"}}<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+{{template "head" "Главная"}}
+</head>
+<body>
+{{template "nav"}}
+
+<main class="max-w-[860px] mx-auto px-6 pb-16">
+
+  <section class="panel p-7 mb-8">
+    <div class="flex items-start justify-between gap-6 mb-8 flex-wrap">
+      <div>
+        <p class="font-mono text-xs mb-2" style="color:var(--dim)">С возвращением</p>
+        <h1 class="font-display text-4xl font-semibold">{{.User.FirstName}}</h1>
+      </div>
+      {{template "levelSteps" .User.Level}}
+    </div>
+
+    <p class="text-base leading-relaxed" style="color:var(--dim)">
+      {{if .User.Onboarded}}
+        Ваш уровень — {{.User.Level}}. Задания и слова подбираются под него.
+      {{else}}
+        Уровень ещё не определён. Пройдите тест — он занимает 30&nbsp;вопросов и настраивает
+        сложность заданий под вас.
+      {{end}}
+    </p>
+
+    {{if not .User.Onboarded}}
+    <div class="mt-7">
+      <a href="/assess" class="btn inline-block no-underline">Пройти тест на уровень</a>
+    </div>
+    {{end}}
+  </section>
+
+  <p class="font-mono text-xs" style="color:var(--dim)">
+    Разделы «Задания», «Слова» и «Грамматика» появятся здесь по мере готовности.
+  </p>
+
+</main>
+</body>
+</html>{{end}}

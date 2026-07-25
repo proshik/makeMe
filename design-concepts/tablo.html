@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>makeMe — направление «Табло»</title>
+<script>(function(){var t=localStorage.getItem('mm-theme-tablo');if(t)document.documentElement.dataset.theme=t;})();</script>
+<link rel="stylesheet" href="vendor/fonts.local.css">
+<script src="vendor/tailwind.js"></script>
+<script>
+tailwind.config = {
+  theme: {
+    borderRadius: { none: '0px' },
+    boxShadow: { none: 'none' },
+    extend: {
+      fontFamily: {
+        display: ['Oswald', 'sans-serif'],
+        sans: ['"IBM Plex Sans"', 'sans-serif'],
+        mono: ['"IBM Plex Mono"', 'monospace'],
+        ipa: ['"Charis SIL"', 'serif'],
+      },
+    },
+  },
+}
+</script>
+<style>
+  /* ── Токены ────────────────────────────────────────────────────────────
+     Тёмная база с янтарём — но это цвет механической индикации, а не
+     неоновый акцент: спасает фактура перекидных створок, не свечение. */
+  :root, [data-theme="dark"] {
+    --board:  #15181B;
+    --cell:   #21262B;
+    --cell-2: #2A3036;
+    --seam:   #0B0D0F;
+    --chalk:  #ECE9E2;
+    --dim:    #8A9199;
+    --amber:  #E8A317;
+    --right:  #46B37A;
+    --wrong:  #E0554A;
+    --rule:   #333A41;
+  }
+  [data-theme="light"] {
+    --board:  #CFCCC3;
+    --cell:   #E4E1D8;
+    --cell-2: #F0EDE5;
+    --seam:   #A8A49A;
+    --chalk:  #16191C;
+    --dim:    #62676D;
+    --amber:  #A66F00;
+    --right:  #1C7A4C;
+    --wrong:  #B32D20;
+    --rule:   #B4B0A6;
+  }
+
+  body { background: var(--board); color: var(--chalk); font-family: 'IBM Plex Sans', sans-serif; }
+
+  /* ── Подпись направления: перекидная створка ──────────────────────────
+     Каждая ячейка разрезана горизонтальным швом по центру — так выглядит
+     механическое табло. Шов рисуем градиент-free: две фоновые полосы. */
+  .flap {
+    position: relative; display: inline-flex; align-items: center; justify-content: center;
+    background: var(--cell); color: var(--chalk);
+    font-family: 'Oswald', sans-serif; font-variant-numeric: tabular-nums;
+    padding: .18em .34em; min-width: 1.1em; overflow: hidden;
+  }
+  .flap::after {
+    content: ""; position: absolute; left: 0; right: 0; top: 50%;
+    height: 1px; background: var(--seam);
+  }
+  .flap-amber { color: var(--amber); }
+  .flap-row { display: inline-flex; gap: 3px; }
+
+  .ipa { font-family: 'Charis SIL', serif; color: var(--dim); }
+  .num { font-variant-numeric: tabular-nums; }
+  .rule { border-top: 1px solid var(--rule); }
+
+  /* Варианты ответа — планки табло с индикаторной колонкой слева. */
+  .opt {
+    display: flex; align-items: stretch; width: 100%; text-align: left;
+    background: var(--cell); color: inherit; border: 0;
+    transition: background .12s;
+  }
+  .opt:hover { background: var(--cell-2); }
+  .opt:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+  .opt .lamp { width: 8px; background: var(--seam); flex: none; }
+  .opt .val  { padding: .95rem 1.1rem; font-size: 1.05rem; }
+  .opt .key  { padding: .95rem 0 .95rem 1.1rem; font-family: 'IBM Plex Mono', monospace;
+               font-size: .78rem; color: var(--dim); }
+  .opt[data-state="right"] .lamp { background: var(--right); }
+  .opt[data-state="right"] { background: var(--cell-2); }
+  .opt[data-state="right"] .val { color: var(--right); font-weight: 600; }
+  .opt[data-state="wrong"] .lamp { background: var(--wrong); }
+  .opt[data-state="wrong"] .val { color: var(--wrong); }
+  .opt[data-state="muted"] { opacity: .4; }
+
+  .field {
+    width: 100%; background: var(--cell); border: 0; border-bottom: 2px solid var(--amber);
+    padding: .7rem .9rem; font-size: 1.5rem; font-family: 'Oswald', sans-serif; color: var(--chalk);
+  }
+  .field:focus { outline: none; background: var(--cell-2); }
+  .field::placeholder { color: var(--dim); }
+
+  .btn {
+    padding: .75rem 1.5rem; border: 1px solid var(--amber); background: var(--amber); color: #15181B;
+    font-family: 'Oswald', sans-serif; font-size: 1rem; letter-spacing: .01em;
+  }
+  .btn:hover { background: transparent; color: var(--amber); }
+  .btn-ghost { background: transparent; color: var(--dim); border-color: var(--rule); }
+  .btn-ghost:hover { background: var(--cell-2); color: var(--chalk); border-color: var(--dim); }
+
+  .screen-label { font-family: 'IBM Plex Mono', monospace; font-size: .72rem; color: var(--dim); text-transform: uppercase; }
+  .panel { background: var(--board); border: 1px solid var(--rule); }
+
+  /* Шкала уровня — ряд створок, горящая = достигнутый уровень. */
+  .steps { display: inline-flex; gap: 3px; }
+  .steps span {
+    width: 22px; height: 22px; background: var(--cell); position: relative;
+    font-family: 'Oswald', sans-serif; font-size: .62rem; color: var(--dim);
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .steps span::after { content:""; position:absolute; left:0; right:0; top:50%; height:1px; background:var(--seam); }
+  .steps span[data-on="1"] { background: var(--amber); color: #15181B; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<div class="max-w-[860px] mx-auto px-6 py-10">
+
+  <header class="flex items-baseline justify-between mb-2">
+    <h1 class="font-display text-2xl font-semibold">makeMe</h1>
+    <button onclick="var d=document.documentElement;var n=d.dataset.theme==='dark'?'light':'dark';d.dataset.theme=n;localStorage.setItem('mm-theme-tablo',n)"
+            class="text-sm underline underline-offset-4">Сменить тему</button>
+  </header>
+  <p class="text-sm mb-1" style="color:var(--dim)">Направление 2 — «Табло»</p>
+  <p class="text-sm mb-10 max-w-[54ch]" style="color:var(--dim)">
+    Вокзальное перекидное табло. Каждая ячейка разрезана горизонтальным швом — фактура механики,
+    а не свечение. Счёт, серия и место в группе набираются створками; уровень A1—C2 — ряд из шести.
+    Направление отвечает соревновательной половине продукта.
+  </p>
+
+  <!-- ── Экран 1 ──────────────────────────────────────────────────────── -->
+  <p class="screen-label mb-3">Экран 1 — грамматика, выбор варианта</p>
+  <section class="panel p-7 mb-12">
+    <div class="flex items-center justify-between mb-7">
+      <span class="font-mono text-xs" style="color:var(--dim)">Conditionals</span>
+      <div class="steps">
+        <span data-on="1">A1</span><span data-on="1">A2</span><span data-on="1">B1</span>
+        <span data-on="1">B2</span><span>C1</span><span>C2</span>
+      </div>
+    </div>
+
+    <div class="flex items-baseline gap-3 mb-8">
+      <span class="font-mono text-xs" style="color:var(--dim)">задание</span>
+      <span class="flap-row">
+        <span class="flap flap-amber text-xl">0</span><span class="flap flap-amber text-xl">4</span>
+      </span>
+      <span class="font-mono text-xs" style="color:var(--dim)">из 10</span>
+    </div>
+
+    <p class="font-display text-3xl leading-snug mb-8" style="font-weight:400">
+      Had she studied harder, <span style="border-bottom:2px solid var(--amber); padding:0 1.6rem"></span> the exam.
+    </p>
+
+    <div class="grid gap-[3px] mb-7">
+      <button class="opt"><span class="lamp"></span><span class="key">1</span><span class="val">passed</span></button>
+      <button class="opt"><span class="lamp"></span><span class="key">2</span><span class="val">would pass</span></button>
+      <button class="opt"><span class="lamp"></span><span class="key">3</span><span class="val">would have passed</span></button>
+      <button class="opt"><span class="lamp"></span><span class="key">4</span><span class="val">had passed</span></button>
+    </div>
+    <button class="btn btn-ghost">Не знаю</button>
+  </section>
+
+  <!-- ── Экран 2 ──────────────────────────────────────────────────────── -->
+  <p class="screen-label mb-3">Экран 2 — тот же экран, ответ неверный</p>
+  <section class="panel p-7 mb-12">
+    <p class="font-display text-3xl leading-snug mb-8" style="font-weight:400">
+      Had she studied harder, <span style="color:var(--right)">would have passed</span> the exam.
+    </p>
+    <div class="grid gap-[3px] mb-7">
+      <button class="opt" data-state="muted"><span class="lamp"></span><span class="key">1</span><span class="val">passed</span></button>
+      <button class="opt" data-state="wrong"><span class="lamp"></span><span class="key">2</span><span class="val">would pass</span></button>
+      <button class="opt" data-state="right"><span class="lamp"></span><span class="key">3</span><span class="val">would have passed</span></button>
+      <button class="opt" data-state="muted"><span class="lamp"></span><span class="key">4</span><span class="val">had passed</span></button>
+    </div>
+    <div class="rule pt-5 mb-6">
+      <p class="text-[.95rem] leading-relaxed" style="color:var(--dim)">
+        Третий тип условия описывает то, чего не случилось. В инверсии <span class="font-mono text-sm">if</span>
+        опускается, а <span class="font-mono text-sm">had</span> уходит вперёд подлежащего.
+      </p>
+    </div>
+    <div class="flex items-center gap-5">
+      <button class="btn">Дальше</button>
+      <div class="flex items-baseline gap-2">
+        <span class="font-mono text-xs" style="color:var(--dim)">начислено</span>
+        <span class="flap-row"><span class="flap text-lg">0</span></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Экран 3 ──────────────────────────────────────────────────────── -->
+  <p class="screen-label mb-3">Экран 3 — словарь, ввод перевода</p>
+  <section class="panel p-7 mb-12">
+    <div class="flex items-center justify-between mb-8">
+      <span class="font-mono text-xs" style="color:var(--dim)">Введите перевод на русский</span>
+      <div class="steps">
+        <span data-on="1">A1</span><span data-on="1">A2</span><span data-on="1">B1</span>
+        <span data-on="1">B2</span><span data-on="1">C1</span><span>C2</span>
+      </div>
+    </div>
+
+    <p class="font-display text-6xl leading-none mb-3" style="font-weight:500">ubiquitous</p>
+    <p class="ipa text-2xl mb-9">/juːˈbɪk.wə.təs/</p>
+
+    <input class="field mb-3" placeholder="перевод" autocomplete="off">
+    <p class="font-mono text-xs mb-8" style="color:var(--dim)">Регистр и «ё» не важны</p>
+
+    <div class="flex items-center gap-3 flex-wrap">
+      <button class="btn">Проверить</button>
+      <button class="btn btn-ghost">Не знаю</button>
+      <button class="btn btn-ghost">Послушать</button>
+    </div>
+  </section>
+
+  <!-- ── Экран 4 ──────────────────────────────────────────────────────── -->
+  <p class="screen-label mb-3">Экран 4 — карточка слова в разделе «Слова»</p>
+  <section class="panel p-7 mb-12">
+    <div class="flex items-center justify-between mb-7">
+      <span class="font-mono text-xs" style="color:var(--dim)">Выбор EN&thinsp;→&thinsp;RU</span>
+      <div class="flex items-baseline gap-2">
+        <span class="font-mono text-xs" style="color:var(--dim)">показ</span>
+        <span class="flap-row"><span class="flap text-base">2</span><span class="flap text-base">3</span></span>
+        <span class="font-mono text-xs" style="color:var(--dim)">из 80</span>
+      </div>
+    </div>
+
+    <!-- Четыре режима: горящая створка = зачтённый ответ, нужно две. -->
+    <div class="flex gap-5 mb-8 flex-wrap">
+      <div><p class="font-mono text-[.68rem] mb-1" style="color:var(--dim)">выбор EN→RU</p>
+        <div class="steps"><span data-on="1"></span><span data-on="1"></span></div></div>
+      <div><p class="font-mono text-[.68rem] mb-1" style="color:var(--dim)">выбор RU→EN</p>
+        <div class="steps"><span data-on="1"></span><span></span></div></div>
+      <div><p class="font-mono text-[.68rem] mb-1" style="color:var(--dim)">ввод EN→RU</p>
+        <div class="steps"><span></span><span></span></div></div>
+      <div><p class="font-mono text-[.68rem] mb-1" style="color:var(--dim)">ввод RU→EN</p>
+        <div class="steps"><span></span><span></span></div></div>
+    </div>
+
+    <p class="font-display text-6xl leading-none mb-3" style="font-weight:500">ambiguous</p>
+    <p class="ipa text-2xl mb-8">/æmˈbɪɡjuəs/</p>
+
+    <div class="grid gap-[3px] mb-7">
+      <button class="opt"><span class="lamp"></span><span class="key">1</span><span class="val">неоднозначный</span></button>
+      <button class="opt"><span class="lamp"></span><span class="key">2</span><span class="val">вездесущий</span></button>
+      <button class="opt"><span class="lamp"></span><span class="key">3</span><span class="val">мимолётный</span></button>
+      <button class="opt"><span class="lamp"></span><span class="key">4</span><span class="val">убедительный</span></button>
+    </div>
+
+    <div class="rule pt-5 flex items-center gap-3 flex-wrap">
+      <button class="btn btn-ghost">Не знаю</button>
+      <button class="btn btn-ghost">Уже знаю это слово</button>
+      <button class="btn btn-ghost">Послушать</button>
+    </div>
+  </section>
+
+  <!-- ── Экран 5 ──────────────────────────────────────────────────────── -->
+  <p class="screen-label mb-3">Экран 5 — лидерборд группы</p>
+  <section class="panel p-7 mb-12">
+    <div class="flex items-baseline justify-between mb-8">
+      <h2 class="font-display text-2xl font-semibold">ENGLISH&nbsp;CLUB</h2>
+      <div class="flex gap-1">
+        <button class="btn" style="padding:.4rem 1rem; font-size:.9rem">Сегодня</button>
+        <button class="btn btn-ghost" style="padding:.4rem 1rem; font-size:.9rem">Месяц</button>
+      </div>
+    </div>
+
+    <div class="rule">
+      <div class="flex items-center gap-5 py-4 rule" style="border-top:0">
+        <span class="flap flap-amber text-2xl">1</span>
+        <div class="flex-1">
+          <p class="font-display text-xl" style="font-weight:500">АЛИСА</p>
+          <div class="steps mt-2">
+            <span data-on="1">A1</span><span data-on="1">A2</span><span data-on="1">B1</span>
+            <span data-on="1">B2</span><span>C1</span><span>C2</span></div>
+        </div>
+        <span class="flap-row">
+          <span class="flap flap-amber text-2xl">1</span><span class="flap flap-amber text-2xl">8</span>
+          <span class="flap text-2xl" style="min-width:.5em">,</span><span class="flap flap-amber text-2xl">4</span>
+        </span>
+      </div>
+
+      <div class="flex items-center gap-5 py-4 rule">
+        <span class="flap text-2xl">2</span>
+        <div class="flex-1">
+          <p class="font-display text-xl" style="font-weight:500">БОРИС</p>
+          <div class="steps mt-2">
+            <span data-on="1">A1</span><span data-on="1">A2</span><span data-on="1">B1</span>
+            <span>B2</span><span>C1</span><span>C2</span></div>
+        </div>
+        <span class="flap-row">
+          <span class="flap text-2xl">1</span><span class="flap text-2xl">2</span>
+          <span class="flap text-2xl" style="min-width:.5em">,</span><span class="flap text-2xl">0</span>
+        </span>
+      </div>
+
+      <div class="flex items-center gap-5 py-4 rule">
+        <span class="flap text-2xl">3</span>
+        <div class="flex-1">
+          <p class="font-display text-xl" style="font-weight:500">ВЕРА</p>
+          <div class="steps mt-2">
+            <span data-on="1">A1</span><span data-on="1">A2</span><span>B1</span>
+            <span>B2</span><span>C1</span><span>C2</span></div>
+        </div>
+        <span class="flap-row">
+          <span class="flap text-2xl">&nbsp;</span><span class="flap text-2xl">9</span>
+          <span class="flap text-2xl" style="min-width:.5em">,</span><span class="flap text-2xl">6</span>
+        </span>
+      </div>
+    </div>
+
+    <p class="font-mono text-xs mt-6" style="color:var(--dim)">
+      Баллы нормированы по уровню задания — A1&nbsp;×&nbsp;0,6 … C2&nbsp;×&nbsp;1,5
+    </p>
+  </section>
+
+</div>
+</body>
+</html>

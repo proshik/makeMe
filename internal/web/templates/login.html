@@ -1,0 +1,41 @@
+{{define "login.html"}}<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+{{template "head" "Вход"}}
+</head>
+<body>
+<main class="min-h-screen flex items-center justify-center px-6">
+  <div class="w-full max-w-[420px]">
+
+    <h1 class="font-display text-5xl font-semibold mb-3">makeMe</h1>
+    <p class="text-base mb-10" style="color:var(--dim)">
+      Английский по заданиям, с группой и общим счётом. Тот же прогресс, что и в Telegram-боте.
+    </p>
+
+    <!-- Табло на входе: продукт представляется тем, чем и является. -->
+    <div class="flex items-baseline gap-3 mb-10">
+      <span class="flap-row">
+        <span class="flap flap-amber text-3xl">A</span><span class="flap flap-amber text-3xl">1</span>
+      </span>
+      <span class="font-mono text-xs" style="color:var(--dim)">…</span>
+      <span class="flap-row">
+        <span class="flap text-3xl">C</span><span class="flap text-3xl">2</span>
+      </span>
+    </div>
+
+    {{if .Error}}
+    <div class="p-4 mb-8" style="background:var(--cell); border-left:4px solid var(--wrong)">
+      <p class="text-sm">{{.Error}}</p>
+    </div>
+    {{end}}
+
+    <a href="/auth/telegram" class="btn inline-block no-underline">Войти через Telegram</a>
+
+    <p class="text-xs mt-8 leading-relaxed" style="color:var(--dim)">
+      Вход через Telegram — makeMe получит имя и юзернейм, ничего больше.
+      Если вы уже занимались в боте, прогресс подхватится сам.
+    </p>
+  </div>
+</main>
+</body>
+</html>{{end}}

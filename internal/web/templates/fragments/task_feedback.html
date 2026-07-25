@@ -1,0 +1,42 @@
+{{/* Ответ дан. Состояние передаётся цветом лампы и подписью, без эмодзи. */}}
+{{define "task_feedback"}}
+<div id="slot">
+  <section class="panel p-7">
+
+    <div class="flex items-stretch mb-7" style="background:var(--cell)">
+      <span class="lamp" style="width:8px; flex:none; background:{{if .Correct}}var(--right){{else}}var(--wrong){{end}}"></span>
+      <div class="px-5 py-4">
+        <p class="font-display text-2xl" style="font-weight:500; color:{{if .Correct}}var(--right){{else}}var(--wrong){{end}}">
+          {{if .Correct}}Верно{{else if .Skipped}}Пропущено{{else}}Неверно{{end}}
+        </p>
+        {{if not .Correct}}
+        <p class="mt-2 text-base">Правильный ответ: <span class="font-semibold">{{.Answer}}</span></p>
+        {{end}}
+      </div>
+      <div class="ml-auto flex items-center gap-2 px-5">
+        <span class="font-mono text-xs" style="color:var(--dim)">баллы</span>
+        <span class="flap-row">
+          {{range digits .Score 2}}<span class="flap {{if gt $.Score 0}}flap-amber{{end}} text-lg">{{.}}</span>{{end}}
+        </span>
+      </div>
+    </div>
+
+    {{if .Explanation}}
+    <div class="rule pt-5 mb-7">
+      <p class="text-[.95rem] leading-relaxed" style="color:var(--dim)">{{.Explanation}}</p>
+    </div>
+    {{end}}
+
+    {{if .HasNext}}
+      <button class="btn" hx-get="/tasks/next" hx-target="#slot" hx-swap="outerHTML">Дальше</button>
+    {{else if .Done}}
+      {{/* Итог набирается здесь же, а не отдельным фрагментом: вложить
+           "task_done" нельзя — он несёт собственный id="slot". */}}
+      <div class="rule pt-6">
+        {{template "round_summary" .Done}}
+      </div>
+    {{end}}
+
+  </section>
+</div>
+{{end}}

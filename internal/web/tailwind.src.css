@@ -1,0 +1,9 @@
+/* Вход для Tailwind CLI. Собирается в internal/web/static/tailwind.css
+   командой `make css` — результат коммитится, потому что //go:embed требует
+   файл на месте во время компиляции.
+
+   Живёт вне static/, чтобы не попасть в embed и не раздаваться наружу. */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

@@ -145,6 +145,13 @@ func (s *Service) SubmitAnswer(ctx context.Context, userID int64, userOption int
 	return session, nextQ, nil, nil
 }
 
+// TotalQuestions is how many questions one assessment run has. Exposed so
+// adapters can render "question N of M" without duplicating the constant.
+func (s *Service) TotalQuestions() int { return totalQuestions }
+
+// VocabPhaseCount is where the run switches from vocabulary to grammar.
+func (s *Service) VocabPhaseCount() int { return vocabPhaseCount }
+
 // GetActiveSession returns the current in-progress session or ErrNoActiveSession.
 func (s *Service) GetActiveSession(ctx context.Context, userID int64) (*Session, error) {
 	return s.repo.GetActiveSession(ctx, userID)

@@ -1,0 +1,17 @@
+{{define "error.html"}}<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+{{template "head" "Ошибка"}}
+</head>
+<body>
+{{template "nav"}}
+<main class="max-w-[860px] mx-auto px-6 pb-16">
+  <section class="panel p-7">
+    <div class="flex items-stretch" style="background:var(--cell)">
+      <span style="width:8px; flex:none; background:var(--wrong)"></span>
+      <p class="px-5 py-4 text-base">{{.Message}}</p>
+    </div>
+  </section>
+</main>
+</body>
+</html>{{end}}

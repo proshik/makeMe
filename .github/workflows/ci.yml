@@ -23,5 +23,10 @@ jobs:
         with:
           go-version: '1.26'
 
+      # Собранный tailwind.css лежит в репозитории (его требует //go:embed),
+      # поэтому он может отстать от шаблонов. Пересобираем и падаем, если diff.
+      - name: Check built CSS is up to date
+        run: make css-check
+
       - name: Run tests
         run: go test -v -race ./...

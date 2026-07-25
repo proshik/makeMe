@@ -9,6 +9,7 @@ import (
 
 	"makeMe/internal/dictionary"
 	"makeMe/internal/telegram"
+	"makeMe/internal/web"
 )
 
 // AdminConfig groups dependencies needed by /admin/* endpoints. AdminToken
@@ -20,7 +21,9 @@ type AdminConfig struct {
 	AdminToken string
 }
 
-func New(tgBot *telegram.Bot, admin AdminConfig) *chi.Mux {
+// New builds the HTTP router. webSrv may be nil — the web UI is optional and
+// the bot works without it (see Config.WebEnabled).
+func New(tgBot *telegram.Bot, admin AdminConfig, webSrv *web.Server) *chi.Mux {
 	r := chi.NewRouter()
 
 	r.Use(chimw.Logger)
@@ -43,6 +46,10 @@ func New(tgBot *telegram.Bot, admin AdminConfig) *chi.Mux {
 	r.Route("/admin", func(ar chi.Router) {
 		ar.Post("/seed-audio", adminAuth(deps.token, deps.handleSeedAudio))
 	})
+
+	if webSrv != nil {
+		webSrv.Mount(r)
+	}
 
 	return r
 }

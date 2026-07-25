@@ -1,0 +1,55 @@
+{{/* Итог теста: уровень крупно створками, под ним разбор по каждому вопросу —
+     иначе результат выглядит вердиктом без обоснования. */}}
+{{define "assess_result"}}
+<div id="assess">
+  <section class="panel p-7">
+
+    <p class="font-mono text-xs mb-3" style="color:var(--dim)">ваш уровень</p>
+    <div class="flex items-baseline gap-4 mb-8 flex-wrap">
+      <span class="flap-row">
+        {{range chars .Level}}<span class="flap flap-amber text-5xl">{{.}}</span>{{end}}
+      </span>
+      <span class="font-mono text-sm" style="color:var(--dim)">
+        верных {{.Correct}} из {{.Total}}
+      </span>
+    </div>
+
+    {{template "levelSteps" .Level}}
+
+    <p class="text-base leading-relaxed mt-8 mb-8" style="color:var(--dim)">
+      Задания и слова теперь подбираются под этот уровень. Он не окончательный —
+      через месяц занятий тест можно пройти заново.
+    </p>
+
+    <div class="flex gap-3 flex-wrap mb-9">
+      <a href="/tasks" class="btn no-underline">К заданиям</a>
+      <a href="/words" class="btn btn-ghost no-underline">Учить слова</a>
+    </div>
+
+    <details class="rule pt-6">
+      <summary class="font-mono text-xs cursor-pointer" style="color:var(--dim)">
+        Разбор по вопросам
+      </summary>
+      <div class="mt-5">
+        {{range $i, $a := .Answers}}
+        <div class="flex items-stretch mb-[3px]" style="background:var(--cell)">
+          <span style="width:8px; flex:none; background:{{if $a.Correct}}var(--right){{else}}var(--wrong){{end}}"></span>
+          <div class="px-4 py-3 flex-1">
+            <p class="font-mono text-[.7rem] mb-1" style="color:var(--dim)">
+              {{inc $i}} — {{$a.QuestionLevel}}{{if $a.Skipped}} — пропущен{{end}}
+            </p>
+            <p class="text-[.95rem]">{{$a.QuestionText}}</p>
+            {{if not $a.Correct}}
+            <p class="text-[.9rem] mt-1" style="color:var(--dim)">
+              Верно: <span style="color:var(--right)">{{index $a.Options $a.CorrectOption}}</span>
+            </p>
+            {{end}}
+          </div>
+        </div>
+        {{end}}
+      </div>
+    </details>
+
+  </section>
+</div>
+{{end}}

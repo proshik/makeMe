@@ -1,0 +1,35 @@
+{{/* Вопрос теста. Уровень намеренно не показан: он меняется адаптивно после
+     каждого ответа, и его демонстрация превратила бы тест в игру с системой. */}}
+{{define "assess_slot"}}
+<div id="assess">
+  <section class="panel p-7">
+
+    <div class="flex items-center justify-between mb-7 gap-4 flex-wrap">
+      <span class="font-mono text-xs" style="color:var(--dim)">{{.Phase}}</span>
+      <div class="flex items-baseline gap-3">
+        <span class="font-mono text-xs" style="color:var(--dim)">вопрос</span>
+        <span class="flap-row">
+          {{range digits .Number 2}}<span class="flap flap-amber text-xl">{{.}}</span>{{end}}
+        </span>
+        <span class="font-mono text-xs" style="color:var(--dim)">из {{.Total}}</span>
+      </div>
+    </div>
+
+    <p class="font-display text-3xl leading-snug mb-8" style="font-weight:400">{{.Question.Text}}</p>
+
+    <form hx-post="/assess/answer" hx-target="#assess" hx-swap="outerHTML">
+      <div class="grid gap-[3px] mb-7">
+        {{range $i, $opt := .Question.Options}}
+        <button type="submit" name="option" value="{{$i}}" class="opt">
+          <span class="lamp"></span>
+          <span class="key">{{inc $i}}</span>
+          <span class="val">{{$opt}}</span>
+        </button>
+        {{end}}
+      </div>
+      <button type="submit" name="skip" value="1" class="btn btn-ghost">Не знаю</button>
+    </form>
+
+  </section>
+</div>
+{{end}}

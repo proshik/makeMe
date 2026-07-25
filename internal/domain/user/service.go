@@ -33,6 +33,16 @@ func (s *Service) GetByTelegramID(ctx context.Context, telegramID int64) (*User,
 	return u, nil
 }
 
+// GetByID resolves a user by our own primary key. The web session carries this
+// id in its JWT, unlike the bot which always starts from a telegram_id.
+func (s *Service) GetByID(ctx context.Context, id int64) (*User, error) {
+	u, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("get user by id: %w", err)
+	}
+	return u, nil
+}
+
 func (s *Service) UpdateLevel(ctx context.Context, userID int64, level Level) error {
 	if err := s.repo.UpdateLevel(ctx, userID, level); err != nil {
 		return fmt.Errorf("update user level: %w", err)

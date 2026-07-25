@@ -1,0 +1,67 @@
+{{/* Слот задания. Приезжает и первой отрисовкой страницы, и фрагментом
+     после «Дальше», поэтому шапка раунда живёт внутри него. */}}
+{{define "task_slot"}}
+<div id="slot">
+  <section class="panel p-7">
+
+    <div class="flex items-center justify-between mb-7 gap-4 flex-wrap">
+      <span class="font-mono text-xs" style="color:var(--dim)">
+        {{if eq .Task.Type "grammar"}}Грамматика{{else}}Словарь{{end}}
+      </span>
+      {{template "levelSteps" .Task.Level}}
+    </div>
+
+    <div class="flex items-baseline gap-3 mb-8">
+      <span class="font-mono text-xs" style="color:var(--dim)">задание</span>
+      <span class="flap-row">
+        {{range digits .Position 2}}<span class="flap flap-amber text-xl">{{.}}</span>{{end}}
+      </span>
+      <span class="font-mono text-xs" style="color:var(--dim)">из {{.Total}}</span>
+      <span class="font-mono text-xs ml-auto" style="color:var(--dim)">
+        раунд {{.Round}} из {{.MaxRounds}}
+      </span>
+    </div>
+
+    <p class="font-mono text-xs mb-4" style="color:var(--dim)">{{.Instruction}}</p>
+
+    {{if .Word}}
+      {{/* Словарная карточка: слово крупно, транскрипция под ним. */}}
+      <p class="font-display text-6xl leading-none mb-3" style="font-weight:500">{{.Word}}</p>
+      {{if .Transcript}}<p class="ipa text-2xl mb-8">{{.Transcript}}</p>{{else}}<div class="mb-8"></div>{{end}}
+    {{else}}
+      <p class="font-display text-3xl leading-snug mb-8" style="font-weight:400">{{.Task.Prompt}}</p>
+    {{end}}
+
+    <form hx-post="/tasks/{{.Task.ID}}/answer" hx-target="#slot" hx-swap="outerHTML">
+      {{if .Typing}}
+        <input class="field mb-3" type="text" name="answer" autocomplete="off"
+               autocapitalize="off" spellcheck="false" autofocus
+               placeholder="перевод" aria-label="{{.Instruction}}">
+        <p class="font-mono text-xs mb-7" style="color:var(--dim)">Регистр и «ё» не важны</p>
+        <div class="flex items-center gap-3 flex-wrap">
+          <button type="submit" class="btn">Проверить</button>
+          <button type="submit" name="skip" value="1" class="btn btn-ghost">Не знаю</button>
+          {{if .AudioURL}}<button type="button" class="btn btn-ghost"
+              data-action="play-audio" data-src="{{.AudioURL}}">Послушать</button>{{end}}
+        </div>
+      {{else}}
+        <div class="grid gap-[3px] mb-7">
+          {{range $i, $opt := .Task.Options}}
+          <button type="submit" name="answer" value="{{$opt}}" class="opt">
+            <span class="lamp"></span>
+            <span class="key">{{inc $i}}</span>
+            <span class="val">{{$opt}}</span>
+          </button>
+          {{end}}
+        </div>
+        <div class="flex items-center gap-3 flex-wrap">
+          <button type="submit" name="skip" value="1" class="btn btn-ghost">Не знаю</button>
+          {{if .AudioURL}}<button type="button" class="btn btn-ghost"
+              data-action="play-audio" data-src="{{.AudioURL}}">Послушать</button>{{end}}
+        </div>
+      {{end}}
+    </form>
+
+  </section>
+</div>
+{{end}}

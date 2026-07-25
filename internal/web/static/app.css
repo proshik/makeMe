@@ -1,0 +1,167 @@
+/* ── Дизайн-система «Табло» ─────────────────────────────────────────────
+   Утверждённый макет: design-concepts/tablo.html.
+
+   Правила, которые нельзя нарушать:
+   — никаких border-radius, теней и градиентов;
+   — никаких эмодзи в интерфейсе (в Telegram-боте они остаются, там нет CSS);
+   — русская микротипографика: «ёлочки», длинное тире, &nbsp; перед короткими словами;
+   — состояние передаётся цветом, весом и плашкой, а не иконкой.
+
+   Янтарь здесь — цвет механической индикации, а не неоновый акцент: работает
+   фактура перекидных створок, а не свечение. */
+
+:root, [data-theme="dark"] {
+  --board:  #15181B;
+  --cell:   #21262B;
+  --cell-2: #2A3036;
+  --seam:   #0B0D0F;
+  --chalk:  #ECE9E2;
+  --dim:    #8A9199;
+  --amber:  #E8A317;
+  --right:  #46B37A;
+  --wrong:  #E0554A;
+  --rule:   #333A41;
+}
+
+[data-theme="light"] {
+  --board:  #CFCCC3;
+  --cell:   #E4E1D8;
+  --cell-2: #F0EDE5;
+  --seam:   #A8A49A;
+  --chalk:  #16191C;
+  --dim:    #62676D;
+  --amber:  #A66F00;
+  --right:  #1C7A4C;
+  --wrong:  #B32D20;
+  --rule:   #B4B0A6;
+}
+
+body {
+  background: var(--board);
+  color: var(--chalk);
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+/* ── Подпись системы: перекидная створка ──────────────────────────────
+   Каждая ячейка разрезана горизонтальным швом по центру. Шов — сплошная
+   полоса в 1px, не градиент. */
+.flap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--cell);
+  color: var(--chalk);
+  font-family: 'Oswald', sans-serif;
+  font-variant-numeric: tabular-nums;
+  padding: .18em .34em;
+  min-width: 1.1em;
+  overflow: hidden;
+}
+.flap::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 50%;
+  height: 1px;
+  background: var(--seam);
+}
+.flap-amber { color: var(--amber); }
+.flap-row   { display: inline-flex; gap: 3px; }
+
+.ipa  { font-family: 'Charis SIL', serif; color: var(--dim); }
+.num  { font-variant-numeric: tabular-nums; }
+.rule { border-top: 1px solid var(--rule); }
+.panel { background: var(--board); border: 1px solid var(--rule); }
+
+/* ── Варианты ответа — планки табло с индикаторной колонкой слева ────── */
+.opt {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  text-align: left;
+  background: var(--cell);
+  color: inherit;
+  border: 0;
+  transition: background .12s;
+}
+.opt:hover { background: var(--cell-2); }
+.opt:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+.opt .lamp { width: 8px; background: var(--seam); flex: none; }
+.opt .val  { padding: .95rem 1.1rem; font-size: 1.05rem; }
+.opt .key  {
+  padding: .95rem 0 .95rem 1.1rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .78rem;
+  color: var(--dim);
+}
+.opt[data-state="right"]      { background: var(--cell-2); }
+.opt[data-state="right"] .lamp { background: var(--right); }
+.opt[data-state="right"] .val  { color: var(--right); font-weight: 600; }
+.opt[data-state="wrong"] .lamp { background: var(--wrong); }
+.opt[data-state="wrong"] .val  { color: var(--wrong); }
+.opt[data-state="muted"]       { opacity: .4; }
+
+/* Мгновенная реакция на клик до ответа сервера — иначе ощущается залипание. */
+.opt[aria-pressed="true"] { background: var(--cell-2); }
+.opt[aria-pressed="true"] .lamp { background: var(--amber); }
+
+.field {
+  width: 100%;
+  background: var(--cell);
+  border: 0;
+  border-bottom: 2px solid var(--amber);
+  padding: .7rem .9rem;
+  font-size: 1.5rem;
+  font-family: 'Oswald', sans-serif;
+  color: var(--chalk);
+}
+.field:focus { outline: none; background: var(--cell-2); }
+.field::placeholder { color: var(--dim); }
+
+.btn {
+  padding: .75rem 1.5rem;
+  border: 1px solid var(--amber);
+  background: var(--amber);
+  color: #15181B;
+  font-family: 'Oswald', sans-serif;
+  font-size: 1rem;
+  letter-spacing: .01em;
+  cursor: pointer;
+}
+.btn:hover { background: transparent; color: var(--amber); }
+.btn:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px; }
+.btn-ghost {
+  background: transparent;
+  color: var(--dim);
+  border-color: var(--rule);
+}
+.btn-ghost:hover { background: var(--cell-2); color: var(--chalk); border-color: var(--dim); }
+
+/* ── Шкала уровня — ряд створок, горящая = достигнутый уровень ───────── */
+.steps { display: inline-flex; gap: 3px; }
+.steps span {
+  width: 26px; height: 26px;
+  background: var(--cell);
+  position: relative;
+  font-family: 'Oswald', sans-serif;
+  font-size: .72rem;
+  color: var(--dim);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.steps span::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 50%;
+  height: 1px;
+  background: var(--seam);
+}
+.steps span[data-on="1"] { background: var(--amber); color: #15181B; }
+
+/* Ссылки в тексте — подчёркивание, а не цвет: цвет здесь занят семантикой. */
+a { color: inherit; text-underline-offset: 4px; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}

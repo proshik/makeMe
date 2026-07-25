@@ -1,0 +1,43 @@
+{{define "tasks.html"}}<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+{{template "head" "Задания"}}
+</head>
+<body>
+{{template "nav"}}
+
+<main class="max-w-[860px] mx-auto px-6 pb-16">
+
+  {{if .NeedsLevel}}
+    <section class="panel p-7">
+      <h1 class="font-display text-3xl font-semibold mb-4">Сначала — тест на уровень</h1>
+      <p class="text-base mb-7" style="color:var(--dim)">
+        Задания подбираются под ваш уровень, поэтому начать нужно с теста.
+        Тридцать вопросов: пятнадцать на словарный запас, пятнадцать на грамматику.
+      </p>
+      <a href="/assess" class="btn inline-block no-underline">Пройти тест</a>
+    </section>
+
+  {{else if .LimitHit}}
+    <section class="panel p-7">
+      <h1 class="font-display text-3xl font-semibold mb-4">Раунды на сегодня закончились</h1>
+      <p class="text-base mb-7" style="color:var(--dim)">
+        В день доступно {{.MaxRounds}} раундов по десять заданий. Новые появятся завтра —
+        а пока можно учить слова, это не расходует раунды.
+      </p>
+      <div class="flex gap-3 flex-wrap">
+        <a href="/words" class="btn no-underline">Учить слова</a>
+        <a href="/learn" class="btn btn-ghost no-underline">Грамматика</a>
+      </div>
+    </section>
+
+  {{else if .Done}}
+    {{template "task_done" .Done}}
+
+  {{else if .Slot}}
+    {{template "task_slot" .Slot}}
+  {{end}}
+
+</main>
+</body>
+</html>{{end}}
