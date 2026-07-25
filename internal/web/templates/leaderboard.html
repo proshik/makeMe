@@ -1,0 +1,77 @@
+{{define "leaderboard.html"}}<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+{{template "head" "Рейтинг"}}
+</head>
+<body>
+{{template "nav"}}
+
+<main class="max-w-[860px] mx-auto px-6 pb-16">
+
+  {{if not .Groups}}
+    <section class="panel p-7">
+      <h1 class="font-display text-3xl font-semibold mb-4">Пока не с кем соревноваться</h1>
+      <p class="text-base mb-7" style="color:var(--dim)">
+        Рейтинг считается внутри группы. Создайте свою или вступите по коду —
+        баллы за задания начнут попадать в общую таблицу.
+      </p>
+      <a href="/groups" class="btn inline-block no-underline">К группам</a>
+    </section>
+
+  {{else}}
+    <section class="panel p-7">
+
+      <div class="flex items-baseline justify-between gap-6 mb-8 flex-wrap">
+        <h1 class="font-display text-2xl font-semibold">{{.Group.Name}}</h1>
+        <div class="flex gap-1">
+          <a href="/leaderboard?group={{.Group.ID}}&period=day"
+             class="btn {{if ne .Period "day"}}btn-ghost{{end}} no-underline"
+             style="padding:.4rem 1rem; font-size:.9rem">Сегодня</a>
+          <a href="/leaderboard?group={{.Group.ID}}&period=month"
+             class="btn {{if ne .Period "month"}}btn-ghost{{end}} no-underline"
+             style="padding:.4rem 1rem; font-size:.9rem">Месяц</a>
+        </div>
+      </div>
+
+      {{if gt (len .Groups) 1}}
+      <div class="flex gap-2 mb-8 flex-wrap">
+        {{range .Groups}}
+        <a href="/leaderboard?group={{.ID}}&period={{$.Period}}"
+           class="font-mono text-xs no-underline px-3 py-2"
+           style="background:{{if eq .ID $.Group.ID}}var(--cell-2){{else}}var(--cell){{end}}">{{.Name}}</a>
+        {{end}}
+      </div>
+      {{end}}
+
+      {{if .Entries}}
+      <div style="border-top:1px solid var(--rule)">
+        {{range .Entries}}
+        <div class="flex items-center gap-5 py-4"
+             style="border-bottom:1px solid var(--rule)">
+          <span class="flap {{if le .Rank 3}}flap-amber{{end}} text-2xl">{{.Rank}}</span>
+          <span class="flex-1 font-display text-xl" style="font-weight:500">
+            {{.FirstName}}{{if eq .UserID $.MeID}} <span class="font-mono text-xs" style="color:var(--dim)">— вы</span>{{end}}
+          </span>
+          <span class="flap-row">
+            {{range chars (score1 .Normalized)}}<span class="flap text-2xl">{{.}}</span>{{end}}
+          </span>
+        </div>
+        {{end}}
+      </div>
+      <p class="font-mono text-xs mt-6" style="color:var(--dim)">
+        Баллы нормированы по уровню задания — A1&nbsp;×&nbsp;0,6 … C2&nbsp;×&nbsp;1,5,
+        чтобы игроки разных уровней соревновались честно.
+      </p>
+      {{else}}
+      <p class="text-base" style="color:var(--dim)">
+        {{if eq .Period "day"}}Сегодня в группе ещё никто не занимался.{{else}}В этом месяце в группе ещё нет результатов.{{end}}
+        <a href="/tasks">Начните первым.</a>
+      </p>
+      {{end}}
+
+    </section>
+  {{end}}
+
+</main>
+</body>
+</html>{{end}}

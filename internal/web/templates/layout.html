@@ -15,14 +15,12 @@
 {{define "nav"}}
 <header class="max-w-[860px] mx-auto px-6 pt-8 pb-6 flex items-baseline justify-between gap-6">
   <a href="/" class="font-display text-2xl font-semibold no-underline">makeMe</a>
-  {{/* Пункты без ссылки — разделы, которых в вебе ещё нет. Показывать их
-       ссылками значило бы обещать то, чего нет, и уводить в 404. */}}
   <nav class="flex items-baseline gap-5 text-sm flex-wrap">
     <a href="/tasks">Задания</a>
     <a href="/words">Слова</a>
     <a href="/learn">Грамматика</a>
-    <span title="Пока только в Telegram-боте" style="color:var(--dim)">Рейтинг</span>
-    <span title="Пока только в Telegram-боте" style="color:var(--dim)">Профиль</span>
+    <a href="/leaderboard">Рейтинг</a>
+    <a href="/profile">Профиль</a>
     <button type="button" data-action="toggle-theme" class="text-sm underline">Тема</button>
     <a href="/logout">Выйти</a>
   </nav>

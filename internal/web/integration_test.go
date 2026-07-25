@@ -854,3 +854,132 @@ func TestLearnExplanationOnlyOnWrongAnswer(t *testing.T) {
 	require.Contains(t, wrong, snippet, "a wrong answer must be explained")
 	require.NotContains(t, right, snippet, "a correct answer must not repeat the theory")
 }
+
+// --- leaderboard, profile, groups ----------------------------------------
+
+func TestProfileShowsVocabularyAndStreak(t *testing.T) {
+	env := setupDBEnv(t)
+	_, cookie := env.signedIn(t, 500, user.B1)
+
+	rr := env.get(t, "/profile", cookie)
+	require.Equal(t, http.StatusOK, rr.Code)
+	body := rr.Body.String()
+
+	require.Contains(t, body, "В интервальных повторениях")
+	require.Contains(t, body, "Усвоено в разделе «Слова»")
+	require.Contains(t, body, "дней подряд")
+	// A zero streak needs explaining, or it reads as the app losing history.
+	require.Contains(t, body, "Серия считает и сегодняшний день")
+}
+
+func TestLeaderboardWithoutGroupsInvitesToCreateOne(t *testing.T) {
+	env := setupDBEnv(t)
+	_, cookie := env.signedIn(t, 501, user.A1)
+
+	rr := env.get(t, "/leaderboard", cookie)
+	require.Equal(t, http.StatusOK, rr.Code)
+	require.Contains(t, rr.Body.String(), "Пока не с кем соревноваться")
+	require.Contains(t, rr.Body.String(), "/groups")
+}
+
+func TestGroupCreateAndJoinByCode(t *testing.T) {
+	env := setupDBEnv(t)
+	_, ownerCookie := env.signedIn(t, 502, user.A1)
+	_, joinerCookie := env.signedIn(t, 503, user.A1)
+
+	created := env.postForm(t, "/groups/create",
+		url.Values{"name": {"English Club"}}.Encode(), ownerCookie)
+	require.Equal(t, http.StatusOK, created.Code)
+	require.Contains(t, created.Body.String(), "English Club")
+
+	code := inviteCodeFrom(t, created.Body.String())
+
+	joined := env.postForm(t, "/groups/join",
+		url.Values{"code": {code}}.Encode(), joinerCookie)
+	require.Equal(t, http.StatusOK, joined.Code)
+	require.Contains(t, joined.Body.String(), "вступили в группу")
+
+	// Joining twice is a mistake, not a failure — say so plainly.
+	again := env.postForm(t, "/groups/join",
+		url.Values{"code": {code}}.Encode(), joinerCookie)
+	require.Contains(t, again.Body.String(), "уже состоите")
+}
+
+// A wrong code and a nonexistent group look identical to the user: telling
+// them apart would let someone probe which codes exist.
+func TestGroupJoinWithBadCodeSaysNotFound(t *testing.T) {
+	env := setupDBEnv(t)
+	_, cookie := env.signedIn(t, 504, user.A1)
+
+	rr := env.postForm(t, "/groups/join", url.Values{"code": {"deadbeef"}}.Encode(), cookie)
+	require.Equal(t, http.StatusOK, rr.Code)
+	require.Contains(t, rr.Body.String(), "не найдена")
+}
+
+func TestGroupCreateRejectsEmptyName(t *testing.T) {
+	env := setupDBEnv(t)
+	_, cookie := env.signedIn(t, 505, user.A1)
+
+	rr := env.postForm(t, "/groups/create", url.Values{"name": {"   "}}.Encode(), cookie)
+	require.Contains(t, rr.Body.String(), "Введите название")
+}
+
+// Passing another group's id must not expose its standings.
+func TestLeaderboardIgnoresGroupTheUserIsNotIn(t *testing.T) {
+	env := setupDBEnv(t)
+	_, ownerCookie := env.signedIn(t, 506, user.A1)
+	outsider, outsiderCookie := env.signedIn(t, 507, user.A1)
+	ctx := context.Background()
+
+	env.postForm(t, "/groups/create", url.Values{"name": {"Private"}}.Encode(), ownerCookie)
+	env.postForm(t, "/groups/create", url.Values{"name": {"Outsider Own"}}.Encode(), outsiderCookie)
+
+	var privateID int64
+	require.NoError(t, env.pool.QueryRow(ctx,
+		`SELECT id FROM groups WHERE name = 'Private'`).Scan(&privateID))
+
+	rr := env.get(t, "/leaderboard?group="+strconv.FormatInt(privateID, 10), outsiderCookie)
+	require.Equal(t, http.StatusOK, rr.Code)
+	require.Contains(t, rr.Body.String(), "Outsider Own",
+		"an id the user is not a member of must fall back to their own group")
+	require.NotContains(t, rr.Body.String(), "Private")
+	_ = outsider
+}
+
+func TestLeaderboardRanksAnsweredTasks(t *testing.T) {
+	env := setupDBEnv(t)
+	u, cookie := env.signedIn(t, 508, user.A1)
+	ctx := context.Background()
+
+	// Answer a full round so there is something to rank.
+	body := env.get(t, "/tasks", cookie).Body.String()
+	for i := 0; i < 10; i++ {
+		if !strings.Contains(body, `hx-post="/tasks/`) {
+			break
+		}
+		id := currentTaskID(t, body)
+		tk, err := env.taskSvc.GetTaskByID(ctx, taskIDFrom(t, id))
+		require.NoError(t, err)
+		env.postForm(t, "/tasks/"+id+"/answer", answerForm(tk.Answer), cookie)
+		body = env.get(t, "/tasks/next", cookie).Body.String()
+	}
+
+	rr := env.get(t, "/leaderboard", cookie)
+	require.Equal(t, http.StatusOK, rr.Code)
+	require.Contains(t, rr.Body.String(), "— вы", "the user must be marked in their own standings")
+
+	var raw int
+	require.NoError(t, env.pool.QueryRow(ctx,
+		`SELECT coalesce(sum(raw),0) FROM scores WHERE user_id = $1 AND period = 'day'`,
+		u.ID).Scan(&raw))
+	require.Greater(t, raw, 0)
+}
+
+func inviteCodeFrom(t *testing.T, body string) string {
+	t.Helper()
+	const marker = `Инвайт-код: <span class="font-mono text-lg">`
+	i := strings.Index(body, marker)
+	require.GreaterOrEqual(t, i, 0, "no invite code in the response")
+	rest := body[i+len(marker):]
+	return rest[:strings.Index(rest, "<")]
+}

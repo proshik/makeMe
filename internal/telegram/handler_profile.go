@@ -9,6 +9,8 @@ import (
 
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
+
+	"makeMe/internal/domain/scoring"
 )
 
 func (b *Bot) handleProfile(ctx context.Context, tgBot *bot.Bot, update *models.Update) {
@@ -71,7 +73,7 @@ func (b *Bot) handleProfile(ctx context.Context, tgBot *bot.Bot, update *models.
 		}
 	}
 
-	streak := calcStreak(scoreDays)
+	streak := scoring.Streak(scoreDays, time.Now())
 
 	slog.Info("profile viewed", "user_id", u.ID, "level", u.Level, "streak", streak, "monthly_score", monthlyScore, "learned_words", learnedWords, "in_progress_words", inProgressWords, "learned_via_words", learnedViaWords)
 
@@ -123,17 +125,3 @@ func (b *Bot) handleProfile(ctx context.Context, tgBot *bot.Bot, update *models.
 }
 
 // calcStreak counts consecutive days up to and including today where the user has scores.
-func calcStreak(days []string) int {
-	set := make(map[string]bool, len(days))
-	for _, d := range days {
-		set[d] = true
-	}
-	streak := 0
-	for d := time.Now(); ; d = d.AddDate(0, 0, -1) {
-		if !set[d.Format("2006-01-02")] {
-			break
-		}
-		streak++
-	}
-	return streak
-}

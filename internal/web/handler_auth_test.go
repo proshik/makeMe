@@ -558,24 +558,6 @@ func TestUnknownURLRendersStyled404(t *testing.T) {
 	}
 }
 
-// The menu must not link to sections that do not exist yet — promising them
-// and dropping the user on a 404 is worse than not showing a link.
-func TestNavDoesNotLinkToUnbuiltSections(t *testing.T) {
-	env := newTestEnv(t, 777, "Алиса", "alice")
-
-	u, _ := env.repo.Create(context.Background(), 777, "alice", "Алиса")
-	token, _ := env.jwt.Create(u.ID)
-	req := httptest.NewRequest(http.MethodGet, "/", nil)
-	req.AddCookie(&http.Cookie{Name: authCookie, Value: token})
-
-	body := env.do(t, req).Body.String()
-	for _, path := range []string{`href="/leaderboard"`, `href="/profile"`} {
-		if strings.Contains(body, path) {
-			t.Errorf("nav links to %s, which is not implemented in the web UI", path)
-		}
-	}
-}
-
 // Russian plurals: "1 вопросов" reads as broken software, and the counts on
 // the grammar index are user-facing.
 func TestPluralHelperPicksRussianForms(t *testing.T) {

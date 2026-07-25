@@ -1,0 +1,84 @@
+{{define "groups.html"}}<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+{{template "head" "Группы"}}
+</head>
+<body>
+{{template "nav"}}
+
+<main class="max-w-[860px] mx-auto px-6 pb-16">
+
+  {{if .Error}}
+  <div class="flex items-stretch mb-8" style="background:var(--cell)">
+    <span style="width:8px; flex:none; background:var(--wrong)"></span>
+    <p class="px-5 py-4 text-base">{{.Error}}</p>
+  </div>
+  {{end}}
+
+  {{if .Created}}
+  <div class="flex items-stretch mb-8" style="background:var(--cell)">
+    <span style="width:8px; flex:none; background:var(--right)"></span>
+    <div class="px-5 py-4">
+      <p class="text-base mb-2">Группа «{{.Created.Name}}» создана.</p>
+      <p class="text-base">Инвайт-код: <span class="font-mono text-lg">{{.Created.InviteCode}}</span> — отправьте его тем, кого зовёте.</p>
+    </div>
+  </div>
+  {{end}}
+
+  {{if .Joined}}
+  <div class="flex items-stretch mb-8" style="background:var(--cell)">
+    <span style="width:8px; flex:none; background:var(--right)"></span>
+    <p class="px-5 py-4 text-base">Вы вступили в группу «{{.Joined.Name}}».</p>
+  </div>
+  {{end}}
+
+  <section class="panel p-7 mb-8">
+    <h1 class="font-display text-2xl font-semibold mb-6">Ваши группы</h1>
+    {{if .Groups}}
+      <div style="border-top:1px solid var(--rule)">
+        {{range .Groups}}
+        <div class="flex items-center gap-5 py-4 flex-wrap" style="border-bottom:1px solid var(--rule)">
+          <span class="flex-1 text-lg" style="min-width:12ch">{{.Name}}</span>
+          <span class="font-mono text-sm" style="color:var(--dim)">{{.InviteCode}}</span>
+          <a href="/leaderboard?group={{.ID}}" class="font-mono text-xs">рейтинг</a>
+        </div>
+        {{end}}
+      </div>
+    {{else}}
+      <p class="text-base" style="color:var(--dim)">
+        Групп пока нет. Соло-группа появится сама при первом заходе в задания —
+        она нужна, чтобы баллам было куда попадать.
+      </p>
+    {{end}}
+  </section>
+
+  <div class="grid gap-8" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr))">
+    <section class="panel p-7">
+      <h2 class="font-display text-xl font-semibold mb-3">Создать группу</h2>
+      <p class="text-sm mb-6" style="color:var(--dim)">
+        Вы получите инвайт-код, по которому в группу вступают остальные.
+      </p>
+      <form method="post" action="/groups/create">
+        <input class="field mb-5" type="text" name="name" maxlength="60"
+               placeholder="Название" aria-label="Название группы" required>
+        <button type="submit" class="btn">Создать</button>
+      </form>
+    </section>
+
+    <section class="panel p-7">
+      <h2 class="font-display text-xl font-semibold mb-3">Вступить по коду</h2>
+      <p class="text-sm mb-6" style="color:var(--dim)">
+        Код даёт тот, кто создал группу.
+      </p>
+      <form method="post" action="/groups/join">
+        <input class="field mb-5" type="text" name="code" autocomplete="off"
+               autocapitalize="off" spellcheck="false"
+               placeholder="Инвайт-код" aria-label="Инвайт-код" required>
+        <button type="submit" class="btn">Вступить</button>
+      </form>
+    </section>
+  </div>
+
+</main>
+</body>
+</html>{{end}}

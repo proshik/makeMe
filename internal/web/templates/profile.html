@@ -1,0 +1,99 @@
+{{define "profile.html"}}<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+{{template "head" "Профиль"}}
+</head>
+<body>
+{{template "nav"}}
+
+<main class="max-w-[860px] mx-auto px-6 pb-16">
+
+  <section class="panel p-7 mb-8">
+    <div class="flex items-start justify-between gap-6 mb-8 flex-wrap">
+      <div>
+        <h1 class="font-display text-4xl font-semibold">{{.User.FirstName}}</h1>
+        {{if .User.Username}}<p class="font-mono text-xs mt-2" style="color:var(--dim)">@{{.User.Username}}</p>{{end}}
+      </div>
+      {{template "levelSteps" .User.Level}}
+    </div>
+
+    <div class="rule pt-6 flex gap-10 flex-wrap">
+      <div>
+        <p class="font-mono text-xs mb-2" style="color:var(--dim)">баллов за месяц</p>
+        <span class="flap-row">
+          {{range digits (round .MonthlyScore) 3}}<span class="flap flap-amber text-3xl">{{.}}</span>{{end}}
+        </span>
+      </div>
+      <div>
+        <p class="font-mono text-xs mb-2" style="color:var(--dim)">дней подряд</p>
+        <span class="flap-row">
+          {{range digits .Streak 2}}<span class="flap {{if gt $.Streak 0}}flap-amber{{end}} text-3xl">{{.}}</span>{{end}}
+        </span>
+      </div>
+    </div>
+    {{if eq .Streak 0}}
+    <p class="font-mono text-xs mt-4" style="color:var(--dim)">
+      Серия считает и сегодняшний день — она начнётся, как только выполните задание.
+    </p>
+    {{end}}
+  </section>
+
+  <section class="panel p-7 mb-8">
+    <h2 class="font-display text-2xl font-semibold mb-6">Слова</h2>
+    <div class="grid gap-3" style="border-top:1px solid var(--rule)">
+      <div class="flex items-baseline gap-4 pt-4">
+        <span class="flex-1">В интервальных повторениях</span>
+        <span class="font-display text-xl num">{{.InSpacedRepetition}}</span>
+      </div>
+      <div class="flex items-baseline gap-4">
+        <span class="flex-1">Усвоено в разделе «Слова»</span>
+        <span class="font-display text-xl num">{{.LearnedViaWords}}</span>
+      </div>
+      <div class="flex items-baseline gap-4">
+        <span class="flex-1">В работе</span>
+        <span class="font-display text-xl num">{{.InProgress}}</span>
+      </div>
+    </div>
+
+    {{if .ByLevel}}
+    <div class="rule pt-6 mt-7">
+      <p class="font-mono text-xs mb-4" style="color:var(--dim)">по уровням</p>
+      <div class="grid gap-2">
+        {{range .ByLevel}}
+        <div class="flex items-center gap-4">
+          <span class="font-mono text-xs" style="width:2.5em; color:var(--dim)">{{.Level}}</span>
+          <div class="flex-1" style="height:6px; background:var(--cell)">
+            <div style="height:6px; width:{{percent .Learned .Total}}%; background:var(--amber)"></div>
+          </div>
+          <span class="font-mono text-xs num" style="color:var(--dim)">{{.Learned}} / {{.Total}}</span>
+        </div>
+        {{end}}
+      </div>
+    </div>
+    {{end}}
+  </section>
+
+  <section class="panel p-7">
+    <div class="flex items-baseline justify-between gap-4 mb-6 flex-wrap">
+      <h2 class="font-display text-2xl font-semibold">Группы</h2>
+      <a href="/groups" class="text-sm">Управление</a>
+    </div>
+    {{if .Groups}}
+      <div style="border-top:1px solid var(--rule)">
+        {{range .Groups}}
+        <div class="flex items-center gap-4 py-3" style="border-bottom:1px solid var(--rule)">
+          <span class="flex-1">{{.Name}}</span>
+          <a href="/leaderboard?group={{.ID}}" class="font-mono text-xs">рейтинг</a>
+        </div>
+        {{end}}
+      </div>
+    {{else}}
+      <p class="text-base" style="color:var(--dim)">
+        Групп пока нет. Соло-группа создаётся сама при первом заходе в задания.
+      </p>
+    {{end}}
+  </section>
+
+</main>
+</body>
+</html>{{end}}

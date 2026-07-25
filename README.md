@@ -333,6 +333,10 @@ The web UI is optional: with `APP_BASE_URL`, `TELEGRAM_CLIENT_ID`, `TELEGRAM_CLI
 | `GET /learn/practice?name=…&seed=…&i=…` | One question of a run. The run keeps no server-side state: seed plus index reproduce the same sample, so a refresh does not lose the user's place. |
 | `POST /learn/answer` | Checks the answer and returns the feedback fragment. The rule is shown only when the answer was wrong — after a correct one it is noise. |
 
+| `GET /leaderboard` | Group standings, day or month. `?group=` is honoured only for groups the user belongs to — any other id falls back to their own, so an id cannot expose another group's standings. |
+| `GET /profile` | Level, monthly score, streak, vocabulary split by how each word got there, per-CEFR-level progress, group list. |
+| `GET /groups`, `POST /groups/create`, `POST /groups/join` | Create a group (returns an invite code) or join by code. A wrong code and a missing group give the same message, so codes cannot be probed. |
+
 Topic names travel as query values rather than path segments: categories like `can/can't` carry slashes, which a path segment would mangle.
 
 `/learn` and `/words` write no score rows — not contributing to the leaderboard is its one behavioural difference from `/tasks`, and a test guards it.

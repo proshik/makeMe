@@ -139,6 +139,12 @@ func (s *Server) Mount(r chi.Router) {
 		priv.Get("/learn/practice", s.handleLearnPractice)
 		priv.Get("/learn/next", s.handleLearnNext)
 		priv.Post("/learn/answer", s.handleLearnAnswer)
+
+		priv.Get("/leaderboard", s.handleLeaderboard)
+		priv.Get("/profile", s.handleProfile)
+		priv.Get("/groups", s.handleGroups)
+		priv.Post("/groups/create", s.handleGroupCreate)
+		priv.Post("/groups/join", s.handleGroupJoin)
 	})
 }
 
@@ -233,6 +239,12 @@ func templateFuncs(staticVersion string) template.FuncMap {
 				return many
 			}
 		},
+		// score1 formats a normalised score the way the board shows it: one
+		// decimal, comma as the separator, since the interface is Russian.
+		"score1": func(v float64) string {
+			return strings.Replace(strconv.FormatFloat(v, 'f', 1, 64), ".", ",", 1)
+		},
+		"round": func(v float64) int { return int(v + 0.5) },
 		"percent": func(part, total int) int {
 			if total <= 0 {
 				return 0
