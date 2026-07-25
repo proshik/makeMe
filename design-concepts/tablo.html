@@ -27,32 +27,41 @@ tailwind.config = {
   /* ── Токены ────────────────────────────────────────────────────────────
      Тёмная база с янтарём — но это цвет механической индикации, а не
      неоновый акцент: спасает фактура перекидных створок, не свечение. */
+  /* Слои идут в обе стороны от фона страницы: в тёмной теме карточка светлее
+     фона, в светлой — наоборот. Изначально --board был и фоном страницы, и
+     фоном панели, из-за чего в светлой теме карточка сливалась со страницей. */
   :root, [data-theme="dark"] {
-    --board:  #15181B;
-    --cell:   #21262B;
-    --cell-2: #2A3036;
-    --seam:   #0B0D0F;
-    --chalk:  #ECE9E2;
-    --dim:    #8A9199;
-    --amber:  #E8A317;
-    --right:  #46B37A;
-    --wrong:  #E0554A;
-    --rule:   #333A41;
+    --page:     #121417;
+    --panel:    #191D21;
+    --cell:     #232A30;
+    --cell-2:   #2D353C;
+    --seam:     #0A0C0E;
+    --chalk:    #ECE9E2;
+    --dim:      #8A9199;
+    --amber:    #E8A317;
+    --amber-ink:#E8A317;
+    --btn-ink:  #15181B;
+    --right:    #46B37A;
+    --wrong:    #E0554A;
+    --rule:     #333A41;
   }
   [data-theme="light"] {
-    --board:  #CFCCC3;
-    --cell:   #E4E1D8;
-    --cell-2: #F0EDE5;
-    --seam:   #A8A49A;
-    --chalk:  #16191C;
-    --dim:    #62676D;
-    --amber:  #A66F00;
-    --right:  #1C7A4C;
-    --wrong:  #B32D20;
-    --rule:   #B4B0A6;
+    --page:     #C9C7C1;
+    --panel:    #F4F2ED;
+    --cell:     #E5E1D6;
+    --cell-2:   #D8D3C5;
+    --seam:     #8F8878;
+    --chalk:    #14171A;
+    --dim:      #585D64;
+    --amber:    #D9901A;
+    --amber-ink:#8A5600;
+    --btn-ink:  #1A1206;
+    --right:    #16653F;
+    --wrong:    #A32619;
+    --rule:     #A9A69D;
   }
 
-  body { background: var(--board); color: var(--chalk); font-family: 'IBM Plex Sans', sans-serif; }
+  body { background: var(--page); color: var(--chalk); font-family: 'IBM Plex Sans', sans-serif; }
 
   /* ── Подпись направления: перекидная створка ──────────────────────────
      Каждая ячейка разрезана горизонтальным швом по центру — так выглядит
@@ -67,7 +76,7 @@ tailwind.config = {
     content: ""; position: absolute; left: 0; right: 0; top: 50%;
     height: 1px; background: var(--seam);
   }
-  .flap-amber { color: var(--amber); }
+  .flap-amber { color: var(--amber-ink); }
   .flap-row { display: inline-flex; gap: 3px; }
 
   .ipa { font-family: 'Charis SIL', serif; color: var(--dim); }
@@ -101,7 +110,7 @@ tailwind.config = {
   .field::placeholder { color: var(--dim); }
 
   .btn {
-    padding: .75rem 1.5rem; border: 1px solid var(--amber); background: var(--amber); color: #15181B;
+    padding: .75rem 1.5rem; border: 1px solid var(--amber); background: var(--amber); color: var(--btn-ink);
     font-family: 'Oswald', sans-serif; font-size: 1rem; letter-spacing: .01em;
   }
   .btn:hover { background: transparent; color: var(--amber); }
@@ -109,7 +118,7 @@ tailwind.config = {
   .btn-ghost:hover { background: var(--cell-2); color: var(--chalk); border-color: var(--dim); }
 
   .screen-label { font-family: 'IBM Plex Mono', monospace; font-size: .72rem; color: var(--dim); text-transform: uppercase; }
-  .panel { background: var(--board); border: 1px solid var(--rule); }
+  .panel { background: var(--panel); border: 1px solid var(--rule); }
 
   /* Шкала уровня — ряд створок, горящая = достигнутый уровень. */
   .steps { display: inline-flex; gap: 3px; }
@@ -119,7 +128,7 @@ tailwind.config = {
     display: inline-flex; align-items: center; justify-content: center;
   }
   .steps span::after { content:""; position:absolute; left:0; right:0; top:50%; height:1px; background:var(--seam); }
-  .steps span[data-on="1"] { background: var(--amber); color: #15181B; }
+  .steps span[data-on="1"] { background: var(--amber); color: var(--btn-ink); }
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 </head>

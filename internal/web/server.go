@@ -14,6 +14,7 @@ import (
 	"log/slog"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 
@@ -36,23 +37,25 @@ var staticFS embed.FS
 // same instance the Telegram bot uses — that shared state is what makes a
 // session started in the browser continue in the bot.
 type Deps struct {
-	UserSvc    *user.Service
-	GroupSvc   *group.Service
-	AssessSvc  *assessment.Service
-	WordsSvc   *words.Service
-	TaskSvc    *task.Service
-	ScoringSvc *scoring.Service
-	SRSRepo    srs.Repository
+	UserSvc     *user.Service
+	GroupSvc    *group.Service
+	AssessSvc   *assessment.Service
+	WordsSvc    *words.Service
+	GrammarRepo task.GrammarRepository
+	TaskSvc     *task.Service
+	ScoringSvc  *scoring.Service
+	SRSRepo     srs.Repository
 }
 
 type Server struct {
-	userSvc    *user.Service
-	groupSvc   *group.Service
-	assessSvc  *assessment.Service
-	wordsSvc   *words.Service
-	taskSvc    *task.Service
-	scoringSvc *scoring.Service
-	srsRepo    srs.Repository
+	userSvc     *user.Service
+	groupSvc    *group.Service
+	assessSvc   *assessment.Service
+	wordsSvc    *words.Service
+	grammarRepo task.GrammarRepository
+	taskSvc     *task.Service
+	scoringSvc  *scoring.Service
+	srsRepo     srs.Repository
 
 	jwt          *JWTService
 	oidc         *OIDCClient
@@ -76,6 +79,7 @@ func New(deps Deps, jwtSvc *JWTService, oidc *OIDCClient, cookieSecure bool) (*S
 		groupSvc:     deps.GroupSvc,
 		assessSvc:    deps.AssessSvc,
 		wordsSvc:     deps.WordsSvc,
+		grammarRepo:  deps.GrammarRepo,
 		taskSvc:      deps.TaskSvc,
 		scoringSvc:   deps.ScoringSvc,
 		srsRepo:      deps.SRSRepo,
@@ -129,6 +133,12 @@ func (s *Server) Mount(r chi.Router) {
 		priv.Post("/words/{id}/answer", s.handleWordsAnswer)
 		priv.Post("/words/{id}/know", s.handleWordsKnow)
 		priv.Post("/words/{id}/defer", s.handleWordsDefer)
+
+		priv.Get("/learn", s.handleLearn)
+		priv.Get("/learn/topic", s.handleLearnTopic)
+		priv.Get("/learn/practice", s.handleLearnPractice)
+		priv.Get("/learn/next", s.handleLearnNext)
+		priv.Post("/learn/answer", s.handleLearnAnswer)
 	})
 }
 
@@ -196,6 +206,32 @@ func templateFuncs(staticVersion string) template.FuncMap {
 				out[i] = i < done
 			}
 			return out
+		},
+		// paragraphs splits stored theory on blank lines so a rule keeps its
+		// structure instead of collapsing into one wall of text.
+		"paragraphs": func(text string) []string {
+			out := []string{}
+			for _, p := range strings.Split(strings.ReplaceAll(text, "\r\n", "\n"), "\n") {
+				if p = strings.TrimSpace(p); p != "" {
+					out = append(out, p)
+				}
+			}
+			return out
+		},
+		// plural picks the Russian form: 1 вопрос, 2 вопроса, 5 вопросов.
+		// Without it the interface says "1 вопросов", which reads as broken.
+		"plural": func(n int, one, few, many string) string {
+			if mod100 := n % 100; mod100 >= 11 && mod100 <= 14 {
+				return many
+			}
+			switch n % 10 {
+			case 1:
+				return one
+			case 2, 3, 4:
+				return few
+			default:
+				return many
+			}
 		},
 		"percent": func(part, total int) int {
 			if total <= 0 {

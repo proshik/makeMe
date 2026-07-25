@@ -569,9 +569,28 @@ func TestNavDoesNotLinkToUnbuiltSections(t *testing.T) {
 	req.AddCookie(&http.Cookie{Name: authCookie, Value: token})
 
 	body := env.do(t, req).Body.String()
-	for _, path := range []string{`href="/learn"`, `href="/leaderboard"`, `href="/profile"`} {
+	for _, path := range []string{`href="/leaderboard"`, `href="/profile"`} {
 		if strings.Contains(body, path) {
 			t.Errorf("nav links to %s, which is not implemented in the web UI", path)
+		}
+	}
+}
+
+// Russian plurals: "1 вопросов" reads as broken software, and the counts on
+// the grammar index are user-facing.
+func TestPluralHelperPicksRussianForms(t *testing.T) {
+	fn := templateFuncs("v")["plural"].(func(int, string, string, string) string)
+
+	cases := map[int]string{
+		1: "вопрос", 2: "вопроса", 4: "вопроса", 5: "вопросов",
+		11: "вопросов", 12: "вопросов", 14: "вопросов",
+		21: "вопрос", 22: "вопроса", 25: "вопросов",
+		101: "вопрос", 111: "вопросов",
+		0: "вопросов",
+	}
+	for n, want := range cases {
+		if got := fn(n, "вопрос", "вопроса", "вопросов"); got != want {
+			t.Errorf("plural(%d) = %q, want %q", n, got, want)
 		}
 	}
 }

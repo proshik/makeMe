@@ -1,0 +1,47 @@
+{{define "learn.html"}}<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+{{template "head" "Грамматика"}}
+</head>
+<body>
+{{template "nav"}}
+
+<main class="max-w-[860px] mx-auto px-6 pb-16">
+
+  <p class="text-base mb-8 max-w-[56ch]" style="color:var(--dim)">
+    Здесь можно разобрать правило и сразу его отработать. Практика не идёт
+    в зачёт рейтинга — это тренажёр, а не задание.
+  </p>
+
+  {{if not .Groups}}
+    <section class="panel p-7">
+      <h1 class="font-display text-2xl font-semibold mb-3">Тем пока нет</h1>
+      <p class="text-base" style="color:var(--dim)">
+        Для вашего уровня грамматические темы ещё не заведены.
+      </p>
+    </section>
+  {{end}}
+
+  {{range .Groups}}
+  <section class="panel p-7 mb-8">
+    <div class="flex items-baseline gap-4 mb-7">
+      <h2 class="font-display text-2xl font-semibold">Уровень {{.Level}}</h2>
+      <span class="font-mono text-xs" style="color:var(--dim)">{{len .Topics}}&nbsp;{{plural (len .Topics) "тема" "темы" "тем"}}</span>
+    </div>
+
+    <div style="border-top:1px solid var(--rule)">
+      {{range .Topics}}
+      <a href="/learn/topic?name={{.Name}}"
+         class="flex items-center gap-4 py-4 no-underline"
+         style="border-bottom:1px solid var(--rule)">
+        <span class="flex-1 text-lg">{{.Name}}</span>
+        <span class="font-mono text-xs num" style="color:var(--dim)">{{.Questions}}&nbsp;{{plural .Questions "вопрос" "вопроса" "вопросов"}}</span>
+      </a>
+      {{end}}
+    </div>
+  </section>
+  {{end}}
+
+</main>
+</body>
+</html>{{end}}

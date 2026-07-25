@@ -1,0 +1,39 @@
+{{/* Вопрос практики. Прогон не хранится на сервере: seed и индекс едут в
+     форме и воспроизводят ту же выборку, поэтому обновление страницы не
+     сбивает последовательность. */}}
+{{define "learn_slot"}}
+<div id="learnslot">
+  <section class="panel p-7">
+
+    <div class="flex items-center justify-between mb-7 gap-4 flex-wrap">
+      <span class="font-mono text-xs" style="color:var(--dim)">{{.Topic}}</span>
+      <div class="flex items-baseline gap-3">
+        <span class="font-mono text-xs" style="color:var(--dim)">вопрос</span>
+        <span class="flap-row">
+          {{range digits .Number 2}}<span class="flap flap-amber text-xl">{{.}}</span>{{end}}
+        </span>
+        <span class="font-mono text-xs" style="color:var(--dim)">из {{.Total}}</span>
+      </div>
+    </div>
+
+    <p class="font-display text-3xl leading-snug mb-8" style="font-weight:400">{{.Question.Prompt}}</p>
+
+    <form hx-post="/learn/answer" hx-target="#learnslot" hx-swap="outerHTML">
+      <input type="hidden" name="name" value="{{.Topic}}">
+      <input type="hidden" name="seed" value="{{.Seed}}">
+      <input type="hidden" name="i" value="{{.Index}}">
+      <input type="hidden" name="run" value="{{.CorrectRun}}">
+      <div class="grid gap-[3px]">
+        {{range $i, $opt := .Question.Options}}
+        <button type="submit" name="answer" value="{{$opt}}" class="opt">
+          <span class="lamp"></span>
+          <span class="key">{{inc $i}}</span>
+          <span class="val">{{$opt}}</span>
+        </button>
+        {{end}}
+      </div>
+    </form>
+
+  </section>
+</div>
+{{end}}

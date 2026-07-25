@@ -10,34 +10,52 @@
    Янтарь здесь — цвет механической индикации, а не неоновый акцент: работает
    фактура перекидных створок, а не свечение. */
 
+/* Слои поверхности идут в обе стороны от фона страницы:
+   в тёмной теме карточка светлее фона, в светлой — наоборот, а ячейки
+   утоплены относительно карточки. Так у каждого слоя своя светлота, и ничто
+   не сливается. Раньше --board служил и фоном страницы, и фоном карточки —
+   в светлой теме карточка просто исчезала.
+
+   Два янтаря не прихоть: на тёмном фоне один и тот же тон работает и заливкой,
+   и текстом, а на светлом заливочный янтарь как текст даёт около 2:1 — нечитаемо.
+   Поэтому --amber для плашек, --amber-ink для цифр и подписей. */
 :root, [data-theme="dark"] {
-  --board:  #15181B;
-  --cell:   #21262B;
-  --cell-2: #2A3036;
-  --seam:   #0B0D0F;
-  --chalk:  #ECE9E2;
-  --dim:    #8A9199;
-  --amber:  #E8A317;
-  --right:  #46B37A;
-  --wrong:  #E0554A;
-  --rule:   #333A41;
+  --page:     #121417;
+  --panel:    #191D21;
+  --cell:     #232A30;
+  --cell-2:   #2D353C;
+  --seam:     #0A0C0E;
+  --chalk:    #ECE9E2;
+  --dim:      #8A9199;
+  --amber:    #E8A317;
+  --amber-ink:#E8A317;
+  --btn-ink:  #15181B;
+  --right:    #46B37A;
+  --wrong:    #E0554A;
+  --rule:     #333A41;
 }
 
 [data-theme="light"] {
-  --board:  #CFCCC3;
-  --cell:   #E4E1D8;
-  --cell-2: #F0EDE5;
-  --seam:   #A8A49A;
-  --chalk:  #16191C;
-  --dim:    #62676D;
-  --amber:  #A66F00;
-  --right:  #1C7A4C;
-  --wrong:  #B32D20;
-  --rule:   #B4B0A6;
+  /* Страница — прохладный бетон корпуса, карточка и створки — тёплая
+     бумага. Разница по тону, а не только по светлоте, иначе всё
+     схлопывается в один бежевый. */
+  --page:     #C9C7C1;
+  --panel:    #F4F2ED;
+  --cell:     #E5E1D6;
+  --cell-2:   #D8D3C5;
+  --seam:     #8F8878;
+  --chalk:    #14171A;
+  --dim:      #585D64;
+  --amber:    #D9901A;
+  --amber-ink:#8A5600;
+  --btn-ink:  #1A1206;
+  --right:    #16653F;
+  --wrong:    #A32619;
+  --rule:     #A9A69D;
 }
 
 body {
-  background: var(--board);
+  background: var(--page);
   color: var(--chalk);
   font-family: 'IBM Plex Sans', sans-serif;
 }
@@ -65,13 +83,13 @@ body {
   height: 1px;
   background: var(--seam);
 }
-.flap-amber { color: var(--amber); }
+.flap-amber { color: var(--amber-ink); }
 .flap-row   { display: inline-flex; gap: 3px; }
 
 .ipa  { font-family: 'Charis SIL', serif; color: var(--dim); }
 .num  { font-variant-numeric: tabular-nums; }
 .rule { border-top: 1px solid var(--rule); }
-.panel { background: var(--board); border: 1px solid var(--rule); }
+.panel { background: var(--panel); border: 1px solid var(--rule); }
 
 /* ── Варианты ответа — планки табло с индикаторной колонкой слева ────── */
 .opt {
@@ -122,7 +140,7 @@ body {
   padding: .75rem 1.5rem;
   border: 1px solid var(--amber);
   background: var(--amber);
-  color: #15181B;
+  color: var(--btn-ink);
   font-family: 'Oswald', sans-serif;
   font-size: 1rem;
   letter-spacing: .01em;
@@ -157,7 +175,7 @@ body {
   height: 1px;
   background: var(--seam);
 }
-.steps span[data-on="1"] { background: var(--amber); color: #15181B; }
+.steps span[data-on="1"] { background: var(--amber); color: var(--btn-ink); }
 
 /* Ссылки в тексте — подчёркивание, а не цвет: цвет здесь занят семантикой. */
 a { color: inherit; text-underline-offset: 4px; }

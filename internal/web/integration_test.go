@@ -38,14 +38,15 @@ import (
 // plus the web router on top. No WireMock here — the web adapter never calls
 // the Telegram API.
 type dbEnv struct {
-	router    *chi.Mux
-	jwt       *JWTService
-	userSvc   *user.Service
-	taskSvc   *task.Service
-	assessSvc *assessment.Service
-	wordsSvc  *words.Service
-	srsRepo   srs.Repository
-	pool      *pgxpool.Pool
+	router      *chi.Mux
+	jwt         *JWTService
+	userSvc     *user.Service
+	taskSvc     *task.Service
+	assessSvc   *assessment.Service
+	wordsSvc    *words.Service
+	srsRepo     srs.Repository
+	grammarRepo task.GrammarRepository
+	pool        *pgxpool.Pool
 }
 
 func setupDBEnv(t *testing.T) *dbEnv {
@@ -97,7 +98,7 @@ func setupDBEnv(t *testing.T) *dbEnv {
 	// minted directly.
 	srv, err := New(Deps{
 		UserSvc: userSvc, GroupSvc: groupSvc, TaskSvc: taskSvc,
-		ScoringSvc: scoringSvc, SRSRepo: srsRepo, AssessSvc: assessSvc, WordsSvc: wordsSvc,
+		ScoringSvc: scoringSvc, SRSRepo: srsRepo, AssessSvc: assessSvc, WordsSvc: wordsSvc, GrammarRepo: grammarRepo,
 	}, jwtSvc, NewOIDCClient("http://unused", "client-1", "secret", "http://app/cb"), false)
 	require.NoError(t, err)
 
@@ -105,7 +106,8 @@ func setupDBEnv(t *testing.T) *dbEnv {
 	srv.Mount(r)
 
 	return &dbEnv{router: r, jwt: jwtSvc, userSvc: userSvc, taskSvc: taskSvc,
-		assessSvc: assessSvc, wordsSvc: wordsSvc, srsRepo: srsRepo, pool: pool}
+		assessSvc: assessSvc, wordsSvc: wordsSvc, srsRepo: srsRepo,
+		grammarRepo: grammarRepo, pool: pool}
 }
 
 // signedIn creates an onboarded user and returns them with a session cookie.
@@ -711,4 +713,144 @@ func mustUserID(t *testing.T, env *dbEnv, telegramID int64) int64 {
 	u, err := env.userSvc.GetByTelegramID(context.Background(), telegramID)
 	require.NoError(t, err)
 	return u.ID
+}
+
+// --- learn ---------------------------------------------------------------
+
+func TestLearnListsTopicsForUserLevelAndNext(t *testing.T) {
+	env := setupDBEnv(t)
+	_, cookie := env.signedIn(t, 400, user.A1)
+
+	rr := env.get(t, "/learn", cookie)
+	require.Equal(t, http.StatusOK, rr.Code)
+	body := rr.Body.String()
+
+	require.Contains(t, body, "Уровень A1")
+	require.Contains(t, body, "Уровень A2", "the next level is offered so the user can look ahead")
+	require.NotContains(t, body, "Уровень C2", "levels far above the user must not be listed")
+	require.Contains(t, body, "/learn/topic?name=")
+}
+
+func TestLearnTopicShowsTheoryAndStart(t *testing.T) {
+	env := setupDBEnv(t)
+	_, cookie := env.signedIn(t, 401, user.A1)
+
+	body := env.get(t, "/learn", cookie).Body.String()
+	topic := firstTopic(t, body)
+
+	rr := env.get(t, "/learn/topic?name="+url.QueryEscape(topic), cookie)
+	require.Equal(t, http.StatusOK, rr.Code)
+	require.Contains(t, rr.Body.String(), "Начать практику")
+	// Форма слова зависит от числа (1 вопрос / 3 вопроса / 5 вопросов),
+	// поэтому проверяем корень, а не конкретное окончание.
+	require.Contains(t, rr.Body.String(), "вопрос")
+}
+
+// The run is stateless: seed plus index reproduce the sample, so the same URL
+// always yields the same question. Without that a refresh would reshuffle
+// mid-run and the user would lose their place.
+func TestLearnPracticeIsReproducibleFromSeed(t *testing.T) {
+	env := setupDBEnv(t)
+	_, cookie := env.signedIn(t, 402, user.A1)
+
+	body := env.get(t, "/learn", cookie).Body.String()
+	topic := url.QueryEscape(firstTopic(t, body))
+
+	first := env.get(t, "/learn/practice?name="+topic+"&seed=12345&i=0", cookie)
+	require.Equal(t, http.StatusOK, first.Code)
+	again := env.get(t, "/learn/practice?name="+topic+"&seed=12345&i=0", cookie)
+	require.Equal(t, first.Body.String(), again.Body.String(),
+		"the same seed and index must yield the same question")
+
+	other := env.get(t, "/learn/practice?name="+topic+"&seed=999&i=0", cookie)
+	require.Equal(t, http.StatusOK, other.Code)
+}
+
+func TestLearnAnswerReportsCorrectness(t *testing.T) {
+	env := setupDBEnv(t)
+	u, cookie := env.signedIn(t, 403, user.A1)
+	ctx := context.Background()
+
+	body := env.get(t, "/learn", cookie).Body.String()
+	topic := firstTopic(t, body)
+
+	questions, err := env.grammarRepo.GetQuestionsByCategory(ctx, topic)
+	require.NoError(t, err)
+	sample := task.StratifiedSample(questions, 12345, 20)
+	require.NotEmpty(t, sample)
+
+	form := url.Values{
+		"name": {topic}, "seed": {"12345"}, "i": {"0"},
+		"answer": {sample[0].Answer}, "run": {"0"},
+	}
+	rr := env.postForm(t, "/learn/answer", form.Encode(), cookie)
+	require.Equal(t, http.StatusOK, rr.Code)
+	require.Contains(t, rr.Body.String(), "Верно")
+
+	form.Set("answer", "заведомо неверно")
+	rr = env.postForm(t, "/learn/answer", form.Encode(), cookie)
+	require.Contains(t, rr.Body.String(), "Неверно")
+	require.Contains(t, rr.Body.String(), sample[0].Answer)
+
+	// Practice must not touch scores or the SRS — it is a drill, not a task.
+	var scores, cards int
+	require.NoError(t, env.pool.QueryRow(ctx,
+		`SELECT count(*) FROM scores WHERE user_id = $1`, u.ID).Scan(&scores))
+	require.NoError(t, env.pool.QueryRow(ctx,
+		`SELECT count(*) FROM review_cards WHERE user_id = $1`, u.ID).Scan(&cards))
+	require.Zero(t, scores, "/learn must not write scores")
+	require.Zero(t, cards, "/learn must not write review cards")
+}
+
+func TestLearnUnknownTopicIs404(t *testing.T) {
+	env := setupDBEnv(t)
+	_, cookie := env.signedIn(t, 404, user.A1)
+
+	rr := env.get(t, "/learn/topic?name="+url.QueryEscape("нет такой темы"), cookie)
+	require.Equal(t, http.StatusNotFound, rr.Code)
+}
+
+// firstTopic pulls a category name out of the rendered index.
+func firstTopic(t *testing.T, body string) string {
+	t.Helper()
+	const marker = `/learn/topic?name=`
+	i := strings.Index(body, marker)
+	require.GreaterOrEqual(t, i, 0, "index lists no topics")
+	rest := body[i+len(marker):]
+	raw := rest[:strings.Index(rest, `"`)]
+	decoded, err := url.QueryUnescape(strings.ReplaceAll(raw, "&amp;", "&"))
+	require.NoError(t, err)
+	return decoded
+}
+
+// The rule is shown when the user got it wrong — that is the moment it helps.
+// After a correct answer it is noise, and they read the theory a screen ago.
+func TestLearnExplanationOnlyOnWrongAnswer(t *testing.T) {
+	env := setupDBEnv(t)
+	_, cookie := env.signedIn(t, 405, user.A1)
+	ctx := context.Background()
+
+	topic := firstTopic(t, env.get(t, "/learn", cookie).Body.String())
+	questions, err := env.grammarRepo.GetQuestionsByCategory(ctx, topic)
+	require.NoError(t, err)
+	sample := task.StratifiedSample(questions, 777, 20)
+	require.NotEmpty(t, sample)
+	if sample[0].Explanation == "" {
+		t.Skip("this topic carries no explanation")
+	}
+
+	form := url.Values{"name": {topic}, "seed": {"777"}, "i": {"0"}, "run": {"0"}}
+
+	form.Set("answer", sample[0].Answer)
+	right := env.postForm(t, "/learn/answer", form.Encode(), cookie).Body.String()
+
+	form.Set("answer", "заведомо неверно")
+	wrong := env.postForm(t, "/learn/answer", form.Encode(), cookie).Body.String()
+
+	snippet := sample[0].Explanation
+	if len(snippet) > 40 {
+		snippet = snippet[:40]
+	}
+	require.Contains(t, wrong, snippet, "a wrong answer must be explained")
+	require.NotContains(t, right, snippet, "a correct answer must not repeat the theory")
 }

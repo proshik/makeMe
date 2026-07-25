@@ -90,7 +90,7 @@ func main() {
 
 	srv, err := web.New(web.Deps{
 		UserSvc: userSvc, GroupSvc: groupSvc, TaskSvc: taskSvc,
-		ScoringSvc: scoringSvc, SRSRepo: srsRepo, AssessSvc: assessSvc, WordsSvc: wordsSvc,
+		ScoringSvc: scoringSvc, SRSRepo: srsRepo, AssessSvc: assessSvc, WordsSvc: wordsSvc, GrammarRepo: grammarRepo,
 	}, jwtSvc, web.NewOIDCClient(stub.URL, "client-1", "secret",
 		"http://localhost"+previewAddr+"/auth/telegram/callback"), false)
 	if err != nil {

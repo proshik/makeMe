@@ -124,13 +124,14 @@ func run(ctx context.Context) error {
 	}()
 
 	webSrv, err := buildWebServer(cfg, web.Deps{
-		UserSvc:    userSvc,
-		GroupSvc:   groupSvc,
-		AssessSvc:  assessSvc,
-		TaskSvc:    taskSvc,
-		ScoringSvc: scoringSvc,
-		SRSRepo:    srsRepo,
-		WordsSvc:   wordsSvc,
+		UserSvc:     userSvc,
+		GroupSvc:    groupSvc,
+		AssessSvc:   assessSvc,
+		TaskSvc:     taskSvc,
+		ScoringSvc:  scoringSvc,
+		SRSRepo:     srsRepo,
+		WordsSvc:    wordsSvc,
+		GrammarRepo: grammarRepo,
 	})
 	if err != nil {
 		return err

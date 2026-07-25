@@ -1,0 +1,36 @@
+{{define "learn_topic.html"}}<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+{{template "head" .Topic}}
+</head>
+<body>
+{{template "nav"}}
+
+<main class="max-w-[860px] mx-auto px-6 pb-16">
+  <section class="panel p-7">
+
+    <h1 class="font-display text-4xl font-semibold mb-6">{{.Topic}}</h1>
+
+    {{if .Explanation}}
+      <div class="rule pt-6 mb-8">
+        {{/* Теория хранится с переводами строк — сохраняем их разбиением
+             на абзацы, иначе правило слипается в одну простыню. */}}
+        {{range paragraphs .Explanation}}
+        <p class="text-base leading-relaxed mb-3">{{.}}</p>
+        {{end}}
+      </div>
+    {{else}}
+      <p class="text-base mb-8" style="color:var(--dim)">Описание для этой темы пока не добавлено.</p>
+    {{end}}
+
+    <div class="flex items-center gap-4 flex-wrap">
+      <a class="btn no-underline"
+         href="/learn/practice?name={{.Topic}}&seed={{.Seed}}&i=0">Начать практику</a>
+      <span class="font-mono text-xs" style="color:var(--dim)">{{.Total}}&nbsp;{{plural .Total "вопрос" "вопроса" "вопросов"}}</span>
+      <a href="/learn" class="btn btn-ghost no-underline">К темам</a>
+    </div>
+
+  </section>
+</main>
+</body>
+</html>{{end}}

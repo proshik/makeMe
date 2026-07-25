@@ -1,0 +1,50 @@
+{{/* Практика не идёт в зачёт: ни баллов, ни записи в интервальные повторения.
+     Поэтому здесь нет счёта — только верно/неверно и правило. */}}
+{{define "learn_feedback"}}
+<div id="learnslot">
+  <section class="panel p-7">
+
+    <div class="flex items-stretch mb-6" style="background:var(--cell)">
+      <span style="width:8px; flex:none; background:{{if .Correct}}var(--right){{else}}var(--wrong){{end}}"></span>
+      <div class="px-5 py-4">
+        <p class="font-display text-2xl" style="font-weight:500; color:{{if .Correct}}var(--right){{else}}var(--wrong){{end}}">
+          {{if .Correct}}Верно{{else}}Неверно{{end}}
+        </p>
+        {{if not .Correct}}
+        <p class="mt-2 text-base">Правильный ответ: <span class="font-semibold">{{.Answer}}</span></p>
+        {{end}}
+      </div>
+    </div>
+
+    {{/* Правило показываем только при ошибке: после верного ответа это шум,
+         а теорию пользователь только что читал на странице темы. */}}
+    {{if and .Explanation (not .Correct)}}
+    <div class="rule pt-5 mb-7">
+      {{range paragraphs .Explanation}}
+      <p class="text-[.95rem] leading-relaxed mb-2" style="color:var(--dim)">{{.}}</p>
+      {{end}}
+    </div>
+    {{end}}
+
+    {{if .Done}}
+      <div class="flex items-baseline gap-4 mb-7 flex-wrap">
+        <span class="font-mono text-xs" style="color:var(--dim)">верных ответов</span>
+        <span class="flap-row">
+          {{range digits .CorrectRun 2}}<span class="flap flap-amber text-3xl">{{.}}</span>{{end}}
+        </span>
+        <span class="font-mono text-sm" style="color:var(--dim)">из {{.Total}}</span>
+      </div>
+      <div class="flex gap-3 flex-wrap">
+        <a href="/learn/topic?name={{.Topic}}" class="btn no-underline">Пройти тему заново</a>
+        <a href="/learn" class="btn btn-ghost no-underline">К темам</a>
+        <a href="/tasks" class="btn btn-ghost no-underline">К заданиям</a>
+      </div>
+    {{else}}
+      <button class="btn"
+              hx-get="/learn/next?name={{.Topic}}&seed={{.Seed}}&i={{.NextIndex}}&run={{.CorrectRun}}"
+              hx-target="#learnslot" hx-swap="outerHTML">Дальше</button>
+    {{end}}
+
+  </section>
+</div>
+{{end}}

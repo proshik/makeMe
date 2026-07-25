@@ -328,7 +328,14 @@ The web UI is optional: with `APP_BASE_URL`, `TELEGRAM_CLIENT_ID`, `TELEGRAM_CLI
 | `POST /words/{id}/know` | Retires a word the user already knows across all four modes and drops it into spaced repetition. |
 | `POST /words/{id}/defer` | Drops a word from the rest of the session, keeping its progress. Offered only past `words.DeferThreshold` mistakes on that word. |
 
-`/words` writes no score rows — not contributing to the leaderboard is its one behavioural difference from `/tasks`, and a test guards it.
+| `GET /learn` | Grammar topics at the user's level and the one above it. |
+| `GET /learn/topic?name=…` | Theory plus a fresh random seed, so re-entering a topic reshuffles the order. |
+| `GET /learn/practice?name=…&seed=…&i=…` | One question of a run. The run keeps no server-side state: seed plus index reproduce the same sample, so a refresh does not lose the user's place. |
+| `POST /learn/answer` | Checks the answer and returns the feedback fragment. The rule is shown only when the answer was wrong — after a correct one it is noise. |
+
+Topic names travel as query values rather than path segments: categories like `can/can't` carry slashes, which a path segment would mangle.
+
+`/learn` and `/words` write no score rows — not contributing to the leaderboard is its one behavioural difference from `/tasks`, and a test guards it.
 | `GET /static/*` | Self-hosted assets, served from the binary via `embed.FS`. |
 
 Asset URLs carry a `?v=` token derived from a hash of every embedded file, so `Cache-Control: immutable` is safe — a new build produces new URLs. Without it a deploy would leave browsers on the previous stylesheet for a year.
