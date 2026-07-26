@@ -308,6 +308,20 @@ Copy `.env.example` to `.env` and fill in the values:
 
 The web UI is optional: with `APP_BASE_URL`, `TELEGRAM_CLIENT_ID`, `TELEGRAM_CLIENT_SECRET` or `JWT_SECRET` unset it is not mounted and only the bot runs. A warning is logged at startup saying which variables are missing.
 
+### First deployment of the web UI
+
+Not yet performed — the interface has only ever run against a stub OIDC provider. See "Веб-интерфейс: что не проверено" in `docs/plan.md` for the full list of what that leaves unproven.
+
+1. Register an OAuth application for the bot and obtain `TELEGRAM_CLIENT_ID` / `TELEGRAM_CLIENT_SECRET`. These are **not** the same as `TELEGRAM_TOKEN`.
+2. `openssl rand -base64 32` → `JWT_SECRET`. Startup fails if it is shorter than 32 bytes decoded, so a bad value surfaces immediately rather than on first login.
+3. Set `APP_BASE_URL` to the public origin. The redirect URI is derived as `$APP_BASE_URL/auth/telegram/callback` and must match what was registered exactly.
+4. Deploy, then confirm in this order — each step depends on the previous one working:
+   - `GET /login` renders and the button leads to Telegram.
+   - Signing in lands back on `/` as the right user. A user who already exists in the bot must keep their level and progress.
+   - `websocat -H="Cookie: auth_token=<jwt>" wss://<host>/ws` stays open longer than the platform's idle timeout. The server pings every 25s; a shorter proxy timeout will cut the socket.
+   - Answer a task in the bot with the browser open on `/leaderboard` — the standings should move without a reload.
+5. Populate pronunciation with `POST /admin/seed-audio` (see below). Until then the "Послушать" button has nothing to play, and that path has never been exercised.
+
 ## Web UI
 
 | Route | Description |
