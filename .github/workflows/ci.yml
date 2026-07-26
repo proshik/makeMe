@@ -16,12 +16,14 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v7
         with:
-          go-version: '1.26'
+          # Версия берётся из go.mod, а не дублируется здесь: иначе она живёт
+          # в двух местах и однажды разъедется с той, под которую собирают.
+          go-version-file: go.mod
 
       # Собранный tailwind.css лежит в репозитории (его требует //go:embed),
       # поэтому он может отстать от шаблонов. Пересобираем и падаем, если diff.
