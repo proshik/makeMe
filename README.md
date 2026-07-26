@@ -17,7 +17,7 @@ Go, PostgreSQL (pgx/sqlc/goose), chi, [go-telegram/bot](https://github.com/go-te
 - **Fair scoring** — raw points multiplied by a level coefficient (A1=0.6 … C2=1.5) so a perfect A1 score ≈ a perfect C2 score
 - **Profile** — current level, monthly points, daily streak, number of learned words
 - **Proactive scheduler** — daily summary sent at `SCHEDULER_TIME` (default 21:00 in `TIMEZONE`, default Europe/Moscow); reassessment reminder to users whose last completed assessment is more than 30 days old
-- **Web UI** — browser interface at `/` with Telegram login (OAuth 2.0 + PKCE), sharing the same domain services and the same Postgres state as the bot: start in the browser, continue in Telegram. Design system «Табло» (`design-concepts/tablo.html`). Assets are vendored, not loaded from a CDN.
+- **Web UI** — browser interface at `/` with Telegram login (OAuth 2.0 + PKCE), sharing the same domain services and the same Postgres state as the bot: start in the browser, continue in Telegram. Design system «Табло», defined in `internal/web/static/app.css`. Assets are vendored, not loaded from a CDN.
 - **Docker support** — multi-stage `Dockerfile` + `docker-compose.yml` (app + PostgreSQL)
 
 ## Bot Commands
