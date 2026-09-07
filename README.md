@@ -335,6 +335,9 @@ That test drives this package's own `OIDCClient` — not a stub — through a re
 broker: authorization URL, PKCE, code exchange, id_token parsing, and a replay of
 the spent code. Without `BROKER_URL` it skips, so `go test ./...` stays hermetic.
 
+What is already proven and what still has to be checked against real Telegram is
+tracked in the broker's [docs/VERIFICATION.md](../telegram-login-broker/docs/VERIFICATION.md).
+
 ⚠️ **Starting the binary needs a separate dev bot.** `main.go` calls
 `SetWebhook(ctx, cfg.WEBHOOK_URL)` on startup, and with `WEBHOOK_URL` empty that
 **deletes the webhook** of whichever bot's token is in `TELEGRAM_TOKEN`. Running

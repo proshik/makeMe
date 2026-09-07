@@ -131,6 +131,28 @@ Shipped and working end to end:
 - `/learn` — grammar theory + up to 20 stratified questions per topic
 - Scheduler (daily summary at `SCHEDULER_TIME`, reassessment reminder after 30 days), `POST /admin/seed-audio`
 
+Web UI login (`internal/web`) — rules that are load-bearing, not preferences:
+- The `id_token` signature is **not** verified (it arrives server-to-server over
+  TLS), so the claim checks are the only thing between a token and an identity.
+  Every one of `iss`, `aud`, `exp` is **mandatory**; `iat` is checked when present
+  with 60s of skew. Never weaken one back to "checked only if present" — that
+  hands the decision to whoever issued the token.
+- `iss` is compared **byte for byte** against `TELEGRAM_EXPECTED_ISSUER`, never by
+  substring. It is configured separately from `TELEGRAM_OAUTH_BASE_URL` so that
+  pointing the flow at a login broker is deliberate rather than incidental.
+- `aud` is read both as a string and as an array. As a bare `.(string)` an array
+  yields "" and the audience check turns itself off silently.
+- A missing `id` claim is a failure. **Never fall back to `sub`** — it is a
+  different number, and substituting it would return a stable, plausible and
+  wrong person.
+- The token HTTP client refuses redirects. There is no legitimate redirect on a
+  token endpoint, and following one reads the id_token from wherever the last hop
+  pointed.
+- Local development runs against [telegram-login-broker](../telegram-login-broker);
+  see the README. Starting the binary locally needs a **separate dev bot**:
+  `SetWebhook` with an empty `WEBHOOK_URL` deletes the webhook of whichever bot's
+  token is in `TELEGRAM_TOKEN`.
+
 Known gaps worth knowing before you touch these areas:
 - **No weekly period exists.** `scoring.Service.Award` only upserts rows under the `"day"` and `"month"` period keys, and `/leaderboard` is registered `MatchTypeExact` — it accepts no text arguments. Periods switch via a single inline toggle button. Adding a week means new period keys plus new UI, not just a label.
 
