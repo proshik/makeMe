@@ -30,9 +30,14 @@ type Config struct {
 	TelegramClientID     string // OAuth client id from Telegram
 	TelegramClientSecret string // OAuth client secret from Telegram
 	TelegramOAuthBaseURL string // OIDC issuer base, overridable so tests can point at a stub
-	JWTSecret            string // base64, must decode to >=32 bytes for HS256
-	JWTTTLHours          int    // lifetime of the auth_token cookie and the JWT inside it
-	CookieSecure         bool   // false only for local http development
+	// TelegramExpectedIssuer is the exact iss the id_token must carry. It
+	// defaults to Telegram's own issuer and is set separately from the base URL
+	// on purpose: pointing the flow at a local login broker must be a deliberate
+	// change to both, not something one edit quietly enables.
+	TelegramExpectedIssuer string
+	JWTSecret              string // base64, must decode to >=32 bytes for HS256
+	JWTTTLHours            int    // lifetime of the auth_token cookie and the JWT inside it
+	CookieSecure           bool   // false only for local http development
 }
 
 // WebEnabled reports whether the web UI has everything it needs to be mounted.
@@ -63,13 +68,14 @@ func Load() (*Config, error) {
 		MaxRoundsPerDay:       getEnvInt("MAX_ROUNDS_PER_DAY", 5),
 		AdminToken:            os.Getenv("ADMIN_TOKEN"),
 
-		AppBaseURL:           os.Getenv("APP_BASE_URL"),
-		TelegramClientID:     os.Getenv("TELEGRAM_CLIENT_ID"),
-		TelegramClientSecret: os.Getenv("TELEGRAM_CLIENT_SECRET"),
-		TelegramOAuthBaseURL: getEnv("TELEGRAM_OAUTH_BASE_URL", "https://oauth.telegram.org"),
-		JWTSecret:            os.Getenv("JWT_SECRET"),
-		JWTTTLHours:          getEnvInt("JWT_TTL_HOURS", 24),
-		CookieSecure:         getEnvBool("COOKIE_SECURE", true),
+		AppBaseURL:             os.Getenv("APP_BASE_URL"),
+		TelegramClientID:       os.Getenv("TELEGRAM_CLIENT_ID"),
+		TelegramClientSecret:   os.Getenv("TELEGRAM_CLIENT_SECRET"),
+		TelegramOAuthBaseURL:   getEnv("TELEGRAM_OAUTH_BASE_URL", "https://oauth.telegram.org"),
+		TelegramExpectedIssuer: getEnv("TELEGRAM_EXPECTED_ISSUER", "https://oauth.telegram.org"),
+		JWTSecret:              os.Getenv("JWT_SECRET"),
+		JWTTTLHours:            getEnvInt("JWT_TTL_HOURS", 24),
+		CookieSecure:           getEnvBool("COOKIE_SECURE", true),
 	}
 
 	if cfg.DatabaseURL == "" {
