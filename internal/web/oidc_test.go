@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"strconv"
+	"strings"
 	"testing"
 	"time"
 )
@@ -49,7 +51,7 @@ func TestGenerateVerifierIsRandom(t *testing.T) {
 }
 
 func TestAuthorizationURLCarriesPKCEAndState(t *testing.T) {
-	c := NewOIDCClient("https://oauth.example.org", "client-1", "secret", "https://app.example.org/auth/telegram/callback")
+	c := NewOIDCClient("https://oauth.example.org", "client-1", "secret", "https://app.example.org/auth/telegram/callback", "https://oauth.example.org")
 
 	raw := c.AuthorizationURL("st4te", "ch4llenge")
 	u, err := url.Parse(raw)
@@ -93,6 +95,37 @@ func idToken(t *testing.T, claims map[string]any) string {
 	return enc([]byte(`{"alg":"none"}`)) + "." + enc(payload) + ".sig"
 }
 
+// validClaims is a complete, well-formed claim set. Every strictness test below
+// starts from it and breaks exactly one thing, so a failure names its own cause.
+func validClaims() map[string]any {
+	return map[string]any{
+		"id":                 float64(777),
+		"name":               "Алиса",
+		"preferred_username": "alice",
+		"picture":            "https://example.org/a.jpg",
+		"iss":                "https://oauth.telegram.org",
+		"aud":                "client-1",
+		"iat":                float64(time.Now().Unix()),
+		"exp":                float64(time.Now().Add(time.Hour).Unix()),
+	}
+}
+
+func claimsWithout(key string) map[string]any {
+	c := validClaims()
+	delete(c, key)
+	return c
+}
+
+func claimsWith(key string, value any) map[string]any {
+	c := validClaims()
+	c[key] = value
+	return c
+}
+
+func newTestOIDCClient(baseURL string) *OIDCClient {
+	return NewOIDCClient(baseURL, "client-1", "secret", "https://app/cb", "https://oauth.telegram.org")
+}
+
 func stubTokenEndpoint(t *testing.T, status int, body any) *httptest.Server {
 	t.Helper()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -118,20 +151,12 @@ func stubTokenEndpoint(t *testing.T, status int, body any) *httptest.Server {
 }
 
 func TestExchangeReadsProfileFromIDToken(t *testing.T) {
-	tok := idToken(t, map[string]any{
-		"id":                 float64(777),
-		"name":               "Алиса",
-		"preferred_username": "alice",
-		"picture":            "https://example.org/a.jpg",
-		"iss":                "https://oauth.telegram.org",
-		"aud":                "client-1",
-		"exp":                float64(time.Now().Add(time.Hour).Unix()),
-	})
+	tok := idToken(t, validClaims())
 	srv := stubTokenEndpoint(t, http.StatusOK, map[string]any{
 		"access_token": "at", "token_type": "bearer", "id_token": tok,
 	})
 
-	c := NewOIDCClient(srv.URL, "client-1", "secret", "https://app/cb")
+	c := newTestOIDCClient(srv.URL)
 	u, err := c.Exchange(context.Background(), "code", "verifier")
 	if err != nil {
 		t.Fatalf("Exchange: %v", err)
@@ -143,10 +168,10 @@ func TestExchangeReadsProfileFromIDToken(t *testing.T) {
 
 // Telegram is inconsistent about whether id is a number or a string.
 func TestExchangeAcceptsStringID(t *testing.T) {
-	tok := idToken(t, map[string]any{"id": "777", "name": "Алиса"})
+	tok := idToken(t, claimsWith("id", "777"))
 	srv := stubTokenEndpoint(t, http.StatusOK, map[string]any{"id_token": tok})
 
-	c := NewOIDCClient(srv.URL, "client-1", "secret", "https://app/cb")
+	c := newTestOIDCClient(srv.URL)
 	u, err := c.Exchange(context.Background(), "code", "verifier")
 	if err != nil {
 		t.Fatalf("Exchange: %v", err)
@@ -157,33 +182,30 @@ func TestExchangeAcceptsStringID(t *testing.T) {
 }
 
 func TestExchangeRejectsExpiredIDToken(t *testing.T) {
-	tok := idToken(t, map[string]any{
-		"id":  float64(1),
-		"exp": float64(time.Now().Add(-time.Hour).Unix()),
-	})
+	tok := idToken(t, claimsWith("exp", float64(time.Now().Add(-time.Hour).Unix())))
 	srv := stubTokenEndpoint(t, http.StatusOK, map[string]any{"id_token": tok})
 
-	c := NewOIDCClient(srv.URL, "client-1", "secret", "https://app/cb")
+	c := newTestOIDCClient(srv.URL)
 	if _, err := c.Exchange(context.Background(), "code", "verifier"); err == nil {
 		t.Fatal("expected an error for an expired id_token")
 	}
 }
 
 func TestExchangeRejectsAudienceMismatch(t *testing.T) {
-	tok := idToken(t, map[string]any{"id": float64(1), "aud": "someone-else"})
+	tok := idToken(t, claimsWith("aud", "someone-else"))
 	srv := stubTokenEndpoint(t, http.StatusOK, map[string]any{"id_token": tok})
 
-	c := NewOIDCClient(srv.URL, "client-1", "secret", "https://app/cb")
+	c := newTestOIDCClient(srv.URL)
 	if _, err := c.Exchange(context.Background(), "code", "verifier"); err == nil {
 		t.Fatal("expected an error when aud does not match our client id")
 	}
 }
 
 func TestExchangeRejectsForeignIssuer(t *testing.T) {
-	tok := idToken(t, map[string]any{"id": float64(1), "iss": "https://evil.example.com"})
+	tok := idToken(t, claimsWith("iss", "https://evil.example.com"))
 	srv := stubTokenEndpoint(t, http.StatusOK, map[string]any{"id_token": tok})
 
-	c := NewOIDCClient(srv.URL, "client-1", "secret", "https://app/cb")
+	c := newTestOIDCClient(srv.URL)
 	if _, err := c.Exchange(context.Background(), "code", "verifier"); err == nil {
 		t.Fatal("expected an error for an issuer that is not Telegram")
 	}
@@ -192,17 +214,17 @@ func TestExchangeRejectsForeignIssuer(t *testing.T) {
 func TestExchangeRejectsMissingIDToken(t *testing.T) {
 	srv := stubTokenEndpoint(t, http.StatusOK, map[string]any{"access_token": "at"})
 
-	c := NewOIDCClient(srv.URL, "client-1", "secret", "https://app/cb")
+	c := newTestOIDCClient(srv.URL)
 	if _, err := c.Exchange(context.Background(), "code", "verifier"); err == nil {
 		t.Fatal("expected an error when the response carries no id_token")
 	}
 }
 
 func TestExchangeRejectsMissingIDClaim(t *testing.T) {
-	tok := idToken(t, map[string]any{"name": "Алиса"})
+	tok := idToken(t, claimsWithout("id"))
 	srv := stubTokenEndpoint(t, http.StatusOK, map[string]any{"id_token": tok})
 
-	c := NewOIDCClient(srv.URL, "client-1", "secret", "https://app/cb")
+	c := newTestOIDCClient(srv.URL)
 	if _, err := c.Exchange(context.Background(), "code", "verifier"); err == nil {
 		t.Fatal("expected an error when the id claim is absent")
 	}
@@ -211,8 +233,134 @@ func TestExchangeRejectsMissingIDClaim(t *testing.T) {
 func TestExchangeReportsTokenEndpointFailure(t *testing.T) {
 	srv := stubTokenEndpoint(t, http.StatusBadRequest, map[string]any{"error": "invalid_grant"})
 
-	c := NewOIDCClient(srv.URL, "client-1", "secret", "https://app/cb")
+	c := newTestOIDCClient(srv.URL)
 	if _, err := c.Exchange(context.Background(), "code", "verifier"); err == nil {
 		t.Fatal("expected an error for a non-200 token response")
+	}
+}
+
+// --- phase 2: the claim checks become mandatory ------------------------------
+
+func TestExchangeRequiresIssuerAudienceAndExpiry(t *testing.T) {
+	// Until now each of these was enforced only when present, which left the
+	// decision to whoever issued the token. Absence is now a refusal.
+	for _, claim := range []string{"iss", "aud", "exp"} {
+		tok := idToken(t, claimsWithout(claim))
+		srv := stubTokenEndpoint(t, http.StatusOK, map[string]any{"id_token": tok})
+
+		_, err := newTestOIDCClient(srv.URL).Exchange(context.Background(), "code", "verifier")
+		if err == nil {
+			t.Errorf("Exchange() accepted an id_token with no %s claim", claim)
+			continue
+		}
+		if !strings.Contains(err.Error(), claim) {
+			t.Errorf("error for a missing %s is %q and does not name the claim", claim, err)
+		}
+	}
+}
+
+func TestExchangeMatchesTheIssuerExactly(t *testing.T) {
+	// The old check was `iss contains "telegram"`, which any host with that
+	// substring satisfies — and which no honest non-Telegram issuer can pass.
+	for name, iss := range map[string]string{
+		"substring host":   "https://telegram-auth.example.com",
+		"trailing slash":   "https://oauth.telegram.org/",
+		"different scheme": "http://oauth.telegram.org",
+		"suffix":           "https://oauth.telegram.org.evil.com",
+	} {
+		tok := idToken(t, claimsWith("iss", iss))
+		srv := stubTokenEndpoint(t, http.StatusOK, map[string]any{"id_token": tok})
+
+		if _, err := newTestOIDCClient(srv.URL).Exchange(context.Background(), "code", "verifier"); err == nil {
+			t.Errorf("Exchange() accepted issuer %q (%s)", iss, name)
+		}
+	}
+}
+
+func TestExchangeAcceptsAConfiguredIssuerOtherThanTelegram(t *testing.T) {
+	// This is what makes the broker usable: the expected issuer is configuration,
+	// not a substring rule, so pointing at a broker is a deliberate edit rather
+	// than something that happens to pass.
+	const brokerIssuer = "https://broker.example.com"
+	tok := idToken(t, claimsWith("iss", brokerIssuer))
+	srv := stubTokenEndpoint(t, http.StatusOK, map[string]any{"id_token": tok})
+
+	c := NewOIDCClient(srv.URL, "client-1", "secret", "https://app/cb", brokerIssuer)
+	if _, err := c.Exchange(context.Background(), "code", "verifier"); err != nil {
+		t.Errorf("Exchange() = %v for the configured issuer", err)
+	}
+}
+
+func TestExchangeHandlesAnAudienceArray(t *testing.T) {
+	// `claims["aud"].(string)` returns "" for an array, which used to switch the
+	// audience check off without a word. Arrays are now read properly.
+	tok := idToken(t, claimsWith("aud", []any{"someone-else", "another"}))
+	srv := stubTokenEndpoint(t, http.StatusOK, map[string]any{"id_token": tok})
+	if _, err := newTestOIDCClient(srv.URL).Exchange(context.Background(), "code", "verifier"); err == nil {
+		t.Error("Exchange() accepted an audience array that does not contain our client id")
+	}
+
+	tok = idToken(t, claimsWith("aud", []any{"someone-else", "client-1"}))
+	srv = stubTokenEndpoint(t, http.StatusOK, map[string]any{"id_token": tok})
+	if _, err := newTestOIDCClient(srv.URL).Exchange(context.Background(), "code", "verifier"); err != nil {
+		t.Errorf("Exchange() = %v for an audience array that does contain our client id", err)
+	}
+}
+
+func TestExchangeRejectsAnIssuedAtFromTheFuture(t *testing.T) {
+	tok := idToken(t, claimsWith("iat", float64(time.Now().Add(5*time.Minute).Unix())))
+	srv := stubTokenEndpoint(t, http.StatusOK, map[string]any{"id_token": tok})
+
+	if _, err := newTestOIDCClient(srv.URL).Exchange(context.Background(), "code", "verifier"); err == nil {
+		t.Error("Exchange() accepted an id_token issued five minutes from now")
+	}
+}
+
+func TestExchangeToleratesSmallClockSkewOnIssuedAt(t *testing.T) {
+	tok := idToken(t, claimsWith("iat", float64(time.Now().Add(30*time.Second).Unix())))
+	srv := stubTokenEndpoint(t, http.StatusOK, map[string]any{"id_token": tok})
+
+	if _, err := newTestOIDCClient(srv.URL).Exchange(context.Background(), "code", "verifier"); err != nil {
+		t.Errorf("Exchange() = %v for 30s of clock skew, which is within tolerance", err)
+	}
+}
+
+func TestExchangeKeepsLargeTelegramIDsExact(t *testing.T) {
+	// encoding/json decodes into float64 by default, and ids above 2^53 come back
+	// rounded — silently attaching the session to a neighbouring account.
+	const huge = int64(9007199254740993) // 2^53 + 1
+	tok := idToken(t, claimsWith("id", json.Number(strconv.FormatInt(huge, 10))))
+	srv := stubTokenEndpoint(t, http.StatusOK, map[string]any{"id_token": tok})
+
+	u, err := newTestOIDCClient(srv.URL).Exchange(context.Background(), "code", "verifier")
+	if err != nil {
+		t.Fatalf("Exchange: %v", err)
+	}
+	if u.ID != huge {
+		t.Errorf("ID = %d, want %d — precision was lost through float64", u.ID, huge)
+	}
+}
+
+func TestExchangeDoesNotFollowRedirects(t *testing.T) {
+	// Go's default client follows up to ten redirects. A token endpoint that
+	// answers 302 would have the client read an id_token from wherever it landed,
+	// which is a live bug independent of the broker.
+	var attacker *httptest.Server
+	attacker = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"id_token": idToken(t, claimsWith("id", float64(66666))),
+		})
+	}))
+	t.Cleanup(attacker.Close)
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		http.Redirect(w, nil, attacker.URL+"/token", http.StatusFound)
+	}))
+	t.Cleanup(srv.Close)
+
+	u, err := newTestOIDCClient(srv.URL).Exchange(context.Background(), "code", "verifier")
+	if err == nil {
+		t.Fatalf("Exchange() followed a redirect and returned user %+v", u)
 	}
 }

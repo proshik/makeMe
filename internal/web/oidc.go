@@ -1,6 +1,7 @@
 package web
 
 import (
+	"bytes"
 	"context"
 	"crypto/rand"
 	"crypto/sha256"
@@ -33,16 +34,30 @@ type OIDCClient struct {
 	clientID     string
 	clientSecret string
 	redirectURI  string
-	http         *http.Client
+	// expectedIssuer is the exact iss the id_token must carry. It is
+	// configuration rather than a substring rule, so pointing this client at
+	// something other than Telegram — a local login broker, say — is a
+	// deliberate edit that fails loudly when it is wrong.
+	expectedIssuer string
+	http           *http.Client
 }
 
-func NewOIDCClient(baseURL, clientID, clientSecret, redirectURI string) *OIDCClient {
+func NewOIDCClient(baseURL, clientID, clientSecret, redirectURI, expectedIssuer string) *OIDCClient {
 	return &OIDCClient{
-		baseURL:      strings.TrimRight(baseURL, "/"),
-		clientID:     clientID,
-		clientSecret: clientSecret,
-		redirectURI:  redirectURI,
-		http:         &http.Client{Timeout: 15 * time.Second},
+		baseURL:        strings.TrimRight(baseURL, "/"),
+		clientID:       clientID,
+		clientSecret:   clientSecret,
+		redirectURI:    redirectURI,
+		expectedIssuer: expectedIssuer,
+		http: &http.Client{
+			Timeout: 15 * time.Second,
+			// The default client follows up to ten redirects, which would have
+			// it read an id_token from wherever the last hop pointed. There is
+			// no legitimate redirect on a token endpoint.
+			CheckRedirect: func(req *http.Request, via []*http.Request) error {
+				return fmt.Errorf("token endpoint redirected to %s; refusing to follow", req.URL.Redacted())
+			},
+		},
 	}
 }
 
@@ -135,15 +150,18 @@ func (c *OIDCClient) Exchange(ctx context.Context, code, verifier string) (*Tele
 
 // parseIDToken reads the claims out of the JWT payload.
 //
-// The signature is intentionally NOT verified: the token came straight from
-// Telegram's token endpoint over TLS in a server-to-server call, so the
-// transport already guarantees integrity and there is no public JWKS to check
-// against. The claim checks below are defence in depth, and each is enforced
-// only when the claim is present — this OIDC deployment is non-standard and
-// omits some of them.
+// The signature is intentionally NOT verified: the token comes straight from the
+// token endpoint over TLS in a server-to-server call, so the transport already
+// guarantees integrity. Telegram does publish a JWKS at
+// /.well-known/jwks.json, so verifying is possible and would be the stronger
+// answer; not doing it is a decision, not an absence of means.
+//
+// That makes the claim checks below load-bearing rather than defence in depth,
+// and every one of them is mandatory: enforcing a claim "only if present" hands
+// the decision to whoever issued the token.
 func (c *OIDCClient) parseIDToken(raw string) (*TelegramUser, error) {
 	parts := strings.Split(raw, ".")
-	if len(parts) < 3 {
+	if len(parts) != 3 {
 		return nil, fmt.Errorf("unexpected id_token format: got %d segments, want 3", len(parts))
 	}
 
@@ -152,19 +170,49 @@ func (c *OIDCClient) parseIDToken(raw string) (*TelegramUser, error) {
 		return nil, fmt.Errorf("decode id_token payload: %w", err)
 	}
 
+	// UseNumber keeps integers exact. Through the default float64 a Telegram id
+	// above 2^53 comes back rounded, which quietly attaches the session to a
+	// neighbouring account.
+	dec := json.NewDecoder(bytes.NewReader(payload))
+	dec.UseNumber()
 	var claims map[string]any
-	if err := json.Unmarshal(payload, &claims); err != nil {
+	if err := dec.Decode(&claims); err != nil {
 		return nil, fmt.Errorf("parse id_token claims: %w", err)
 	}
 
-	if exp, ok := claims["exp"].(float64); ok && int64(exp) <= time.Now().Unix() {
+	iss, _ := claims["iss"].(string)
+	if iss == "" {
+		return nil, fmt.Errorf("id_token has no iss claim")
+	}
+	// Exact equality, as OIDC Core 3.1.3.7 requires: a trailing slash makes a
+	// different issuer identifier, and normalising it away is how a check turns
+	// into an approximation.
+	if iss != c.expectedIssuer {
+		return nil, fmt.Errorf("id_token iss is %q, want %q", iss, c.expectedIssuer)
+	}
+
+	if err := checkAudience(claims["aud"], c.clientID); err != nil {
+		return nil, err
+	}
+
+	exp, err := claimUnix(claims["exp"])
+	if err != nil {
+		return nil, fmt.Errorf("id_token exp claim: %w", err)
+	}
+	now := time.Now()
+	if !now.Before(exp) {
 		return nil, fmt.Errorf("id_token has expired")
 	}
-	if aud, ok := claims["aud"].(string); ok && aud != c.clientID {
-		return nil, fmt.Errorf("id_token aud mismatch")
-	}
-	if iss, ok := claims["iss"].(string); ok && !strings.Contains(strings.ToLower(iss), "telegram") {
-		return nil, fmt.Errorf("id_token iss mismatch: %s", iss)
+	// iat is optional in the sense that not every provider sends it, but when it
+	// is there a token minted in the future is a sign something is wrong.
+	if raw, present := claims["iat"]; present {
+		iat, err := claimUnix(raw)
+		if err != nil {
+			return nil, fmt.Errorf("id_token iat claim: %w", err)
+		}
+		if iat.After(now.Add(clockSkew)) {
+			return nil, fmt.Errorf("id_token iat is %s, which is in the future", iat)
+		}
 	}
 
 	id, err := claimInt64(claims["id"])
@@ -180,10 +228,61 @@ func (c *OIDCClient) parseIDToken(raw string) (*TelegramUser, error) {
 	}, nil
 }
 
+// clockSkew is how far ahead of us the issuer's clock may be.
+const clockSkew = 60 * time.Second
+
+// checkAudience accepts aud both as a string and as an array, which OIDC allows.
+// Reading it only as a string leaves an array matching nothing, and a check that
+// matches nothing is a check that is off.
+func checkAudience(v any, clientID string) error {
+	switch aud := v.(type) {
+	case string:
+		if aud != clientID {
+			return fmt.Errorf("id_token aud is %q, want %q", aud, clientID)
+		}
+		return nil
+	case []any:
+		for _, entry := range aud {
+			if s, ok := entry.(string); ok && s == clientID {
+				return nil
+			}
+		}
+		return fmt.Errorf("id_token aud %v does not contain %q", aud, clientID)
+	case nil:
+		return fmt.Errorf("id_token has no aud claim")
+	default:
+		return fmt.Errorf("id_token aud is a %T, want a string or an array of strings", v)
+	}
+}
+
+// claimUnix reads a numeric date claim.
+func claimUnix(v any) (time.Time, error) {
+	switch t := v.(type) {
+	case json.Number:
+		n, err := t.Int64()
+		if err != nil {
+			return time.Time{}, fmt.Errorf("not a whole number: %q", t)
+		}
+		return time.Unix(n, 0), nil
+	case float64:
+		return time.Unix(int64(t), 0), nil
+	case nil:
+		return time.Time{}, fmt.Errorf("missing")
+	default:
+		return time.Time{}, fmt.Errorf("is a %T, want a number", v)
+	}
+}
+
 // claimInt64 accepts both the JSON-number and string spellings of the id claim,
 // since Telegram is not consistent about which it sends.
 func claimInt64(v any) (int64, error) {
 	switch t := v.(type) {
+	case json.Number:
+		n, err := t.Int64()
+		if err != nil {
+			return 0, fmt.Errorf("not a whole number: %q", t)
+		}
+		return n, nil
 	case float64:
 		return int64(t), nil
 	case string:

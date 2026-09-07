@@ -113,7 +113,7 @@ func newTestEnv(t *testing.T, tgID int64, name, username string) *testEnv {
 	srv, err := New(
 		Deps{UserSvc: user.NewService(repo)},
 		jwtSvc,
-		NewOIDCClient(oidcSrv.URL, "client-1", "secret", "https://app.test/auth/telegram/callback"),
+		NewOIDCClient(oidcSrv.URL, "client-1", "secret", "https://app.test/auth/telegram/callback", "https://oauth.telegram.org"),
 		false, // no TLS in tests, so Secure cookies would be dropped
 	)
 	if err != nil {

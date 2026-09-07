@@ -104,7 +104,7 @@ func setupDBEnv(t *testing.T) *dbEnv {
 	srv, err := New(Deps{
 		UserSvc: userSvc, GroupSvc: groupSvc, TaskSvc: taskSvc,
 		ScoringSvc: scoringSvc, SRSRepo: srsRepo, AssessSvc: assessSvc, WordsSvc: wordsSvc, GrammarRepo: grammarRepo, Hub: hub,
-	}, jwtSvc, NewOIDCClient("http://unused", "client-1", "secret", "http://app/cb"), false)
+	}, jwtSvc, NewOIDCClient("http://unused", "client-1", "secret", "http://app/cb", "https://oauth.telegram.org"), false)
 	require.NoError(t, err)
 
 	r := chi.NewRouter()

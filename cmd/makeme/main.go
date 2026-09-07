@@ -193,6 +193,7 @@ func buildWebServer(cfg *config.Config, deps web.Deps) (*web.Server, error) {
 		cfg.TelegramClientID,
 		cfg.TelegramClientSecret,
 		cfg.RedirectURI(),
+		cfg.TelegramExpectedIssuer,
 	)
 
 	srv, err := web.New(deps, jwtSvc, oidc, cfg.CookieSecure)

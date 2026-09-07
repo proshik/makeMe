@@ -303,14 +303,52 @@ Copy `.env.example` to `.env` and fill in the values:
 | `TELEGRAM_CLIENT_SECRET` | `(empty)` | OAuth client secret. |
 | `JWT_SECRET` | `(empty)` | Base64 key for session JWTs, ≥32 bytes decoded. `openssl rand -base64 32`. Startup fails if it is shorter or not base64. |
 | `JWT_TTL_HOURS` | `24` | Session lifetime; the `auth_token` cookie max-age is derived from it. |
-| `COOKIE_SECURE` | `true` | Set `false` only for local http development. |
-| `TELEGRAM_OAUTH_BASE_URL` | `https://oauth.telegram.org` | OIDC provider base. Override only in tests. |
+| `COOKIE_SECURE` | `true` | Set `false` for local http development. Chrome and Firefox accept a `Secure` cookie from `http://localhost`; Safari drops it silently, and no browser accepts it from `http://192.168.x.x`, so testing from a phone needs this too. |
+| `TELEGRAM_OAUTH_BASE_URL` | `https://oauth.telegram.org` | OIDC provider base. Point it at a login broker for local development. |
+| `TELEGRAM_EXPECTED_ISSUER` | `https://oauth.telegram.org` | The exact `iss` the id_token must carry, compared byte for byte. Changed together with the base URL and never derived from it: pointing the flow somewhere else has to be deliberate. |
 
 The web UI is optional: with `APP_BASE_URL`, `TELEGRAM_CLIENT_ID`, `TELEGRAM_CLIENT_SECRET` or `JWT_SECRET` unset it is not mounted and only the bot runs. A warning is logged at startup saying which variables are missing.
 
+### Local development without ngrok
+
+Telegram only accepts publicly resolvable HTTPS redirect URIs, which is why the
+login used to be untestable locally. [telegram-login-broker](../telegram-login-broker)
+solves that: it is registered in BotFather once and forwards the browser to any
+loopback port afterwards. Run it in mock mode and point two variables at it:
+
+```sh
+TELEGRAM_OAUTH_BASE_URL=http://127.0.0.1:8091
+TELEGRAM_EXPECTED_ISSUER=http://127.0.0.1:8091
+TELEGRAM_CLIENT_ID=makeme
+TELEGRAM_CLIENT_SECRET=dev-secret     # must match the broker's BROKER_CLIENTS
+COOKIE_SECURE=false
+```
+
+The whole exchange can be exercised without starting the bot at all:
+
+```sh
+BROKER_URL=http://127.0.0.1:8091 BROKER_CLIENT_ID=makeme BROKER_CLIENT_SECRET=dev-secret \
+  go test ./internal/web -run TestLoginAgainstALiveBroker -v
+```
+
+That test drives this package's own `OIDCClient` — not a stub — through a real
+broker: authorization URL, PKCE, code exchange, id_token parsing, and a replay of
+the spent code. Without `BROKER_URL` it skips, so `go test ./...` stays hermetic.
+
+What is already proven and what still has to be checked against real Telegram is
+tracked in the broker's [docs/VERIFICATION.md](../telegram-login-broker/docs/VERIFICATION.md).
+
+⚠️ **Starting the binary needs a separate dev bot.** `main.go` calls
+`SetWebhook(ctx, cfg.WEBHOOK_URL)` on startup, and with `WEBHOOK_URL` empty that
+**deletes the webhook** of whichever bot's token is in `TELEGRAM_TOKEN`. Running
+locally with the production token takes production down.
+
 ### First deployment of the web UI
 
-Not yet performed — the interface has only ever run against a stub OIDC provider. See "Веб-интерфейс: что не проверено" in `docs/plan.md` for the full list of what that leaves unproven.
+Not yet performed. The OIDC half of the login now works end to end against a real
+independent implementation (see above), but the interface has never run against
+Telegram itself, and no browser has yet been asked to accept its cookies. See
+"Веб-интерфейс: что не проверено" in `docs/plan.md` for what that leaves unproven.
 
 1. Register an OAuth application for the bot and obtain `TELEGRAM_CLIENT_ID` / `TELEGRAM_CLIENT_SECRET`. These are **not** the same as `TELEGRAM_TOKEN`.
 2. `openssl rand -base64 32` → `JWT_SECRET`. Startup fails if it is shorter than 32 bytes decoded, so a bad value surfaces immediately rather than on first login.
