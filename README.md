@@ -448,10 +448,11 @@ Two events exist. `progress` goes to the user's own sessions when they answer an
 
 What each page does with an event is a deliberate split. The leaderboard refetches itself (`hx-trigger="makeme:leaderboard from:body"`): it is a passive page with nothing to lose. Tasks and words only reveal a notice offering to reload — pulling the slot out from under someone who is typing an answer is worse than showing them something slightly stale.
 
-Three things this needed that are easy to miss:
+Four things this needed that are easy to miss:
 
 - `http.Server`'s `WriteTimeout` is the usual suspect for a socket that dies on a timer, and this server sets one — but it does not apply. `net/http` clears both deadlines when a connection is hijacked, which `websocket.Accept` does. `TestSocketOutlivesWriteTimeout` pins that down against a deliberately short timeout, so the assumption is rechecked if the value or the library ever changes.
 - The hub cannot tell sessions apart, so the tab that answered also receives `progress`. Threading a socket identity through a domain event would drag transport into the domain; the client suppresses the notice for three seconds after its own request instead.
+- The hub is required. `realtime.js` is on every page and always opens `/ws`, so a web UI without a hub is broken rather than degraded: the first production deploy shipped with the hub created but never passed into `web.Deps`, `/ws` answered 404 and every tab kept reconnecting, with nothing in the logs. `web.New` now returns `ErrNoHub` instead, and the binary refuses to start (`web: Deps.Hub is nil; the web UI needs the realtime hub`), so the same slip fails the deploy. With the web UI disabled no hub is needed.
 - The hub is in-process, so events reach only sessions on this instance. The domain talks to `task.Notifier`, not to the hub, so a Postgres `LISTEN/NOTIFY` implementation can replace it without the domain noticing.
 
 ### Navigation

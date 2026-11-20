@@ -8,6 +8,7 @@ import (
 	"crypto/sha256"
 	"embed"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"html/template"
 	"io/fs"
@@ -72,7 +73,19 @@ type Server struct {
 	cookieSecure bool
 }
 
+// ErrNoHub is returned by New when Deps.Hub is nil. Every page loads
+// realtime.js, which always opens /ws, so a web UI without a hub is not a
+// degraded mode but a broken one: the socket never connects and the browser
+// reconnects forever. Refusing to start makes a forgotten wiring fail the deploy instead
+// of shipping silently, as it once did.
+//
+// The message carries no "web:" prefix: the caller in cmd/makeme adds one.
+var ErrNoHub = errors.New("Deps.Hub is nil; the web UI needs the realtime hub")
+
 func New(deps Deps, jwtSvc *JWTService, oidc *OIDCClient, cookieSecure bool) (*Server, error) {
+	if deps.Hub == nil {
+		return nil, ErrNoHub
+	}
 	version, err := staticVersion()
 	if err != nil {
 		return nil, err

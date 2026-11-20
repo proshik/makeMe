@@ -17,10 +17,6 @@ import (
 // Verified by running against a server with a WriteTimeout well below the
 // socket's lifetime — see TestSocketOutlivesWriteTimeout.
 func (s *Server) handleWS(w http.ResponseWriter, r *http.Request) {
-	if s.hub == nil {
-		http.Error(w, "realtime disabled", http.StatusNotFound)
-		return
-	}
 	u := UserFromContext(r.Context())
 
 	var groupID int64

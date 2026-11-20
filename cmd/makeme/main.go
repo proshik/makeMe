@@ -85,8 +85,9 @@ func run(ctx context.Context) error {
 	grammarGen := task.NewGrammarGenerator(grammarRepo)
 	taskSvc := task.NewService(taskRepo, srsRepo, cfg.MaxRoundsPerDay, vocabGen, grammarGen)
 
-	// The hub is optional plumbing: with the web UI disabled nothing connects
-	// to it, and the task service works the same without a notifier.
+	// With the web UI disabled nothing connects to the hub, and the task
+	// service works the same without a notifier. With it enabled the hub is
+	// required: web.New refuses to start without one.
 	hub := realtime.New()
 	taskSvc.SetNotifier(hub)
 
@@ -138,6 +139,7 @@ func run(ctx context.Context) error {
 		SRSRepo:     srsRepo,
 		WordsSvc:    wordsSvc,
 		GrammarRepo: grammarRepo,
+		Hub:         hub,
 	})
 	if err != nil {
 		return err

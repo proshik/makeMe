@@ -15,6 +15,7 @@ import (
 	"github.com/go-chi/chi/v5"
 
 	"makeMe/internal/domain/user"
+	"makeMe/internal/realtime"
 )
 
 // fakeUserRepo is an in-memory stand-in for the Postgres repository. Create is
@@ -111,7 +112,7 @@ func newTestEnv(t *testing.T, tgID int64, name, username string) *testEnv {
 	}
 
 	srv, err := New(
-		Deps{UserSvc: user.NewService(repo)},
+		Deps{UserSvc: user.NewService(repo), Hub: realtime.New()},
 		jwtSvc,
 		NewOIDCClient(oidcSrv.URL, "client-1", "secret", "https://app.test/auth/telegram/callback", "https://oauth.telegram.org"),
 		false, // no TLS in tests, so Secure cookies would be dropped
