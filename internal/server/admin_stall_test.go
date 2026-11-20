@@ -2,12 +2,16 @@ package server
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"fmt"
+	"io"
+	"log/slog"
 	"net"
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -125,5 +129,102 @@ func TestSeedAudio_ClientDisconnectCancelsRun(t *testing.T) {
 	case <-cancelled:
 	case <-time.After(5 * time.Second):
 		t.Fatal("seed run still going 5s after the client disconnected")
+	}
+}
+
+// syncBuffer collects log output written from the handler's goroutine.
+type syncBuffer struct {
+	mu  sync.Mutex
+	buf bytes.Buffer
+}
+
+func (b *syncBuffer) Write(p []byte) (int, error) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	return b.buf.Write(p)
+}
+
+func (b *syncBuffer) String() string {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	return b.buf.String()
+}
+
+// captureLogs points the default slog logger at a buffer for this test.
+func captureLogs(t *testing.T) *syncBuffer {
+	t.Helper()
+	buf := &syncBuffer{}
+	prev := slog.Default()
+	slog.SetDefault(slog.New(slog.NewTextHandler(buf, nil)))
+	t.Cleanup(func() { slog.SetDefault(prev) })
+	return buf
+}
+
+// A run cut short must not be logged as "completed": that line once made a
+// broken production stream look like a success.
+func TestSeedAudio_AbortedRunIsNotLoggedAsCompleted(t *testing.T) {
+	logs := captureLogs(t)
+	seed, cancelled := endlessSeed(16)
+	d := &adminDeps{token: "secret", seed: seed}
+
+	srv := newSeedAudioServer(d)
+	srv.Start()
+	t.Cleanup(srv.Close)
+
+	req, err := http.NewRequest(http.MethodPost, srv.URL+"/admin/seed-audio", strings.NewReader(`{"levels":["A1"]}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Authorization", "Bearer secret")
+	resp, err := srv.Client().Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := bufio.NewReader(resp.Body).ReadString('\n'); err != nil {
+		t.Fatalf("first line: %v", err)
+	}
+	resp.Body.Close()
+	<-cancelled
+
+	deadline := time.Now().Add(5 * time.Second)
+	for !strings.Contains(logs.String(), "admin seed-audio aborted before done") {
+		if time.Now().After(deadline) {
+			t.Fatalf("no abort line in the log:\n%s", logs.String())
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	if strings.Contains(logs.String(), "admin seed-audio completed") {
+		t.Fatalf("aborted run logged as completed:\n%s", logs.String())
+	}
+}
+
+// A run that reaches "done" is still logged as completed.
+func TestSeedAudio_FinishedRunIsLoggedAsCompleted(t *testing.T) {
+	logs := captureLogs(t)
+	d := &adminDeps{token: "secret", seed: func(ctx context.Context, _ audio.Options) <-chan audio.Event {
+		out := make(chan audio.Event, 1)
+		out <- audio.Event{Type: audio.EventDone}
+		close(out)
+		return out
+	}}
+	srv := newSeedAudioServer(d)
+	srv.Start()
+	t.Cleanup(srv.Close)
+
+	req, err := http.NewRequest(http.MethodPost, srv.URL+"/admin/seed-audio", strings.NewReader(`{"levels":["A1"]}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Authorization", "Bearer secret")
+	resp, err := srv.Client().Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	io.Copy(io.Discard, resp.Body)
+	resp.Body.Close()
+
+	// The handler logs before it returns, and the body ends when it returns.
+	if out := logs.String(); !strings.Contains(out, "admin seed-audio completed") || strings.Contains(out, "aborted") {
+		t.Fatalf("finished run not logged as completed:\n%s", out)
 	}
 }

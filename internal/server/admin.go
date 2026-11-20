@@ -127,6 +127,7 @@ func (d *adminDeps) handleSeedAudio(w http.ResponseWriter, r *http.Request) {
 		Levels: req.Levels,
 		Delay:  delay,
 	})
+	sawDone := false
 	for ev := range events {
 		if err := rc.SetWriteDeadline(time.Now().Add(lineTimeout)); err != nil {
 			slog.Warn("admin seed-audio: cannot set write deadline", "error", err)
@@ -144,7 +145,16 @@ func (d *adminDeps) handleSeedAudio(w http.ResponseWriter, r *http.Request) {
 			slog.Warn("admin seed-audio flush failed (client stalled or gone?)", "error", err)
 			return
 		}
+		sawDone = sawDone || ev.Type == audio.EventDone
 	}
 
+	// audio.Seed closes the channel without "done" when the request context
+	// is cancelled: the client went away, or a write failed and net/http
+	// cancelled the context (chi's Flush does not report the failure itself).
+	// Logging that as "completed" would hide a cut run.
+	if !sawDone {
+		slog.Warn("admin seed-audio aborted before done", "levels", req.Levels, "error", context.Cause(r.Context()))
+		return
+	}
 	slog.Info("admin seed-audio completed", "levels", req.Levels)
 }

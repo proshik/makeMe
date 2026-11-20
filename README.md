@@ -537,7 +537,7 @@ go run ./cmd/seed-audio -levels=A1,A2 -delay-ms=500
 #### Limits to expect
 
 * Free Dictionary returns no audio at all for ~3–5% of common words (e.g. `look`, `room`, `sea`); they end up as `"status":"not_found"` and stay with empty `audio_url`. The user-facing `🔊 Послушать` button will reply "Произношение не найдено" for these — acceptable for v1.
-* Disconnect (closing curl, network drop) is handled: the server cancels the run via `ctx.Done()` so no quota is wasted on a dropped client.
+* Disconnect (closing curl, network drop) is handled: the server cancels the run via `ctx.Done()` so no quota is wasted on a dropped client. A run that ends without its `done` line, whether the client left, stopped reading or a proxy cut the response, is logged as `admin seed-audio aborted before done` with the cause, not as `completed`. Look for that line in the server log when a client saw no `done`.
 
 ## Development
 
