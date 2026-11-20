@@ -598,6 +598,8 @@ CI (`.github/workflows/ci.yml`) has three jobs:
 
 - **test** — on every push and PR to `master`: `make css-check`, then `go test -v -race ./...` with the Go version from `go.mod`. The runner has Docker, so the testcontainers suites run there too.
 - **docker-build** — on PRs only: builds the image for `linux/amd64` without pushing, so a broken Dockerfile shows up before the merge.
-- **publish** — on push to `master` only, after `test`: pushes `ghcr.io/proshik/makeme:latest` and `:<sha>` with the workflow's `GITHUB_TOKEN` (`packages: write`).
+- **publish** — on push to `master` or a manual run on `master`, after `test`: pushes `ghcr.io/proshik/makeme:latest` and `:<sha>` with the workflow's `GITHUB_TOKEN` (`packages: write`).
+
+The workflow can also be started by hand (`workflow_dispatch`: **Actions → CI → Run workflow**, or `gh workflow run ci.yml --ref master`). On `master` a manual run tests and publishes, just like a push; on any other branch it only runs `test`.
 
 A newer push to a PR cancels the older run. On `master` a running publish is never interrupted and runs go one at a time, so `latest` is never overwritten by an older commit. GitHub keeps only the newest *pending* run, though, so in a burst of pushes an intermediate commit may get no image.

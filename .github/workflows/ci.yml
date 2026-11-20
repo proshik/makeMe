@@ -7,13 +7,17 @@ on:
   pull_request:
     branches:
       - master
+  # Ручной запуск: без него CI нечем стартовать, если push-события не было
+  # (например, ветки пришли одним push'ем в только что созданный репозиторий).
+  workflow_dispatch:
 
 # A newer commit on a PR makes the older run pointless, so it is cancelled.
 # On master a running publish is never interrupted — a half-pushed run would
 # leave that commit without its image, and krill deploys by commit SHA — and
 # runs go one at a time, so `latest` cannot be overwritten by an older commit.
 # GitHub keeps only the newest pending run, though: in a burst of pushes an
-# intermediate commit may get no image at all.
+# intermediate commit may get no image at all. A manual run on master shares the
+# group with pushes and is not cancelled either: only pull_request cancels.
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
@@ -71,7 +75,9 @@ jobs:
   publish:
     name: Publish image
     needs: test
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    if: >-
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
+      github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
