@@ -110,21 +110,23 @@ func TestBearerToken(t *testing.T) {
 
 // The production http.Server sets WriteTimeout to 10s, a deadline on the whole
 // response rather than on each write. A seed-audio run lasts minutes, so
-// without lifting it for this response the client got the first few ndjson
+// without replacing it for this response the client got the first few ndjson
 // lines and then a dropped connection. This test runs the handler behind a
 // real http.Server whose timeouts are far shorter than the stream and requires
-// every line, including the final "done", to arrive. ReadTimeout is set too,
-// as in production, so the test also catches it should it ever start cutting
-// the stream (today it does not).
+// every line, including the final "done", to arrive. The gap between lines is
+// longer than the per-line timeout as well: a slow dictionary lookup must not
+// cut the stream either. ReadTimeout is set too, as in production, so the test
+// also catches it should it ever start cutting the stream (today it does not).
 func TestSeedAudio_StreamOutlivesServerTimeouts(t *testing.T) {
 	const (
 		words   = 10
-		step    = 60 * time.Millisecond // 10 × 60ms ≈ 600ms of streaming
+		step    = 120 * time.Millisecond // 10 × 120ms ≈ 1.2s of streaming
 		timeout = 200 * time.Millisecond
 	)
 
 	d := &adminDeps{
-		token: "secret",
+		token:       "secret",
+		lineTimeout: 100 * time.Millisecond, // shorter than step on purpose
 		seed: func(ctx context.Context, opts audio.Options) <-chan audio.Event {
 			out := make(chan audio.Event)
 			go func() {

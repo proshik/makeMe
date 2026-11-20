@@ -20,7 +20,15 @@ type adminDeps struct {
 	// means audio seeding is not wired. Tests substitute their own stream.
 	seed  func(ctx context.Context, opts audio.Options) <-chan audio.Event
 	token string // empty => admin endpoints respond 503
+	// lineTimeout bounds each streamed write; zero means seedAudioLineTimeout.
+	lineTimeout time.Duration
 }
+
+// seedAudioLineTimeout bounds a single ndjson line of POST /admin/seed-audio.
+// It replaces the server's WriteTimeout for that response, which bounds the
+// whole response and would cut a run that lasts minutes. The gap between lines
+// does not count: the deadline is re-armed right before every write.
+const seedAudioLineTimeout = 30 * time.Second
 
 // newAdminDeps wires the admin handlers from the public AdminConfig.
 func newAdminDeps(cfg AdminConfig) *adminDeps {
@@ -88,17 +96,22 @@ func (d *adminDeps) handleSeedAudio(w http.ResponseWriter, r *http.Request) {
 		delay = 500 * time.Millisecond
 	}
 
-	flusher, ok := w.(http.Flusher)
-	if !ok {
+	if _, ok := w.(http.Flusher); !ok {
 		http.Error(w, "streaming not supported", http.StatusInternalServerError)
 		return
 	}
 
-	// The server's WriteTimeout bounds the whole response, not each line, and
-	// a run lasts minutes. Lift it for this response only.
-	if err := http.NewResponseController(w).SetWriteDeadline(time.Time{}); err != nil {
-		slog.Error("admin seed-audio: cannot lift write deadline", "error", err)
-		http.Error(w, "cannot lift write deadline for streaming", http.StatusInternalServerError)
+	// The server's WriteTimeout bounds the whole response, and a run lasts
+	// minutes. Replace it with a deadline per line: a long run streams to the
+	// end, and a client that stops reading still releases the run.
+	lineTimeout := d.lineTimeout
+	if lineTimeout <= 0 {
+		lineTimeout = seedAudioLineTimeout
+	}
+	rc := http.NewResponseController(w)
+	if err := rc.SetWriteDeadline(time.Now().Add(lineTimeout)); err != nil {
+		slog.Error("admin seed-audio: cannot set write deadline", "error", err)
+		http.Error(w, "cannot set write deadline for streaming", http.StatusInternalServerError)
 		return
 	}
 
@@ -115,11 +128,22 @@ func (d *adminDeps) handleSeedAudio(w http.ResponseWriter, r *http.Request) {
 		Delay:  delay,
 	})
 	for ev := range events {
+		if err := rc.SetWriteDeadline(time.Now().Add(lineTimeout)); err != nil {
+			slog.Warn("admin seed-audio: cannot set write deadline", "error", err)
+			return
+		}
 		if err := enc.Encode(ev); err != nil {
 			slog.Warn("admin seed-audio encode failed (client disconnect?)", "error", err)
 			return
 		}
-		flusher.Flush()
+		// http.Flusher swallows write errors; the controller reports them, so
+		// a write that cannot finish within lineTimeout (the client stopped
+		// reading and the socket buffers are full) ends the handler and, with
+		// it, the run.
+		if err := rc.Flush(); err != nil {
+			slog.Warn("admin seed-audio flush failed (client stalled or gone?)", "error", err)
+			return
+		}
 	}
 
 	slog.Info("admin seed-audio completed", "levels", req.Levels)
