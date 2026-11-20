@@ -160,7 +160,7 @@ func TestSeedAudio_StreamOutlivesServerTimeouts(t *testing.T) {
 		},
 	}
 
-	srv := httptest.NewUnstartedServer(adminAuth(d.token, d.handleSeedAudio))
+	srv := newSeedAudioServer(d)
 	srv.Config.WriteTimeout = timeout
 	srv.Config.ReadTimeout = timeout
 	srv.Start()

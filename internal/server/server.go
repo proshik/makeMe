@@ -25,10 +25,7 @@ type AdminConfig struct {
 // the bot works without it (see Config.WebEnabled).
 func New(tgBot *telegram.Bot, admin AdminConfig, webSrv *web.Server) *chi.Mux {
 	r := chi.NewRouter()
-
-	r.Use(chimw.Logger)
-	r.Use(chimw.Recoverer)
-	r.Use(chimw.RequestID)
+	useCommonMiddleware(r)
 
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -48,4 +45,14 @@ func New(tgBot *telegram.Bot, admin AdminConfig, webSrv *web.Server) *chi.Mux {
 	}
 
 	return r
+}
+
+// useCommonMiddleware installs the middleware every route runs behind. The
+// seed-audio tests mount the handler through it too: streaming depends on the
+// ResponseWriter chain (deadlines and flushes reach the connection only
+// through Unwrap), so testing the bare handler would not cover production.
+func useCommonMiddleware(r chi.Router) {
+	r.Use(chimw.Logger)
+	r.Use(chimw.Recoverer)
+	r.Use(chimw.RequestID)
 }
