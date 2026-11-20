@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/subtle"
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -128,32 +129,38 @@ func (d *adminDeps) handleSeedAudio(w http.ResponseWriter, r *http.Request) {
 		Delay:  delay,
 	})
 	sawDone := false
+	var failure error
 	for ev := range events {
 		if err := rc.SetWriteDeadline(time.Now().Add(lineTimeout)); err != nil {
-			slog.Warn("admin seed-audio: cannot set write deadline", "error", err)
-			return
+			failure = fmt.Errorf("set write deadline: %w", err)
+			break
 		}
 		if err := enc.Encode(ev); err != nil {
-			slog.Warn("admin seed-audio encode failed (client disconnect?)", "error", err)
-			return
+			failure = fmt.Errorf("encode: %w", err)
+			break
 		}
-		// http.Flusher swallows write errors; the controller reports them, so
-		// a write that cannot finish within lineTimeout (the client stopped
-		// reading and the socket buffers are full) ends the handler and, with
-		// it, the run.
+		// rc.Flush reports an error only when every wrapper exposes
+		// FlushError. chi's middleware wrapper implements plain Flush, so
+		// behind it this always returns nil, even when the write timed out.
+		// A failed write is caught anyway: net/http cancels the request
+		// context, audio.Seed stops, and the check after the loop sees it.
 		if err := rc.Flush(); err != nil {
-			slog.Warn("admin seed-audio flush failed (client stalled or gone?)", "error", err)
-			return
+			failure = fmt.Errorf("flush: %w", err)
+			break
 		}
 		sawDone = sawDone || ev.Type == audio.EventDone
 	}
 
-	// audio.Seed closes the channel without "done" when the request context
-	// is cancelled: the client went away, or a write failed and net/http
-	// cancelled the context (chi's Flush does not report the failure itself).
-	// Logging that as "completed" would hide a cut run.
-	if !sawDone {
-		slog.Warn("admin seed-audio aborted before done", "levels", req.Levels, "error", context.Cause(r.Context()))
+	// A run counts as completed only when "done" was written and no write
+	// failed. A failed write cancels the request context even when Flush
+	// stays silent about it, so a cancelled context means the client may not
+	// have received what was written, "done" included. Every such ending gets
+	// this one line, so the log never shows a cut run as a success.
+	if failure == nil {
+		failure = context.Cause(r.Context())
+	}
+	if !sawDone || failure != nil {
+		slog.Warn("admin seed-audio aborted before done", "levels", req.Levels, "error", failure)
 		return
 	}
 	slog.Info("admin seed-audio completed", "levels", req.Levels)

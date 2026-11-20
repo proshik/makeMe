@@ -228,3 +228,64 @@ func TestSeedAudio_FinishedRunIsLoggedAsCompleted(t *testing.T) {
 		t.Fatalf("finished run not logged as completed:\n%s", out)
 	}
 }
+
+// Every way a run can end without "done" reaching the client must produce the
+// one documented abort line, and never "completed". A 1ns line timeout makes
+// the first flush fail deterministically. Behind chi that failure is not
+// reported by Flush; net/http cancels the request context instead, and the
+// next Encode hits the response's sticky write error.
+func TestSeedAudio_FailedWriteIsLoggedAsAborted(t *testing.T) {
+	cases := map[string][]audio.Event{
+		// The flush of "done" itself fails: done was encoded, never delivered.
+		"done line fails": {{Type: audio.EventDone}},
+		// An earlier line fails; the handler leaves through the Encode error.
+		"earlier line fails": {{Type: audio.EventWord, Word: "w"}, {Type: audio.EventDone}},
+		// Enough lines after the failure for the sticky error to reach Encode.
+		"encode fails after it": {
+			{Type: audio.EventWord, Word: "w1"}, {Type: audio.EventWord, Word: "w2"},
+			{Type: audio.EventWord, Word: "w3"}, {Type: audio.EventWord, Word: "w4"},
+			{Type: audio.EventDone},
+		},
+	}
+	for name, events := range cases {
+		t.Run(name, func(t *testing.T) {
+			logs := captureLogs(t)
+			d := &adminDeps{
+				token:       "secret",
+				lineTimeout: time.Nanosecond,
+				seed: func(context.Context, audio.Options) <-chan audio.Event {
+					out := make(chan audio.Event, len(events))
+					for _, ev := range events {
+						out <- ev
+					}
+					close(out)
+					return out
+				},
+			}
+			srv := newSeedAudioServer(d)
+			srv.Start()
+			t.Cleanup(srv.Close)
+
+			req, err := http.NewRequest(http.MethodPost, srv.URL+"/admin/seed-audio", strings.NewReader(`{"levels":["A1"]}`))
+			if err != nil {
+				t.Fatal(err)
+			}
+			req.Header.Set("Authorization", "Bearer secret")
+			if resp, err := srv.Client().Do(req); err == nil {
+				io.Copy(io.Discard, resp.Body)
+				resp.Body.Close()
+			}
+
+			deadline := time.Now().Add(5 * time.Second)
+			for !strings.Contains(logs.String(), "admin seed-audio aborted before done") {
+				if time.Now().After(deadline) {
+					t.Fatalf("no abort line in the log:\n%s", logs.String())
+				}
+				time.Sleep(10 * time.Millisecond)
+			}
+			if strings.Contains(logs.String(), "admin seed-audio completed") {
+				t.Fatalf("failed run logged as completed:\n%s", logs.String())
+			}
+		})
+	}
+}
