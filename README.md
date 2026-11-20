@@ -350,15 +350,59 @@ independent implementation (see above), but the interface has never run against
 Telegram itself, and no browser has yet been asked to accept its cookies. See
 "Веб-интерфейс: что не проверено" in `docs/plan.md` for what that leaves unproven.
 
+#### Where the image comes from
+
+The target is krill, which deploys ready-made images rather than building from
+source. CI publishes one on every push to `master`, after the tests pass:
+
+```
+ghcr.io/proshik/makeme:<commit-sha>   # deploy this one — it pins the exact build
+ghcr.io/proshik/makeme:latest
+```
+
+The name is lower-case on purpose: GHCR rejects upper case, so it is not the
+repository's `makeMe`. The image is `linux/amd64` only, listens on `8080`
+(`EXPOSE 8080`, matching the `PORT` default), runs as uid 10001, and carries
+`migrations/` and `data/` under `/app`. Migrations and the JSON seed run on every
+start, so a fresh database needs nothing beyond the variables below. No image has
+been published yet. The repository is private, so the GHCR package will be private
+too. krill pulls private images through an org-level registry credential
+(**Settings → Registries**, then chosen on the app's **General** tab). The
+neighbouring `proshik-blog` and `lets-project` packages are private as well, so a
+`ghcr.io` credential already exists. Pick it when creating the app; it works only
+if its token can read this package too (a classic token with `read:packages`
+covers every package of the account).
+
+#### Environment on krill
+
+Values live in krill's secret store, never in the repository.
+
+| Variable | Why it is required |
+|---|---|
+| `DATABASE_URL` | Startup fails without it. |
+| `TELEGRAM_TOKEN` | Startup fails without it. The **production** bot. |
+| `WEBHOOK_URL` | `https://<host>/webhook`. **Must be set:** empty deletes the bot's webhook on startup. |
+| `APP_BASE_URL` | Public origin; the redirect URI is derived from it. |
+| `TELEGRAM_CLIENT_ID`, `TELEGRAM_CLIENT_SECRET` | OAuth pair from BotFather. Without them the web UI is not mounted. |
+| `JWT_SECRET` | Session key, ≥32 bytes base64. Without it the web UI is not mounted. |
+| `ADMIN_TOKEN` | Needed for `POST /admin/seed-audio` in step 5; without it every `/admin/*` returns 503. |
+
+Leave `TELEGRAM_OAUTH_BASE_URL`, `TELEGRAM_EXPECTED_ISSUER` and `COOKIE_SECURE`
+at their defaults in production: the first two point at Telegram itself, and the
+cookie must stay `Secure`. `PORT`, `TIMEZONE`, `SCHEDULER_TIME` and the rest are
+optional (see the table above).
+
+#### Steps
+
 1. Register an OAuth application for the bot and obtain `TELEGRAM_CLIENT_ID` / `TELEGRAM_CLIENT_SECRET`. These are **not** the same as `TELEGRAM_TOKEN`.
 2. `openssl rand -base64 32` → `JWT_SECRET`. Startup fails if it is shorter than 32 bytes decoded, so a bad value surfaces immediately rather than on first login.
 3. Set `APP_BASE_URL` to the public origin. The redirect URI is derived as `$APP_BASE_URL/auth/telegram/callback` and must match what was registered exactly.
-4. Deploy, then confirm in this order — each step depends on the previous one working:
+4. Deploy `ghcr.io/proshik/makeme:<sha>` with the environment above. In the logs expect `migrations applied`, three `seed:` lines and `web UI enabled`; then confirm in this order — each step depends on the previous one working:
    - `GET /login` renders and the button leads to Telegram.
    - Signing in lands back on `/` as the right user. A user who already exists in the bot must keep their level and progress.
    - `websocat -H="Cookie: auth_token=<jwt>" wss://<host>/ws` stays open longer than the platform's idle timeout. The server pings every 25s; a shorter proxy timeout will cut the socket.
    - Answer a task in the bot with the browser open on `/leaderboard` — the standings should move without a reload.
-5. Populate pronunciation with `POST /admin/seed-audio` (see below). Until then the "Послушать" button has nothing to play, and that path has never been exercised.
+5. **After the first deploy, run `POST /admin/seed-audio`** (see [Production workflow](#production-workflow)). `audio_url` is not in `data/words.json` and the startup seeder never fills it, so on a fresh database it is empty for every word. Until then the "Послушать" button has nothing to play, and that path has never been exercised.
 
 ## Web UI
 
@@ -510,6 +554,23 @@ make migrate-down      # roll back one migration
 make migrate-create name=add_something   # scaffold a new goose migration
 ```
 
+### Docker image
+
+```bash
+docker build --platform linux/amd64 -t makeme:local .
+```
+
+The builder stage runs on the host's own platform and cross-compiles to the
+target, so this works on Apple Silicon too. Running the Go toolchain itself under
+qemu crashes in `go mod download`. `tailwind.css` is not rebuilt inside the image:
+`//go:embed` takes the committed file, so run `make css` first if templates
+changed. `.dockerignore` keeps `.env` out of the build context. The context is
+copied wholesale, and without that rule real tokens would end up in an image
+layer.
+
+`docker compose up` builds the same image and runs it next to PostgreSQL. Use a
+dev bot's token in `.env`; see the warning about `WEBHOOK_URL` above.
+
 ### Seed data
 
 Three JSON files are seeded automatically every time the application starts — no separate command needed:
@@ -535,4 +596,10 @@ go test ./internal/telegram/ -v -count=1   # integration suite (needs Docker)
 go test -race ./...                        # everything — this is what CI runs
 ```
 
-CI (`.github/workflows/ci.yml`) runs `go test -v -race ./...` on Go 1.26 for every push and PR to `master`.
+CI (`.github/workflows/ci.yml`) has three jobs:
+
+- **test** — on every push and PR to `master`: `make css-check`, then `go test -v -race ./...` with the Go version from `go.mod`. The runner has Docker, so the testcontainers suites run there too.
+- **docker-build** — on PRs only: builds the image for `linux/amd64` without pushing, so a broken Dockerfile shows up before the merge.
+- **publish** — on push to `master` only, after `test`: pushes `ghcr.io/proshik/makeme:latest` and `:<sha>` with the workflow's `GITHUB_TOKEN` (`packages: write`).
+
+A newer push to a PR cancels the older run. On `master` a running publish is never interrupted and runs go one at a time, so `latest` is never overwritten by an older commit. GitHub keeps only the newest *pending* run, though, so in a burst of pushes an intermediate commit may get no image.
