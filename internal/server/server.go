@@ -38,11 +38,7 @@ func New(tgBot *telegram.Bot, admin AdminConfig, webSrv *web.Server) *chi.Mux {
 
 	r.Post("/webhook", tgBot.WebhookHandler())
 
-	deps := &adminDeps{
-		pool:       admin.Pool,
-		dictClient: admin.DictClient,
-		token:      admin.AdminToken,
-	}
+	deps := newAdminDeps(admin)
 	r.Route("/admin", func(ar chi.Router) {
 		ar.Post("/seed-audio", adminAuth(deps.token, deps.handleSeedAudio))
 	})

@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"crypto/subtle"
 	"encoding/json"
 	"log/slog"
@@ -8,18 +9,28 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jackc/pgx/v5/pgxpool"
-
 	"makeMe/internal/audio"
-	"makeMe/internal/dictionary"
 )
 
 // adminDeps groups the dependencies an admin handler needs. Kept private to
 // the package; constructed inside server.New from the public AdminConfig.
 type adminDeps struct {
-	pool       *pgxpool.Pool
-	dictClient *dictionary.Client
-	token      string // empty => admin endpoints respond 503
+	// seed produces the seeding event stream. server.New binds it to
+	// audio.Seed when a pool and a dictionary client are configured; nil
+	// means audio seeding is not wired. Tests substitute their own stream.
+	seed  func(ctx context.Context, opts audio.Options) <-chan audio.Event
+	token string // empty => admin endpoints respond 503
+}
+
+// newAdminDeps wires the admin handlers from the public AdminConfig.
+func newAdminDeps(cfg AdminConfig) *adminDeps {
+	d := &adminDeps{token: cfg.AdminToken}
+	if cfg.Pool != nil && cfg.DictClient != nil {
+		d.seed = func(ctx context.Context, opts audio.Options) <-chan audio.Event {
+			return audio.Seed(ctx, cfg.Pool, cfg.DictClient, opts)
+		}
+	}
+	return d
 }
 
 // adminAuth wraps a handler with constant-time bearer-token check.
@@ -58,7 +69,7 @@ type seedAudioRequest struct {
 // handleSeedAudio streams ndjson progress while bulk-fetching pronunciation.
 // The response is chunked; clients should read line-by-line ("curl -N").
 func (d *adminDeps) handleSeedAudio(w http.ResponseWriter, r *http.Request) {
-	if d.pool == nil || d.dictClient == nil {
+	if d.seed == nil {
 		http.Error(w, "audio seeding not wired", http.StatusServiceUnavailable)
 		return
 	}
@@ -83,6 +94,14 @@ func (d *adminDeps) handleSeedAudio(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// The server's WriteTimeout bounds the whole response, not each line, and
+	// a run lasts minutes. Lift it for this response only.
+	if err := http.NewResponseController(w).SetWriteDeadline(time.Time{}); err != nil {
+		slog.Error("admin seed-audio: cannot lift write deadline", "error", err)
+		http.Error(w, "cannot lift write deadline for streaming", http.StatusInternalServerError)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/x-ndjson")
 	w.Header().Set("Cache-Control", "no-store")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
@@ -91,7 +110,7 @@ func (d *adminDeps) handleSeedAudio(w http.ResponseWriter, r *http.Request) {
 	slog.Info("admin seed-audio started", "levels", req.Levels, "delay_ms", req.DelayMs, "remote", r.RemoteAddr)
 
 	enc := json.NewEncoder(w)
-	events := audio.Seed(r.Context(), d.pool, d.dictClient, audio.Options{
+	events := d.seed(r.Context(), audio.Options{
 		Levels: req.Levels,
 		Delay:  delay,
 	})

@@ -494,7 +494,9 @@ Body (JSON):
 { "levels": ["A1", "A2"], "delay_ms": 500 }
 ```
 
-Response: streamed `application/x-ndjson`, one line per event (start of level / per-word result / final summary). Use `curl -N` so output isn't buffered:
+Response: streamed `application/x-ndjson`, one line per event (start of level / per-word result / final summary). Use `curl -N` so output isn't buffered.
+
+A run lasts minutes, far longer than the server's 10s `WriteTimeout`, which is a deadline on the whole response rather than on each line. The handler lifts the write deadline for this response only; every other endpoint keeps it. Without that the stream was cut after ~10s with a few lines delivered and no `done`. `TestSeedAudio_StreamOutlivesServerTimeouts` runs the handler behind a real `http.Server` with sub-second timeouts to keep it that way. A reverse proxy in front of the app can still impose its own limit on response length; that has not been checked on production.
 
 ```bash
 curl -N -X POST https://your-host.example.com/admin/seed-audio \
@@ -527,7 +529,7 @@ go run ./cmd/seed-audio -levels=A1,A2 -delay-ms=500
    ```
    Stream of ndjson events ends with a `{"event":"done", ...}` summary line. ~5 minutes for A1+A2 (~492 words at 500 ms delay).
 
-3. **If 429 appears** (`"status":"failed","error":"unexpected status: 429"`) — Free Dictionary throttled you. Wait 1–2 minutes and re-run with the same body; the run is idempotent so already-populated rows are skipped.
+3. **If 429 appears** (`"status":"failed","error":"unexpected status: 429"`) — Free Dictionary throttled you. Wait 1–2 minutes and re-run with the same body; the run is idempotent so already-populated rows are skipped. Words that came back `not_found` have no `audio_url` either, so every re-run asks the API about them again and spends `delay_ms` on each.
 
 4. **Adding more levels** later (B1–C2): same call, change `levels`. ~608 words across B1–C2, allow ~10 minutes total.
 
