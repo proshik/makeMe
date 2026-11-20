@@ -365,13 +365,11 @@ repository's `makeMe`. The image is `linux/amd64` only, listens on `8080`
 (`EXPOSE 8080`, matching the `PORT` default), runs as uid 10001, and carries
 `migrations/` and `data/` under `/app`. Migrations and the JSON seed run on every
 start, so a fresh database needs nothing beyond the variables below. No image has
-been published yet. The repository is private, so the GHCR package will be private
-too. krill pulls private images through an org-level registry credential
-(**Settings → Registries**, then chosen on the app's **General** tab). The
-neighbouring `proshik-blog` and `lets-project` packages are private as well, so a
-`ghcr.io` credential already exists. Pick it when creating the app; it works only
-if its token can read this package too (a classic token with `read:packages`
-covers every package of the account).
+been published yet. The repository is public, and the package is meant to be
+public as well, so krill pulls it anonymously: choose "Public (no auth)" for the
+app's registry, no credential needed. Check the package's visibility in its
+settings on GitHub after the first publish and switch it to public if needed —
+until then an anonymous pull is refused.
 
 #### Environment on krill
 
