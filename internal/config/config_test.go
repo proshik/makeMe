@@ -13,6 +13,56 @@ func setBaseEnv(t *testing.T) {
 	t.Setenv("TELEGRAM_TOKEN", "123:abc")
 	t.Setenv("WEBHOOK_URL", "")
 	t.Setenv("TELEGRAM_WEBHOOK_SECRET", "")
+	t.Setenv("TELEGRAM_LOCAL_MODE", "")
+}
+
+func TestLoad_EmptyWebhookURLWithoutLocalModeFails(t *testing.T) {
+	setBaseEnv(t)
+	_, err := Load()
+	if err == nil || !strings.Contains(err.Error(), "WEBHOOK_URL is required") ||
+		!strings.Contains(err.Error(), "TELEGRAM_LOCAL_MODE=true") {
+		t.Fatalf("got %v, want an error naming WEBHOOK_URL and the way out", err)
+	}
+}
+
+func TestLoad_LocalModeWithoutWebhookURL(t *testing.T) {
+	setBaseEnv(t)
+	t.Setenv("TELEGRAM_LOCAL_MODE", "true")
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	if !cfg.TelegramLocalMode || cfg.WebhookURL != "" {
+		t.Fatalf("local=%v url=%q", cfg.TelegramLocalMode, cfg.WebhookURL)
+	}
+}
+
+func TestLoad_LocalModeFalseIsNotLocal(t *testing.T) {
+	setBaseEnv(t)
+	t.Setenv("TELEGRAM_LOCAL_MODE", "false")
+	if _, err := Load(); err == nil || !strings.Contains(err.Error(), "WEBHOOK_URL is required") {
+		t.Fatalf("got %v, want WEBHOOK_URL is required", err)
+	}
+}
+
+func TestLoad_LocalModeWithWebhookURLFails(t *testing.T) {
+	setBaseEnv(t)
+	t.Setenv("TELEGRAM_LOCAL_MODE", "true")
+	t.Setenv("WEBHOOK_URL", "https://example.com/webhook")
+	t.Setenv("TELEGRAM_WEBHOOK_SECRET", "abc")
+	if _, err := Load(); err == nil || !strings.Contains(err.Error(), "mutually exclusive") {
+		t.Fatalf("got %v, want a mutually-exclusive error", err)
+	}
+}
+
+// A typo must not read as "false" and then fail with an unrelated complaint
+// about WEBHOOK_URL: the error names the flag that was mistyped.
+func TestLoad_LocalModeTypoFails(t *testing.T) {
+	setBaseEnv(t)
+	t.Setenv("TELEGRAM_LOCAL_MODE", "ture")
+	if _, err := Load(); err == nil || !strings.Contains(err.Error(), "TELEGRAM_LOCAL_MODE must be true or false") {
+		t.Fatalf("got %v, want a TELEGRAM_LOCAL_MODE parse error", err)
+	}
 }
 
 func TestLoad_WebhookURLWithoutSecretFails(t *testing.T) {

@@ -149,9 +149,16 @@ Web UI login (`internal/web`) — rules that are load-bearing, not preferences:
   token endpoint, and following one reads the id_token from wherever the last hop
   pointed.
 - Local development runs against [telegram-login-broker](../telegram-login-broker);
-  see the README. Starting the binary locally needs a **separate dev bot**:
-  `SetWebhook` with an empty `WEBHOOK_URL` deletes the webhook of whichever bot's
-  token is in `TELEGRAM_TOKEN`.
+  see the README. Start the binary locally with `TELEGRAM_LOCAL_MODE=true` and a
+  **separate dev bot**. An empty `WEBHOOK_URL` without local mode is a startup
+  error, and `Bot.SetWebhook` refuses an empty URL: Telegram reads it as
+  deleteWebhook, which used to take down whichever bot's token was configured.
+  Keep both guards.
+- `/webhook` requires `X-Telegram-Bot-Api-Secret-Token` to equal
+  `TELEGRAM_WEBHOOK_SECRET` (constant-time, 401 otherwise, 503 with no secret
+  configured). The secret is mandatory while `WEBHOOK_URL` is set. Don't switch
+  to go-telegram/bot's `WithWebhookSecretToken`: it compares with `!=` and
+  answers a mismatch with 200.
 
 Known gaps worth knowing before you touch these areas:
 - **No weekly period exists.** `scoring.Service.Award` only upserts rows under the `"day"` and `"month"` period keys, and `/leaderboard` is registered `MatchTypeExact` — it accepts no text arguments. Periods switch via a single inline toggle button. Adding a week means new period keys plus new UI, not just a label.

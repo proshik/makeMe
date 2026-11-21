@@ -11,15 +11,9 @@ import (
 )
 
 type Config struct {
-	Port          string
-	DatabaseURL   string
-	TelegramToken string
-	WebhookURL    string
-	// TelegramWebhookSecret is sent to Telegram as setWebhook's secret_token
-	// and required back in X-Telegram-Bot-Api-Secret-Token on every POST
-	// /webhook. Mandatory whenever WebhookURL is set: without it anyone who
-	// knows the URL can post an update on behalf of any user.
-	TelegramWebhookSecret string
+	Port                  string
+	DatabaseURL           string
+	TelegramToken         string
 	LogLevel              string
 	WordsFile             string
 	GrammarQuestionsFile  string
@@ -28,6 +22,19 @@ type Config struct {
 	Timezone              string // IANA timezone name
 	MaxRoundsPerDay       int    // max daily-task rounds a user can run per day
 	AdminToken            string // bearer token for /admin/* endpoints; empty disables them
+
+	// Telegram delivery. Exactly one of WebhookURL and TelegramLocalMode is
+	// set; validateWebhook refuses both and neither.
+	WebhookURL string
+	// TelegramWebhookSecret is sent to Telegram as setWebhook's secret_token
+	// and required back in X-Telegram-Bot-Api-Secret-Token on every POST
+	// /webhook. Mandatory whenever WebhookURL is set: without it anyone who
+	// knows the URL can post an update on behalf of any user.
+	TelegramWebhookSecret string
+	// TelegramLocalMode starts the bot without touching its webhook. It exists
+	// because an empty WebhookURL used to reach setWebhook and delete the
+	// webhook of whichever bot's token was configured, production included.
+	TelegramLocalMode bool
 
 	// Web UI. Empty TelegramClientID disables the web interface entirely: the bot
 	// keeps working, /login just isn't mounted. That mirrors pochitushki, where
@@ -91,6 +98,11 @@ func Load() (*Config, error) {
 	if cfg.TelegramToken == "" {
 		return nil, fmt.Errorf("TELEGRAM_TOKEN is required")
 	}
+	localMode, err := getEnvBoolStrict("TELEGRAM_LOCAL_MODE")
+	if err != nil {
+		return nil, err
+	}
+	cfg.TelegramLocalMode = localMode
 	if err := cfg.validateWebhook(); err != nil {
 		return nil, err
 	}
@@ -106,6 +118,12 @@ var webhookSecretPattern = regexp.MustCompile(`^[A-Za-z0-9_-]{1,256}$`)
 func (c *Config) validateWebhook() error {
 	if c.TelegramWebhookSecret != "" && !webhookSecretPattern.MatchString(c.TelegramWebhookSecret) {
 		return fmt.Errorf("TELEGRAM_WEBHOOK_SECRET must be 1-256 characters of A-Z, a-z, 0-9, _ or - (generate one with: openssl rand -hex 32)")
+	}
+	if c.TelegramLocalMode && c.WebhookURL != "" {
+		return fmt.Errorf("TELEGRAM_LOCAL_MODE=true and WEBHOOK_URL are mutually exclusive: local mode leaves the bot's webhook untouched, WEBHOOK_URL replaces it; unset one of them")
+	}
+	if !c.TelegramLocalMode && c.WebhookURL == "" {
+		return fmt.Errorf("WEBHOOK_URL is required: with it empty, setWebhook would delete the webhook of the bot whose token is in TELEGRAM_TOKEN. For local development without a webhook set TELEGRAM_LOCAL_MODE=true")
 	}
 	if c.WebhookURL != "" && c.TelegramWebhookSecret == "" {
 		return fmt.Errorf("TELEGRAM_WEBHOOK_SECRET is required when WEBHOOK_URL is set: without it /webhook accepts forged updates (generate one with: openssl rand -hex 32)")
@@ -130,6 +148,21 @@ func getEnvBool(key string, fallback bool) bool {
 		return fallback
 	}
 	return b
+}
+
+// getEnvBoolStrict reads an opt-in flag: unset means false, anything that
+// strconv.ParseBool rejects is an error rather than a silent false, so a typo
+// is reported instead of being taken for "no".
+func getEnvBoolStrict(key string) (bool, error) {
+	v := os.Getenv(key)
+	if v == "" {
+		return false, nil
+	}
+	b, err := strconv.ParseBool(v)
+	if err != nil {
+		return false, fmt.Errorf("%s must be true or false, got %q", key, v)
+	}
+	return b, nil
 }
 
 func getEnvInt(key string, fallback int) int {

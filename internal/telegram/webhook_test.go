@@ -55,3 +55,24 @@ func TestSetWebhook_SendsSecretToken(t *testing.T) {
 		t.Errorf("secret_token = %q, want abc_DEF-123", s)
 	}
 }
+
+// An empty URL is deleteWebhook to Telegram. It must never leave the process.
+func TestSetWebhook_RefusesEmptyURL(t *testing.T) {
+	called := make(chan string, 4)
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		called <- r.URL.Path
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, `{"ok":true,"result":true}`)
+	}))
+	defer srv.Close()
+
+	b := newBotAgainst(t, srv)
+	if err := b.SetWebhook(context.Background(), "", "abc"); err == nil {
+		t.Fatal("SetWebhook with an empty URL succeeded")
+	}
+	select {
+	case path := <-called:
+		t.Fatalf("Bot API was called: %s", path)
+	default:
+	}
+}

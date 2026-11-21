@@ -105,7 +105,7 @@ func run(ctx context.Context) error {
 		return err
 	}
 
-	if err := tgBot.SetWebhook(ctx, cfg.WebhookURL, cfg.TelegramWebhookSecret); err != nil {
+	if err := configureWebhook(ctx, cfg, tgBot); err != nil {
 		return err
 	}
 
@@ -174,6 +174,18 @@ func run(ctx context.Context) error {
 
 	wg.Wait()
 	return nil
+}
+
+// configureWebhook points Telegram at this process, or, in local mode, leaves
+// the bot's webhook exactly as it is. Local mode receives no updates: the bot
+// still sends (scheduler, replies to anything posted to /webhook by hand), but
+// Telegram keeps delivering to wherever the webhook already pointed.
+func configureWebhook(ctx context.Context, cfg *config.Config, tgBot *telegram.Bot) error {
+	if cfg.TelegramLocalMode {
+		slog.Warn("TELEGRAM_LOCAL_MODE: webhook left untouched, Telegram will not deliver updates to this process")
+		return nil
+	}
+	return tgBot.SetWebhook(ctx, cfg.WebhookURL, cfg.TelegramWebhookSecret)
 }
 
 // buildWebServer wires the browser UI. It returns (nil, nil) when the web

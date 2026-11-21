@@ -90,7 +90,13 @@ func (b *Bot) WebhookHandler() http.HandlerFunc {
 // SetWebhook registers the webhook URL with Telegram. Telegram then sends
 // secretToken back in X-Telegram-Bot-Api-Secret-Token on every update; the
 // check itself lives in the HTTP layer (internal/server), not in the library.
+//
+// An empty URL is refused: Telegram treats it as deleteWebhook, so it would
+// silently take the bot off whatever webhook it had.
 func (b *Bot) SetWebhook(ctx context.Context, webhookURL, secretToken string) error {
+	if webhookURL == "" {
+		return fmt.Errorf("set webhook: empty URL would delete the bot's webhook")
+	}
 	_, err := b.bot.SetWebhook(ctx, &bot.SetWebhookParams{
 		URL:         webhookURL,
 		SecretToken: secretToken,

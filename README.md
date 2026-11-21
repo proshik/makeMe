@@ -289,7 +289,8 @@ Copy `.env.example` to `.env` and fill in the values:
 | `PORT` | `8080` | HTTP server port |
 | `DATABASE_URL` | `postgres://makeme:makeme@localhost:5432/makeme?sslmode=disable` | PostgreSQL connection string |
 | `TELEGRAM_TOKEN` | `123456:ABC-DEF...` | Bot token from [@BotFather](https://t.me/BotFather) |
-| `WEBHOOK_URL` | `https://example.com/webhook` | Public URL where Telegram sends updates. For local development use [ngrok](https://ngrok.com): `ngrok http 8080`, then set the resulting `https://xxxx.ngrok-free.app/webhook` |
+| `WEBHOOK_URL` | `https://example.com/webhook` | Public URL where Telegram sends updates. **Required unless `TELEGRAM_LOCAL_MODE=true`**: startup refuses an empty value, because setting an empty webhook deletes the bot's webhook. For local development with real updates use [ngrok](https://ngrok.com): `ngrok http 8080`, then set the resulting `https://xxxx.ngrok-free.app/webhook` |
+| `TELEGRAM_LOCAL_MODE` | `false` | `true` starts the bot without touching its webhook: no `setWebhook` call, so Telegram keeps delivering wherever the webhook already points and this process receives no updates. Outgoing messages still work. Mutually exclusive with `WEBHOOK_URL` (startup fails if both are set). Must parse as a boolean; a typo is an error, not `false`. |
 | `TELEGRAM_WEBHOOK_SECRET` | `(empty)` | Secret Telegram sends back in `X-Telegram-Bot-Api-Secret-Token` on every update; `/webhook` answers 401 without it. **Required whenever `WEBHOOK_URL` is set**: startup fails otherwise. 1–256 characters of `A-Za-z0-9_-` (Telegram's own limit, checked at startup): `openssl rand -hex 32`. Base64 does not fit, since `+`, `/` and `=` are outside the set. With it empty `/webhook` answers 503. |
 | `LOG_LEVEL` | `info` | Log level: `debug`, `info`, `warn`, `error` |
 | `WORDS_FILE` | `data/words.json` | Word list seeded on every startup |
@@ -339,10 +340,24 @@ the spent code. Without `BROKER_URL` it skips, so `go test ./...` stays hermetic
 What is already proven and what still has to be checked against real Telegram is
 tracked in the broker's [docs/VERIFICATION.md](../telegram-login-broker/docs/VERIFICATION.md).
 
-⚠️ **Starting the binary needs a separate dev bot.** `main.go` calls
-`SetWebhook(ctx, cfg.WEBHOOK_URL)` on startup, and with `WEBHOOK_URL` empty that
-**deletes the webhook** of whichever bot's token is in `TELEGRAM_TOKEN`. Running
-locally with the production token takes production down.
+Start the binary itself with `TELEGRAM_LOCAL_MODE=true` and `WEBHOOK_URL`
+unset. Without one of the two it refuses to start: an empty `WEBHOOK_URL` used
+to reach `setWebhook` and **delete the webhook** of whichever bot's token was in
+`TELEGRAM_TOKEN`, so a local run with the production token took production
+down. Local mode never calls `setWebhook` and leaves the webhook exactly as it
+was; the process then receives no updates from Telegram. To feed it an update
+by hand, also set `TELEGRAM_WEBHOOK_SECRET` (without it `/webhook` answers 503)
+and send the same header Telegram would:
+
+```sh
+curl -X POST http://localhost:8080/webhook \
+  -H "X-Telegram-Bot-Api-Secret-Token: $TELEGRAM_WEBHOOK_SECRET" \
+  -H "Content-Type: application/json" \
+  -d '{"update_id":1,"message":{"message_id":1,"date":0,"chat":{"id":<your chat id>,"type":"private"},"text":"/help"}}'
+```
+
+Use a separate dev bot all the same: the scheduler and every reply send real
+messages through whichever token is configured.
 
 ### First deployment of the web UI
 
@@ -380,7 +395,7 @@ Values live in krill's secret store, never in the repository.
 |---|---|
 | `DATABASE_URL` | Startup fails without it. |
 | `TELEGRAM_TOKEN` | Startup fails without it. The **production** bot. |
-| `WEBHOOK_URL` | `https://<host>/webhook`. **Must be set:** empty deletes the bot's webhook on startup. |
+| `WEBHOOK_URL` | `https://<host>/webhook`. Startup fails with it empty (unless `TELEGRAM_LOCAL_MODE=true`, which production must not set). |
 | `TELEGRAM_WEBHOOK_SECRET` | `openssl rand -hex 32`. Startup fails without it while `WEBHOOK_URL` is set. Add it **before** deploying a build that requires it: the old build ignores the variable, the new one refuses to start without it. |
 | `APP_BASE_URL` | Public origin; the redirect URI is derived from it. |
 | `TELEGRAM_CLIENT_ID`, `TELEGRAM_CLIENT_SECRET` | OAuth pair from BotFather. Without them the web UI is not mounted. |
@@ -572,7 +587,9 @@ copied wholesale, and without that rule real tokens would end up in an image
 layer.
 
 `docker compose up` builds the same image and runs it next to PostgreSQL. Use a
-dev bot's token in `.env`; see the warning about `WEBHOOK_URL` above.
+dev bot's token in `.env`, and either `TELEGRAM_LOCAL_MODE=true` or a public
+`WEBHOOK_URL` with `TELEGRAM_WEBHOOK_SECRET`; see "Local development without
+ngrok" above.
 
 ### Seed data
 
