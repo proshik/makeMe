@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -10,10 +11,15 @@ import (
 )
 
 type Config struct {
-	Port                  string
-	DatabaseURL           string
-	TelegramToken         string
-	WebhookURL            string
+	Port          string
+	DatabaseURL   string
+	TelegramToken string
+	WebhookURL    string
+	// TelegramWebhookSecret is sent to Telegram as setWebhook's secret_token
+	// and required back in X-Telegram-Bot-Api-Secret-Token on every POST
+	// /webhook. Mandatory whenever WebhookURL is set: without it anyone who
+	// knows the URL can post an update on behalf of any user.
+	TelegramWebhookSecret string
 	LogLevel              string
 	WordsFile             string
 	GrammarQuestionsFile  string
@@ -59,6 +65,7 @@ func Load() (*Config, error) {
 		DatabaseURL:           os.Getenv("DATABASE_URL"),
 		TelegramToken:         os.Getenv("TELEGRAM_TOKEN"),
 		WebhookURL:            os.Getenv("WEBHOOK_URL"),
+		TelegramWebhookSecret: os.Getenv("TELEGRAM_WEBHOOK_SECRET"),
 		LogLevel:              getEnv("LOG_LEVEL", "info"),
 		WordsFile:             getEnv("WORDS_FILE", "data/words.json"),
 		GrammarQuestionsFile:  getEnv("GRAMMAR_QUESTIONS_FILE", "data/grammar.json"),
@@ -84,8 +91,26 @@ func Load() (*Config, error) {
 	if cfg.TelegramToken == "" {
 		return nil, fmt.Errorf("TELEGRAM_TOKEN is required")
 	}
+	if err := cfg.validateWebhook(); err != nil {
+		return nil, err
+	}
 
 	return cfg, nil
+}
+
+// webhookSecretPattern is Telegram's own constraint on setWebhook's
+// secret_token. A value outside it would be rejected by setWebhook only after
+// migrations and seeding, so it is checked before anything else runs.
+var webhookSecretPattern = regexp.MustCompile(`^[A-Za-z0-9_-]{1,256}$`)
+
+func (c *Config) validateWebhook() error {
+	if c.TelegramWebhookSecret != "" && !webhookSecretPattern.MatchString(c.TelegramWebhookSecret) {
+		return fmt.Errorf("TELEGRAM_WEBHOOK_SECRET must be 1-256 characters of A-Z, a-z, 0-9, _ or - (generate one with: openssl rand -hex 32)")
+	}
+	if c.WebhookURL != "" && c.TelegramWebhookSecret == "" {
+		return fmt.Errorf("TELEGRAM_WEBHOOK_SECRET is required when WEBHOOK_URL is set: without it /webhook accepts forged updates (generate one with: openssl rand -hex 32)")
+	}
+	return nil
 }
 
 func getEnv(key, fallback string) string {

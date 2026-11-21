@@ -105,7 +105,7 @@ func run(ctx context.Context) error {
 		return err
 	}
 
-	if err := tgBot.SetWebhook(ctx, cfg.WebhookURL); err != nil {
+	if err := tgBot.SetWebhook(ctx, cfg.WebhookURL, cfg.TelegramWebhookSecret); err != nil {
 		return err
 	}
 
@@ -145,7 +145,7 @@ func run(ctx context.Context) error {
 		return err
 	}
 
-	r := server.New(tgBot, server.AdminConfig{
+	r := server.New(tgBot, cfg.TelegramWebhookSecret, server.AdminConfig{
 		Pool:       pool,
 		DictClient: dictClient,
 		AdminToken: cfg.AdminToken,

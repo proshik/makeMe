@@ -87,10 +87,13 @@ func (b *Bot) WebhookHandler() http.HandlerFunc {
 	return b.bot.WebhookHandler()
 }
 
-// SetWebhook registers the webhook URL with Telegram.
-func (b *Bot) SetWebhook(ctx context.Context, webhookURL string) error {
+// SetWebhook registers the webhook URL with Telegram. Telegram then sends
+// secretToken back in X-Telegram-Bot-Api-Secret-Token on every update; the
+// check itself lives in the HTTP layer (internal/server), not in the library.
+func (b *Bot) SetWebhook(ctx context.Context, webhookURL, secretToken string) error {
 	_, err := b.bot.SetWebhook(ctx, &bot.SetWebhookParams{
-		URL: webhookURL,
+		URL:         webhookURL,
+		SecretToken: secretToken,
 	})
 	if err != nil {
 		return fmt.Errorf("set webhook: %w", err)

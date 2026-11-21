@@ -1,6 +1,7 @@
 package server
 
 import (
+	"crypto/subtle"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -22,8 +23,9 @@ type AdminConfig struct {
 }
 
 // New builds the HTTP router. webSrv may be nil — the web UI is optional and
-// the bot works without it (see Config.WebEnabled).
-func New(tgBot *telegram.Bot, admin AdminConfig, webSrv *web.Server) *chi.Mux {
+// the bot works without it (see Config.WebEnabled). webhookSecret is the
+// secret_token registered with setWebhook; with it empty /webhook answers 503.
+func New(tgBot *telegram.Bot, webhookSecret string, admin AdminConfig, webSrv *web.Server) *chi.Mux {
 	r := chi.NewRouter()
 	useCommonMiddleware(r)
 
@@ -33,7 +35,7 @@ func New(tgBot *telegram.Bot, admin AdminConfig, webSrv *web.Server) *chi.Mux {
 		w.Write([]byte(`{"status":"ok"}`))
 	})
 
-	r.Post("/webhook", tgBot.WebhookHandler())
+	r.Post("/webhook", webhookAuth(webhookSecret, tgBot.WebhookHandler()))
 
 	deps := newAdminDeps(admin)
 	r.Route("/admin", func(ar chi.Router) {
@@ -55,4 +57,32 @@ func useCommonMiddleware(r chi.Router) {
 	r.Use(chimw.Logger)
 	r.Use(chimw.Recoverer)
 	r.Use(chimw.RequestID)
+}
+
+// webhookSecretHeader carries the secret_token given to setWebhook on every
+// update Telegram delivers.
+const webhookSecretHeader = "X-Telegram-Bot-Api-Secret-Token"
+
+// webhookAuth admits only requests carrying the webhook secret. go-telegram/bot
+// has a check of its own (WithWebhookSecretToken), deliberately not used: it
+// compares with != and, on a mismatch, returns without writing a status, so a
+// forged request gets 200. Here the comparison is constant-time and a mismatch
+// is a 401 before the body is read.
+//
+// An empty secret closes the endpoint (503), the same way an empty ADMIN_TOKEN
+// closes /admin/*. Config allows that only without WEBHOOK_URL, when Telegram
+// has no reason to call here at all.
+func webhookAuth(secret string, next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if secret == "" {
+			http.Error(w, "webhook disabled (set TELEGRAM_WEBHOOK_SECRET)", http.StatusServiceUnavailable)
+			return
+		}
+		got := r.Header.Get(webhookSecretHeader)
+		if subtle.ConstantTimeCompare([]byte(got), []byte(secret)) != 1 {
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
+		next(w, r)
+	}
 }
