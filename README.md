@@ -360,17 +360,21 @@ curl -X POST http://localhost:8080/webhook \
 Use a separate dev bot all the same: the scheduler and every reply send real
 messages through whichever token is configured.
 
-### First deployment of the web UI
+### Deployment on krill
 
-Not yet performed. The OIDC half of the login now works end to end against a real
-independent implementation (see above), but the interface has never run against
-Telegram itself, and no browser has yet been asked to accept its cookies. See
-"Веб-интерфейс: что не проверено" in `docs/plan.md` for what that leaves unproven.
+Production runs on krill since 2026-11-20, as a single replica pulled from GHCR;
+the web UI is mounted, the bot works on the webhook. Confirmed by observation
+there: signing in with real Telegram returns an `id_token` that carries the `id`
+claim, a user who already existed in the bot lands in their own profile with
+their level and progress, the browser keeps the `Secure` session cookie, `/ws`
+held through krill's proxy for 6.5 minutes with pings answered, and
+`POST /admin/seed-audio` filled `audio_url` for every level. What is still
+unproven is listed under "Веб-интерфейс: что не проверено" in `docs/plan.md`.
 
 #### Where the image comes from
 
-The target is krill, which deploys ready-made images rather than building from
-source. CI publishes one on every push to `master`, after the tests pass:
+krill deploys ready-made images rather than building from source. CI publishes
+one on every push to `master`, after the tests pass:
 
 ```
 ghcr.io/proshik/makeme:<commit-sha>   # deploy this one — it pins the exact build
@@ -381,12 +385,15 @@ The name is lower-case on purpose: GHCR rejects upper case, so it is not the
 repository's `makeMe`. The image is `linux/amd64` only, listens on `8080`
 (`EXPOSE 8080`, matching the `PORT` default), runs as uid 10001, and carries
 `migrations/` and `data/` under `/app`. Migrations and the JSON seed run on every
-start, so a fresh database needs nothing beyond the variables below. No image has
-been published yet. The repository is public, and the package is meant to be
-public as well, so krill pulls it anonymously: choose "Public (no auth)" for the
-app's registry, no credential needed. Check the package's visibility in its
-settings on GitHub after the first publish and switch it to public if needed —
-until then an anonymous pull is refused.
+start, so a fresh database needs nothing beyond the variables below. The package
+is public, so krill pulls it anonymously: the app's registry is "Public (no
+auth)", no credential needed. Deploy by full commit sha, never `latest`.
+
+The app's healthcheck is `GET /health`, which answers 200 without touching the
+database. krill rolls out `start-first`: the new task has to start and turn
+healthy before the old one stops, so a build that fails on startup (a missing
+variable, `getMe` failing) leaves the previous version running. That is what
+makes a startup error the safe way to reject a bad configuration.
 
 #### Environment on krill
 
@@ -401,24 +408,48 @@ Values live in krill's secret store, never in the repository.
 | `APP_BASE_URL` | Public origin; the redirect URI is derived from it. |
 | `TELEGRAM_CLIENT_ID`, `TELEGRAM_CLIENT_SECRET` | OAuth pair from BotFather. Without them the web UI is not mounted. |
 | `JWT_SECRET` | Session key, ≥32 bytes base64. Without it the web UI is not mounted. |
-| `ADMIN_TOKEN` | Needed for `POST /admin/seed-audio` in step 5; without it every `/admin/*` returns 503. |
+| `ADMIN_TOKEN` | Needed for `POST /admin/seed-audio`; without it every `/admin/*` returns 503. |
 
-Leave `TELEGRAM_OAUTH_BASE_URL`, `TELEGRAM_EXPECTED_ISSUER` and `COOKIE_SECURE`
-at their defaults in production: the first two point at Telegram itself, and the
-cookie must stay `Secure`. `PORT`, `TIMEZONE`, `SCHEDULER_TIME` and the rest are
-optional (see the table above).
+Leave `TELEGRAM_OAUTH_BASE_URL`, `TELEGRAM_EXPECTED_ISSUER`, `COOKIE_SECURE` and
+`TELEGRAM_LOCAL_MODE` at their defaults in production: the first two point at
+Telegram itself, the cookie must stay `Secure`, and local mode would leave the
+webhook unregistered. `TELEGRAM_INIT_TIMEOUT` (30s), `PORT`, `TIMEZONE`,
+`SCHEDULER_TIME` and the rest are optional (see the table above).
 
-#### Steps
+#### Turning on the webhook secret
+
+A build that requires `TELEGRAM_WEBHOOK_SECRET` is rolled out in this order:
+
+1. Generate the value with `openssl rand -hex 32` and add it to the app's
+   environment **first**. The running build does not read it. If saving the
+   variable restarts the app, the restarted old build calls `setWebhook` without
+   a secret, as it always did.
+2. Deploy the new build by sha. On startup it registers the webhook with the
+   secret (`telegram webhook set` in the log); from then on Telegram sends the
+   header and the new build checks it. Had the variable been forgotten, the log
+   names it (`TELEGRAM_WEBHOOK_SECRET is required when WEBHOOK_URL is set`), the
+   new task never turns healthy, the old one keeps serving and the webhook is
+   left as it was.
+3. Check after the deploy: `getWebhookInfo` shows the same URL, a pending count
+   of 0 and no `last_error_message` (a 401 there means Telegram holds a
+   different secret than the app); `/start` in the bot answers; a `POST /webhook`
+   without the header gets 401.
+
+Rolling back to a build without the check needs nothing extra: on startup it
+calls `setWebhook` without `secret_token`, which clears the secret on
+Telegram's side.
+
+#### Steps for a new environment
 
 1. Register an OAuth application for the bot and obtain `TELEGRAM_CLIENT_ID` / `TELEGRAM_CLIENT_SECRET`. These are **not** the same as `TELEGRAM_TOKEN`.
-2. `openssl rand -base64 32` → `JWT_SECRET`. Startup fails if it is shorter than 32 bytes decoded, so a bad value surfaces immediately rather than on first login.
+2. `openssl rand -base64 32` → `JWT_SECRET`. Startup fails if it is shorter than 32 bytes decoded, so a bad value surfaces immediately rather than on first login. `openssl rand -hex 32` → `TELEGRAM_WEBHOOK_SECRET` (hex, because base64 falls outside Telegram's character set).
 3. Set `APP_BASE_URL` to the public origin. The redirect URI is derived as `$APP_BASE_URL/auth/telegram/callback` and must match what was registered exactly.
-4. Deploy `ghcr.io/proshik/makeme:<sha>` with the environment above. In the logs expect `migrations applied`, three `seed:` lines and `web UI enabled`; then confirm in this order — each step depends on the previous one working:
+4. Deploy `ghcr.io/proshik/makeme:<sha>` with the environment above. In the logs expect `migrations applied`, three `seed:` lines, `telegram webhook set` and `web UI enabled`; then confirm in this order, since each step depends on the previous one working:
    - `GET /login` renders and the button leads to Telegram.
    - Signing in lands back on `/` as the right user. A user who already exists in the bot must keep their level and progress.
-   - `websocat -H="Cookie: auth_token=<jwt>" wss://<host>/ws` stays open longer than the platform's idle timeout. The server pings every 25s; a shorter proxy timeout will cut the socket.
-   - Answer a task in the bot with the browser open on `/leaderboard` — the standings should move without a reload.
-5. **After the first deploy, run `POST /admin/seed-audio`** (see [Production workflow](#production-workflow)). `audio_url` is not in `data/words.json` and the startup seeder never fills it, so on a fresh database it is empty for every word. Until then the "Послушать" button has nothing to play, and that path has never been exercised.
+   - A WebSocket client holding the `auth_token` cookie keeps `wss://<host>/ws` open longer than the platform's idle timeout. The server pings every 25s; a shorter proxy timeout will cut the socket. On krill it held 6.5 minutes.
+   - Answer a task in the bot with the browser open on `/leaderboard`: the standings should move without a reload.
+5. **After the first deploy, run `POST /admin/seed-audio`** level by level (see [Production workflow](#production-workflow)). `audio_url` is not in `data/words.json` and the startup seeder never fills it, so on a fresh database it is empty for every word, and until then the "Послушать" button has nothing to play.
 
 ## Web UI
 
@@ -510,23 +541,25 @@ Bulk-fetches transcription + audio_url from the Free Dictionary API for words at
 
 Body (JSON):
 ```json
-{ "levels": ["A1", "A2"], "delay_ms": 500 }
+{ "levels": ["A1"], "delay_ms": 1500 }
 ```
+
+**Pass `delay_ms: 1500` explicitly.** It is the pause between calls to `api.dictionaryapi.dev`, and on production 500 ms got throttled: 429s came in waves, about 20 words through and the next 20 refused, ~40% of A1 failed. At 1500 ms whole levels went through without a single 429. The server's own default when `delay_ms` is omitted is still 500 ms, and `cmd/seed-audio` defaults to 150 ms.
 
 Response: streamed `application/x-ndjson`, one line per event (start of level / per-word result / final summary). Use `curl -N` so output isn't buffered.
 
-A run lasts minutes, far longer than the server's 10s `WriteTimeout`, which is a deadline on the whole response rather than on each line. For this response only, the handler replaces it with a 30s deadline on each line, re-armed right before every write; every other endpoint keeps the global one. The gap between lines does not count, so a slow dictionary lookup or a large `delay_ms` does not cut the stream. Without that the stream was cut after ~10s with a few lines delivered and no `done`. The per-line bound is what still releases a run whose client keeps the connection open but stops reading: the write fails, net/http cancels the request context, the seeder stops and the handler returns. The handler's own `Flush` check does not see that failure behind chi, whose wrapper implements plain `http.Flusher`, so the cancelled context is what marks the run as cut. `TestSeedAudio_StreamOutlivesServerTimeouts`, `TestSeedAudio_StalledClientReleasesRun` and `TestSeedAudio_ClientDisconnectCancelsRun` run the handler behind a real `http.Server` with sub-second timeouts and the same middleware as production — the deadlines reach the connection only through the middleware's `Unwrap`, so a wrapper without it would turn every run into a 500; flush errors, by contrast, stop at chi's wrapper. A reverse proxy in front of the app can still impose its own limit on response length; that has not been checked on production.
+A run lasts minutes, far longer than the server's 10s `WriteTimeout`, which is a deadline on the whole response rather than on each line. For this response only, the handler replaces it with a 30s deadline on each line, re-armed right before every write; every other endpoint keeps the global one. The gap between lines does not count, so a slow dictionary lookup or a large `delay_ms` does not cut the stream. Without that the stream was cut after ~10s with a few lines delivered and no `done`. The per-line bound is what still releases a run whose client keeps the connection open but stops reading: the write fails, net/http cancels the request context, the seeder stops and the handler returns. The handler's own `Flush` check does not see that failure behind chi, whose wrapper implements plain `http.Flusher`, so the cancelled context is what marks the run as cut. `TestSeedAudio_StreamOutlivesServerTimeouts`, `TestSeedAudio_StalledClientReleasesRun` and `TestSeedAudio_ClientDisconnectCancelsRun` run the handler behind a real `http.Server` with sub-second timeouts and the same middleware as production — the deadlines reach the connection only through the middleware's `Unwrap`, so a wrapper without it would turn every run into a 500; flush errors, by contrast, stop at chi's wrapper. On production, runs of 4.5 and 6 minutes reached `done` through krill's proxy intact. A single 30-minute run over five levels did not: the server wrote everything and logged `completed`, but the client got the stream without its last ~2 KB and no `done`, and exited after four minutes of silence. Where the tail was lost was not established. The data was unaffected, because writes happen on the server; the outcome was checked in the database. Hence the advice below to send one or two levels per request.
 
 ```bash
 curl -N -X POST https://your-host.example.com/admin/seed-audio \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"levels":["A1","A2"],"delay_ms":500}'
+  -d '{"levels":["A1"],"delay_ms":1500}'
 ```
 
 For local seeding without HTTP, the same logic ships as `cmd/seed-audio`:
 ```bash
-go run ./cmd/seed-audio -levels=A1,A2 -delay-ms=500
+go run ./cmd/seed-audio -levels=A1 -delay-ms=1500
 ```
 
 #### Production workflow
@@ -539,18 +572,18 @@ go run ./cmd/seed-audio -levels=A1,A2 -delay-ms=500
    ```
    Set the value as `ADMIN_TOKEN` in the production environment and redeploy so the service picks it up.
 
-2. From any machine with HTTPS access to prod, run:
+2. From any machine with HTTPS access to prod, run **one or two levels per request**, with `delay_ms` 1500:
    ```bash
    curl -N -X POST https://your-prod.example.com/admin/seed-audio \
      -H "Authorization: Bearer $ADMIN_TOKEN" \
      -H "Content-Type: application/json" \
-     -d '{"levels":["A1","A2"],"delay_ms":500}'
+     -d '{"levels":["A1"],"delay_ms":1500}'
    ```
-   Stream of ndjson events ends with a `{"event":"done", ...}` summary line. ~5 minutes for A1+A2 (~492 words at 500 ms delay).
+   Stream of ndjson events ends with a `{"event":"done", ...}` summary line. Each word without audio costs one API call plus `delay_ms`, so budget about 1.5 s per word still missing audio: on production A1 and A2 hold 520–560 words each, ~13–14 minutes per level from scratch, while B1 to C2 hold ~150 each, so two of them fit in ~8 minutes. Words that already have audio cost nothing. Long streams are where the tail went missing on production (see above); short ones arrived whole.
 
-3. **If 429 appears** (`"status":"failed","error":"unexpected status: 429"`) — Free Dictionary throttled you. Wait 1–2 minutes and re-run with the same body; the run is idempotent so already-populated rows are skipped. Words that came back `not_found` have no `audio_url` either, so every re-run asks the API about them again and spends `delay_ms` on each.
+3. **If 429 appears** (`"status":"failed","error":"unexpected status: 429"`), Free Dictionary throttled you: `delay_ms` is too low. Re-run the same levels with 1500; the run is idempotent, so already-populated rows are skipped. Words that came back `not_found` have no `audio_url` either, so every re-run asks the API about them again and spends `delay_ms` on each.
 
-4. **Adding more levels** later (B1–C2): same call, change `levels`. ~608 words across B1–C2, allow ~10 minutes total.
+4. **Adding more levels** later: same call, change `levels`, still one or two at a time.
 
 #### Limits to expect
 
