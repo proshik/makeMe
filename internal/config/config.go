@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/joho/godotenv"
 )
@@ -35,6 +36,10 @@ type Config struct {
 	// because an empty WebhookURL used to reach setWebhook and delete the
 	// webhook of whichever bot's token was configured, production included.
 	TelegramLocalMode bool
+	// TelegramInitTimeout bounds the getMe call go-telegram/bot makes inside
+	// bot.New. The library's own 5s failed deploys while Telegram was merely
+	// slow for one bot.
+	TelegramInitTimeout time.Duration
 
 	// Web UI. Empty TelegramClientID disables the web interface entirely: the bot
 	// keeps working, /login just isn't mounted. That mirrors pochitushki, where
@@ -103,6 +108,11 @@ func Load() (*Config, error) {
 		return nil, err
 	}
 	cfg.TelegramLocalMode = localMode
+	initTimeout, err := getEnvDuration("TELEGRAM_INIT_TIMEOUT", DefaultTelegramInitTimeout)
+	if err != nil {
+		return nil, err
+	}
+	cfg.TelegramInitTimeout = initTimeout
 	if err := cfg.validateWebhook(); err != nil {
 		return nil, err
 	}
@@ -148,6 +158,26 @@ func getEnvBool(key string, fallback bool) bool {
 		return fallback
 	}
 	return b
+}
+
+// DefaultTelegramInitTimeout is how long startup waits for getMe. Six times
+// the library's 5s, still well inside krill's 60s healthcheck start period
+// together with migrations and seeding (~7s on production).
+const DefaultTelegramInitTimeout = 30 * time.Second
+
+// getEnvDuration reads a positive Go duration ("30s", "1m"). Unlike getEnvInt
+// it rejects a bad value instead of falling back: a timeout that silently
+// reverts to its default is the problem this setting exists to solve.
+func getEnvDuration(key string, fallback time.Duration) (time.Duration, error) {
+	v := os.Getenv(key)
+	if v == "" {
+		return fallback, nil
+	}
+	d, err := time.ParseDuration(v)
+	if err != nil || d <= 0 {
+		return 0, fmt.Errorf("%s must be a positive duration such as 30s or 1m, got %q", key, v)
+	}
+	return d, nil
 }
 
 // getEnvBoolStrict reads an opt-in flag: unset means false, anything that

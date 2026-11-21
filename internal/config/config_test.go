@@ -3,6 +3,7 @@ package config
 import (
 	"strings"
 	"testing"
+	"time"
 )
 
 // setBaseEnv sets what Load needs regardless of the webhook, and clears every
@@ -14,6 +15,7 @@ func setBaseEnv(t *testing.T) {
 	t.Setenv("WEBHOOK_URL", "")
 	t.Setenv("TELEGRAM_WEBHOOK_SECRET", "")
 	t.Setenv("TELEGRAM_LOCAL_MODE", "")
+	t.Setenv("TELEGRAM_INIT_TIMEOUT", "")
 }
 
 func TestLoad_EmptyWebhookURLWithoutLocalModeFails(t *testing.T) {
@@ -114,6 +116,42 @@ func TestLoad_WebhookSecretFormat(t *testing.T) {
 			}
 			if !c.ok && (err == nil || !strings.Contains(err.Error(), "1-256 characters")) {
 				t.Fatalf("want a format error, got %v", err)
+			}
+		})
+	}
+}
+
+func TestLoad_TelegramInitTimeout(t *testing.T) {
+	cases := []struct {
+		value string
+		want  time.Duration
+		ok    bool
+	}{
+		{"", DefaultTelegramInitTimeout, true},
+		{"45s", 45 * time.Second, true},
+		{"1m", time.Minute, true},
+		{"30", 0, false}, // no unit: an error, not 30ns and not the default
+		{"0s", 0, false},
+		{"-5s", 0, false},
+		{"soon", 0, false},
+	}
+	for _, c := range cases {
+		t.Run(c.value, func(t *testing.T) {
+			setBaseEnv(t)
+			t.Setenv("TELEGRAM_LOCAL_MODE", "true")
+			t.Setenv("TELEGRAM_INIT_TIMEOUT", c.value)
+			cfg, err := Load()
+			if !c.ok {
+				if err == nil || !strings.Contains(err.Error(), "TELEGRAM_INIT_TIMEOUT") {
+					t.Fatalf("got %v, want a TELEGRAM_INIT_TIMEOUT error", err)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("Load: %v", err)
+			}
+			if cfg.TelegramInitTimeout != c.want {
+				t.Fatalf("timeout = %v, want %v", cfg.TelegramInitTimeout, c.want)
 			}
 		})
 	}

@@ -13,6 +13,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/go-telegram/bot"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
 
@@ -100,7 +101,7 @@ func run(ctx context.Context) error {
 	pendingRepo := postgres.NewPendingTypingRepository(queries)
 	wordsSvc := words.NewService(wordsRepo, srsRepo)
 
-	tgBot, err := telegram.New(cfg.TelegramToken, userSvc, groupSvc, assessSvc, taskSvc, scoringSvc, srsRepo, dictClient, grammarRepo, wordsSvc, pendingRepo)
+	tgBot, err := telegram.New(cfg.TelegramToken, userSvc, groupSvc, assessSvc, taskSvc, scoringSvc, srsRepo, dictClient, grammarRepo, wordsSvc, pendingRepo, botOptions(cfg)...)
 	if err != nil {
 		return err
 	}
@@ -174,6 +175,13 @@ func run(ctx context.Context) error {
 
 	wg.Wait()
 	return nil
+}
+
+// botOptions carries config into go-telegram/bot. bot.New calls getMe before
+// returning, so its timeout has to be an option: there is no later point to
+// set it.
+func botOptions(cfg *config.Config) []bot.Option {
+	return []bot.Option{bot.WithCheckInitTimeout(cfg.TelegramInitTimeout)}
 }
 
 // configureWebhook points Telegram at this process, or, in local mode, leaves
