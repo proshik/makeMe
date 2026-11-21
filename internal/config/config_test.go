@@ -18,32 +18,42 @@ func setBaseEnv(t *testing.T) {
 	t.Setenv("TELEGRAM_INIT_TIMEOUT", "")
 }
 
-// loadServer is what cmd/makeme does on startup: Load, then ValidateWebhook.
+// loadServer is what cmd/makeme does on startup: Load, then ValidateTelegram.
 func loadServer() (*Config, error) {
 	cfg, err := Load()
 	if err != nil {
 		return nil, err
 	}
-	if err := cfg.ValidateWebhook(); err != nil {
+	if err := cfg.ValidateTelegram(); err != nil {
 		return nil, err
 	}
 	return cfg, nil
 }
 
-// cmd/seed and cmd/seed-audio call Load for DATABASE_URL only. Webhook settings
-// they never use must not stop them: neither an empty WEBHOOK_URL nor one
-// without a secret.
-func TestLoad_DoesNotRequireWebhookSettings(t *testing.T) {
-	for _, url := range []string{"", "https://example.com/webhook"} {
-		setBaseEnv(t)
-		t.Setenv("WEBHOOK_URL", url)
-		cfg, err := Load()
-		if err != nil {
-			t.Fatalf("WEBHOOK_URL=%q: Load: %v", url, err)
-		}
-		if cfg.DatabaseURL != "postgres://x" {
-			t.Fatalf("DatabaseURL = %q", cfg.DatabaseURL)
-		}
+// cmd/seed and cmd/seed-audio call Load for DATABASE_URL only. Telegram
+// settings they never use must not stop them, whether missing or malformed.
+func TestLoad_IgnoresServerOnlyTelegramSettings(t *testing.T) {
+	cases := []struct{ name, key, value string }{
+		{"empty WEBHOOK_URL", "WEBHOOK_URL", ""},
+		{"WEBHOOK_URL without a secret", "WEBHOOK_URL", "https://example.com/webhook"},
+		{"malformed WEBHOOK_URL", "WEBHOOK_URL", "https://"},
+		{"secret in a bad format", "TELEGRAM_WEBHOOK_SECRET", "abc="},
+		{"local mode typo", "TELEGRAM_LOCAL_MODE", "ture"},
+		{"init timeout over the cap", "TELEGRAM_INIT_TIMEOUT", "61s"},
+		{"init timeout without a unit", "TELEGRAM_INIT_TIMEOUT", "30"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			setBaseEnv(t)
+			t.Setenv(c.key, c.value)
+			cfg, err := Load()
+			if err != nil {
+				t.Fatalf("Load: %v", err)
+			}
+			if cfg.DatabaseURL != "postgres://x" {
+				t.Fatalf("DatabaseURL = %q", cfg.DatabaseURL)
+			}
+		})
 	}
 }
 
@@ -156,7 +166,7 @@ func TestLoad_TelegramInitTimeout(t *testing.T) {
 		want  time.Duration
 		ok    bool
 	}{
-		{"", DefaultTelegramInitTimeout, true},
+		{"", 30 * time.Second, true}, // the documented default, not the constant
 		{"45s", 45 * time.Second, true},
 		{"1m", time.Minute, true},
 		{"61s", 0, false}, // past the library HTTP client's own 60s cut-off
@@ -190,7 +200,7 @@ func TestLoad_TelegramInitTimeout(t *testing.T) {
 
 // Telegram drops the current registration before it parses the new URL, so a
 // malformed one is caught here rather than handed to setWebhook.
-func TestValidateWebhook_URLShape(t *testing.T) {
+func TestValidateTelegram_URLShape(t *testing.T) {
 	cases := []struct {
 		url string
 		ok  bool
@@ -198,6 +208,15 @@ func TestValidateWebhook_URLShape(t *testing.T) {
 		{"https://example.com/webhook", true},
 		{"https://xxxx.ngrok-free.app/webhook", true},
 		{"https://example.com:8443/webhook", true},
+		{"https://example.com:443/webhook", true},
+		{"https://example.com:88/webhook", true},
+		{"https://user:pass@example.com:8080/webhook", false},
+		{"https://example.com:444/webhook", false},
+		{"https://example.com:65536/webhook", false},
+		{"https://example.com", false},
+		{"https://example.com/", false},
+		{"https://example.com/hook", false},
+		{"https://example.com/webhook/", false},
 		{"https://", false},
 		{"https:///webhook", false},
 		{"http://example.com/webhook", false},
@@ -213,8 +232,12 @@ func TestValidateWebhook_URLShape(t *testing.T) {
 			if c.ok && err != nil {
 				t.Fatalf("want ok, got %v", err)
 			}
-			if !c.ok && (err == nil || !strings.Contains(err.Error(), "absolute https URL")) {
+			if !c.ok && (err == nil || !strings.Contains(err.Error(), "WEBHOOK_URL must")) {
 				t.Fatalf("want a URL error, got %v", err)
+			}
+			// The URL may carry credentials; it must not reach the log.
+			if err != nil && strings.Contains(err.Error(), c.url) {
+				t.Fatalf("error repeats the URL: %v", err)
 			}
 		})
 	}

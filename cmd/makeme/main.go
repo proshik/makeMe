@@ -51,7 +51,7 @@ func run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	if err := cfg.ValidateWebhook(); err != nil {
+	if err := cfg.ValidateTelegram(); err != nil {
 		return err
 	}
 

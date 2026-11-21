@@ -25,8 +25,9 @@ type Config struct {
 	MaxRoundsPerDay       int    // max daily-task rounds a user can run per day
 	AdminToken            string // bearer token for /admin/* endpoints; empty disables them
 
-	// Telegram delivery. Exactly one of WebhookURL and TelegramLocalMode is
-	// set; ValidateWebhook refuses both and neither.
+	// Telegram delivery, read and checked by ValidateTelegram, not by Load.
+	// Exactly one of WebhookURL and TelegramLocalMode is set; ValidateTelegram
+	// refuses both and neither.
 	WebhookURL string
 	// TelegramWebhookSecret is sent to Telegram as setWebhook's secret_token
 	// and required back in X-Telegram-Bot-Api-Secret-Token on every POST
@@ -104,19 +105,6 @@ func Load() (*Config, error) {
 	if cfg.TelegramToken == "" {
 		return nil, fmt.Errorf("TELEGRAM_TOKEN is required")
 	}
-	localMode, err := getEnvBoolStrict("TELEGRAM_LOCAL_MODE")
-	if err != nil {
-		return nil, err
-	}
-	cfg.TelegramLocalMode = localMode
-	initTimeout, err := getEnvDuration("TELEGRAM_INIT_TIMEOUT", DefaultTelegramInitTimeout)
-	if err != nil {
-		return nil, err
-	}
-	if initTimeout > MaxTelegramInitTimeout {
-		return nil, fmt.Errorf("TELEGRAM_INIT_TIMEOUT must be at most %s, got %s: go-telegram/bot's HTTP client cuts every request at %s, so a longer wait would never happen", MaxTelegramInitTimeout, initTimeout, MaxTelegramInitTimeout)
-	}
-	cfg.TelegramInitTimeout = initTimeout
 
 	return cfg, nil
 }
@@ -126,12 +114,39 @@ func Load() (*Config, error) {
 // migrations and seeding, so it is checked before anything else runs.
 var webhookSecretPattern = regexp.MustCompile(`^[A-Za-z0-9_-]{1,256}$`)
 
-// ValidateWebhook checks how the server receives updates. It is separate from
-// Load because only cmd/makeme serves the webhook: cmd/seed and cmd/seed-audio
-// load the same environment for DATABASE_URL and must not fail over settings
-// they never use. The server calls it right after Load, before migrations and
-// before any Telegram call.
-func (c *Config) ValidateWebhook() error {
+// webhookPorts are the public ports setWebhook accepts. An omitted port is
+// 443.
+var webhookPorts = map[string]bool{"": true, "443": true, "80": true, "88": true, "8443": true}
+
+// webhookPath is the only path internal/server routes updates on.
+const webhookPath = "/webhook"
+
+// ValidateTelegram reads and checks the settings only the bot server uses:
+// how updates arrive (WEBHOOK_URL, TELEGRAM_WEBHOOK_SECRET,
+// TELEGRAM_LOCAL_MODE) and how long startup waits for getMe
+// (TELEGRAM_INIT_TIMEOUT). It is separate from Load because cmd/seed and
+// cmd/seed-audio load the same environment for DATABASE_URL and must not fail
+// over settings they never use, a typo in them included. cmd/makeme calls it
+// right after Load, before migrations and before any Telegram call, and only
+// then are TelegramLocalMode and TelegramInitTimeout set.
+func (c *Config) ValidateTelegram() error {
+	localMode, err := getEnvBoolStrict("TELEGRAM_LOCAL_MODE")
+	if err != nil {
+		return err
+	}
+	c.TelegramLocalMode = localMode
+	initTimeout, err := getEnvDuration("TELEGRAM_INIT_TIMEOUT", DefaultTelegramInitTimeout)
+	if err != nil {
+		return err
+	}
+	if initTimeout > MaxTelegramInitTimeout {
+		return fmt.Errorf("TELEGRAM_INIT_TIMEOUT must be at most %s, got %s: go-telegram/bot's HTTP client cuts every request at %s, so a longer wait would never happen", MaxTelegramInitTimeout, initTimeout, MaxTelegramInitTimeout)
+	}
+	c.TelegramInitTimeout = initTimeout
+	return c.validateWebhook()
+}
+
+func (c *Config) validateWebhook() error {
 	if c.TelegramWebhookSecret != "" && !webhookSecretPattern.MatchString(c.TelegramWebhookSecret) {
 		return fmt.Errorf("TELEGRAM_WEBHOOK_SECRET must be 1-256 characters of A-Z, a-z, 0-9, _ or - (generate one with: openssl rand -hex 32)")
 	}
@@ -142,9 +157,18 @@ func (c *Config) ValidateWebhook() error {
 		return fmt.Errorf("WEBHOOK_URL is required: with it empty, setWebhook would delete the webhook of the bot whose token is in TELEGRAM_TOKEN. For local development without a webhook set TELEGRAM_LOCAL_MODE=true")
 	}
 	if c.WebhookURL != "" {
+		// setWebhook with a URL Telegram refuses can drop the current webhook
+		// before the refusal, so every rule Telegram applies is checked here.
+		// The value stays out of the messages: it may carry user:password.
 		u, err := url.Parse(c.WebhookURL)
 		if err != nil || u.Scheme != "https" || u.Hostname() == "" {
-			return fmt.Errorf("WEBHOOK_URL must be an absolute https URL with a host, got %q: setWebhook with a malformed URL can drop the current webhook before Telegram rejects it", c.WebhookURL)
+			return fmt.Errorf("WEBHOOK_URL must be an absolute https URL with a host")
+		}
+		if !webhookPorts[u.Port()] {
+			return fmt.Errorf("WEBHOOK_URL must use one of the ports Telegram delivers to (443, 80, 88 or 8443); this is the public port, not PORT")
+		}
+		if u.Path != webhookPath {
+			return fmt.Errorf("WEBHOOK_URL must end in the path %s, the only path the server routes updates on", webhookPath)
 		}
 	}
 	if c.WebhookURL != "" && c.TelegramWebhookSecret == "" {
