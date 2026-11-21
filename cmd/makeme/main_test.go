@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -145,5 +146,81 @@ func TestRun_RejectsWebhookSettingsBeforeMigrations(t *testing.T) {
 	err := run(context.Background())
 	if err == nil || !strings.Contains(err.Error(), "WEBHOOK_URL is required") {
 		t.Fatalf("run = %v, want the WEBHOOK_URL error", err)
+	}
+}
+
+// serve must not touch the webhook, nor start the scheduler, if the port is
+// taken: the task is about to die, and the one still serving keeps its
+// registration.
+func TestServe_PortTakenLeavesWebhookAlone(t *testing.T) {
+	taken, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer taken.Close()
+
+	b, api := newRecordingBot(t)
+	cfg := &config.Config{WebhookURL: "https://example.com/webhook", TelegramWebhookSecret: "abc"}
+	srv := &http.Server{Addr: taken.Addr().String(), Handler: http.NotFoundHandler()}
+	started := false
+	err = serve(context.Background(), cfg, srv, b, func() { started = true })
+	if err == nil || !strings.Contains(err.Error(), "listen on") {
+		t.Fatalf("serve = %v, want a listen error", err)
+	}
+	if got := api.called(); len(got) != 0 {
+		t.Fatalf("Bot API was called with the port taken: %v", got)
+	}
+	if started {
+		t.Fatal("workers started although startup failed")
+	}
+}
+
+// On the way up: port bound, then setWebhook, then workers, then serving; and
+// a failed setWebhook stops startup before the workers.
+func TestServe_RegistersBeforeWorkersAndStopsOnFailure(t *testing.T) {
+	b, api := newRecordingBot(t)
+	cfg := &config.Config{WebhookURL: "https://example.com/webhook", TelegramWebhookSecret: "abc"}
+	srv := &http.Server{Addr: "127.0.0.1:0", Handler: http.NotFoundHandler()}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	started := make(chan []string, 1)
+	done := make(chan error, 1)
+	go func() {
+		done <- serve(ctx, cfg, srv, b, func() { started <- api.called() })
+	}()
+	select {
+	case calls := <-started:
+		if len(calls) != 1 || calls[0] != "/bottest-token/setWebhook" {
+			t.Fatalf("at worker start the Bot API had seen %v, want exactly setWebhook", calls)
+		}
+	case err := <-done:
+		t.Fatalf("serve returned early: %v", err)
+	case <-time.After(5 * time.Second):
+		t.Fatal("workers never started")
+	}
+	cancel()
+	if err := <-done; err != nil {
+		t.Fatalf("serve after shutdown = %v, want nil", err)
+	}
+
+	failing := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprint(w, `{"ok":false,"error_code":400,"description":"Bad Request: bad webhook"}`)
+	}))
+	defer failing.Close()
+	fb, err := telegram.New("test-token", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
+		bot.WithSkipGetMe(), bot.WithServerURL(failing.URL))
+	if err != nil {
+		t.Fatal(err)
+	}
+	ran := false
+	err = serve(context.Background(), cfg, &http.Server{Addr: "127.0.0.1:0"}, fb, func() { ran = true })
+	if err == nil || !strings.Contains(err.Error(), "set webhook") {
+		t.Fatalf("serve = %v, want the setWebhook error", err)
+	}
+	if ran {
+		t.Fatal("workers started although setWebhook failed")
 	}
 }

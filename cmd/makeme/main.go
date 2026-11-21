@@ -118,19 +118,6 @@ func run(ctx context.Context) error {
 
 	sched := scheduler.New(userRepo, groupSvc, scoringSvc, assessRepo, tgBot.SendMessage, loc, cfg.SchedulerTime)
 
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		tgBot.StartWebhook(ctx)
-	}()
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		sched.Run(ctx)
-	}()
-
 	webSrv, err := buildWebServer(cfg, web.Deps{
 		UserSvc:     userSvc,
 		GroupSvc:    groupSvc,
@@ -160,11 +147,33 @@ func run(ctx context.Context) error {
 		IdleTimeout:  60 * time.Second,
 	}
 
-	// The webhook is registered last, once everything that can fail locally has
-	// succeeded and the port is bound. setWebhook changes where Telegram
-	// delivers and with which secret; a task that registered and then died
-	// (bad JWT_SECRET, port taken) would leave the task still serving with a
-	// registration it never asked for.
+	var wg sync.WaitGroup
+	startWorkers := func() {
+		wg.Add(2)
+		go func() {
+			defer wg.Done()
+			tgBot.StartWebhook(ctx)
+		}()
+		go func() {
+			defer wg.Done()
+			sched.Run(ctx)
+		}()
+	}
+	if err := serve(ctx, cfg, srv, tgBot, startWorkers); err != nil {
+		return err
+	}
+	wg.Wait()
+	return nil
+}
+
+// serve binds the port, registers the webhook, starts the workers and serves
+// until ctx is done. It is the last step of startup on purpose: setWebhook
+// changes where Telegram delivers and with which secret, so a task that
+// registered and then died (bad JWT_SECRET, port taken) would leave the task
+// still serving with a registration it never asked for. Likewise the
+// scheduler starts only once registration succeeded, so a task that fails here
+// has sent nothing. The caller builds everything else first.
+func serve(ctx context.Context, cfg *config.Config, srv *http.Server, tgBot *telegram.Bot, startWorkers func()) error {
 	ln, err := net.Listen("tcp", srv.Addr)
 	if err != nil {
 		return fmt.Errorf("listen on %s: %w", srv.Addr, err)
@@ -173,6 +182,7 @@ func run(ctx context.Context) error {
 		ln.Close()
 		return err
 	}
+	startWorkers()
 
 	go func() {
 		<-ctx.Done()
@@ -186,8 +196,6 @@ func run(ctx context.Context) error {
 	if err := srv.Serve(ln); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}
-
-	wg.Wait()
 	return nil
 }
 
