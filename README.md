@@ -289,10 +289,10 @@ Copy `.env.example` to `.env` and fill in the values:
 | `PORT` | `8080` | HTTP server port |
 | `DATABASE_URL` | `postgres://makeme:makeme@localhost:5432/makeme?sslmode=disable` | PostgreSQL connection string |
 | `TELEGRAM_TOKEN` | `123456:ABC-DEF...` | Bot token from [@BotFather](https://t.me/BotFather) |
-| `WEBHOOK_URL` | `https://example.com/webhook` | Public URL where Telegram sends updates. **Required unless `TELEGRAM_LOCAL_MODE=true`**: startup refuses an empty value, because setting an empty webhook deletes the bot's webhook. For local development with real updates use [ngrok](https://ngrok.com): `ngrok http 8080`, then set the resulting `https://xxxx.ngrok-free.app/webhook` |
-| `TELEGRAM_LOCAL_MODE` | `false` | `true` starts the bot without touching its webhook: no `setWebhook` call, so Telegram keeps delivering wherever the webhook already points and this process receives no updates. Outgoing messages still work. Mutually exclusive with `WEBHOOK_URL` (startup fails if both are set). Must parse as a boolean; a typo is an error, not `false`. |
+| `WEBHOOK_URL` | `https://example.com/webhook` | Public URL where Telegram sends updates. **Required unless `TELEGRAM_LOCAL_MODE=true`**: startup refuses an empty value, because setting an empty webhook deletes the bot's webhook. It must be an absolute `https://` URL with a host; anything else is refused at startup too, since Telegram can drop the current webhook before rejecting a malformed one. For local development with real updates use [ngrok](https://ngrok.com): `ngrok http 8080`, then set the resulting `https://xxxx.ngrok-free.app/webhook` |
+| `TELEGRAM_LOCAL_MODE` | `false` | `true` starts the bot without touching its webhook: no `setWebhook` call, so Telegram keeps delivering wherever the webhook already points. Usually that is nowhere or another environment, and this process gets only what is posted to `/webhook` by hand; if the existing webhook is a tunnel to this very port and the secrets match, real updates arrive. Outgoing messages still work. Mutually exclusive with `WEBHOOK_URL` (startup fails if both are set). Must parse as a boolean; a typo is an error, not `false`. |
 | `TELEGRAM_WEBHOOK_SECRET` | `(empty)` | Secret Telegram sends back in `X-Telegram-Bot-Api-Secret-Token` on every update; `/webhook` answers 401 without it. **Required whenever `WEBHOOK_URL` is set**: startup fails otherwise. 1–256 characters of `A-Za-z0-9_-` (Telegram's own limit, checked at startup): `openssl rand -hex 32`. Base64 does not fit, since `+`, `/` and `=` are outside the set. With it empty `/webhook` answers 503. |
-| `TELEGRAM_INIT_TIMEOUT` | `30s` | How long startup waits for `getMe`, the call `go-telegram/bot` makes before the bot exists (its own default is 5s). A Go duration (`30s`, `1m`); a bad or non-positive value is a startup error, not a silent default. |
+| `TELEGRAM_INIT_TIMEOUT` | `30s` | How long startup waits for `getMe`, the call `go-telegram/bot` makes before the bot exists (its own default is 5s). A Go duration (`30s`, `1m`), at most `60s`: the library's HTTP client cuts every request at one minute, so a longer wait would never happen. A bad, non-positive or larger value is a startup error, not a silent default. |
 | `LOG_LEVEL` | `info` | Log level: `debug`, `info`, `warn`, `error` |
 | `WORDS_FILE` | `data/words.json` | Word list seeded on every startup |
 | `GRAMMAR_QUESTIONS_FILE` | `data/grammar.json` | Grammar questions seeded on every startup |
@@ -346,11 +346,20 @@ unset. Without one of the two it refuses to start: an empty `WEBHOOK_URL` used
 to reach `setWebhook` and **delete the webhook** of whichever bot's token was in
 `TELEGRAM_TOKEN`, so a local run with the production token took production
 down. Local mode never calls `setWebhook` and leaves the webhook exactly as it
-was; the process then receives no updates from Telegram. To feed it an update
-by hand, also set `TELEGRAM_WEBHOOK_SECRET` (without it `/webhook` answers 503)
-and send the same header Telegram would:
+was, so Telegram keeps delivering wherever it pointed before. Normally that
+means this process gets no updates of its own; if the dev bot's webhook is an
+old tunnel to this port, stop the tunnel or real updates will keep arriving.
+`cmd/seed` and `cmd/seed-audio` do not look at any of this: they need only
+`DATABASE_URL` and `TELEGRAM_TOKEN`.
+
+To feed the bot an update by hand, set `TELEGRAM_WEBHOOK_SECRET` for the server
+(without it `/webhook` answers 503) and send the same header Telegram would.
+The value in `.env` reaches only the Go process, not your shell, so export the
+same value where you run curl, and replace `<your chat id>` with your numeric
+Telegram chat id:
 
 ```sh
+export TELEGRAM_WEBHOOK_SECRET=<the value the server was started with>
 curl -X POST http://localhost:8080/webhook \
   -H "X-Telegram-Bot-Api-Secret-Token: $TELEGRAM_WEBHOOK_SECRET" \
   -H "Content-Type: application/json" \
@@ -424,20 +433,39 @@ A build that requires `TELEGRAM_WEBHOOK_SECRET` is rolled out in this order:
    environment **first**. The running build does not read it. If saving the
    variable restarts the app, the restarted old build calls `setWebhook` without
    a secret, as it always did.
-2. Deploy the new build by sha. On startup it registers the webhook with the
-   secret (`telegram webhook set` in the log); from then on Telegram sends the
-   header and the new build checks it. Had the variable been forgotten, the log
-   names it (`TELEGRAM_WEBHOOK_SECRET is required when WEBHOOK_URL is set`), the
-   new task never turns healthy, the old one keeps serving and the webhook is
-   left as it was.
+2. Deploy the new build by sha. It registers the webhook with the secret only
+   after everything else has started and its port is bound, right before it
+   serves (`telegram webhook set` in the log). From then on Telegram sends the
+   header. While both tasks run, the old one accepts every request and the new
+   one checks the header, so nothing is refused. Had the variable been
+   forgotten, the log names it (`TELEGRAM_WEBHOOK_SECRET is required when
+   WEBHOOK_URL is set`), the new task fails before migrations and before any
+   Telegram call, never turns healthy, and the old one keeps serving with the
+   webhook as it was.
 3. Check after the deploy: `getWebhookInfo` shows the same URL, a pending count
    of 0 and no `last_error_message` (a 401 there means Telegram holds a
    different secret than the app); `/start` in the bot answers; a `POST /webhook`
    without the header gets 401.
 
-Rolling back to a build without the check needs nothing extra: on startup it
-calls `setWebhook` without `secret_token`, which clears the secret on
-Telegram's side.
+If a deploy fails after `telegram webhook set` appeared in its log, or
+`setWebhook` itself returned an error, check `getWebhookInfo` before anything
+else: Telegram may have dropped or changed the registration while the old task
+kept serving. Restarting the serving task re-registers its own URL and secret.
+
+**Changing the secret later** (a new value, same URL) refuses updates for a
+short while: once the new task registers the new value, the old task still
+expects the old one and answers 401 to whatever reaches it until it stops.
+Telegram retries a failed delivery, so these updates are delayed rather than
+lost. Watch `getWebhookInfo` until the pending count is back to 0.
+
+**Rolling back to a build without the check** gives up the authentication, and
+the cutover is the same short window in reverse: the old build calls
+`setWebhook` without `secret_token` on startup (before its own port is open),
+and until the hardened task stops, Telegram's requests without the header reach
+it and get 401, to be retried. If the rolled-back task then fails to start, the
+hardened one keeps serving against a registration with no secret and refuses
+everything; redeploy or restart the hardened build so it registers its secret
+again, then confirm with `getWebhookInfo` and a fresh `/start`.
 
 #### Steps for a new environment
 
@@ -588,7 +616,7 @@ go run ./cmd/seed-audio -levels=A1 -delay-ms=1500
 #### Limits to expect
 
 * Free Dictionary returns no audio at all for ~3–5% of common words (e.g. `look`, `room`, `sea`); they end up as `"status":"not_found"` and stay with empty `audio_url`. The user-facing `🔊 Послушать` button will reply "Произношение не найдено" for these — acceptable for v1.
-* Disconnect (closing curl, network drop) is handled: the server cancels the run via `ctx.Done()` so no quota is wasted on a dropped client. A run that ends without its `done` line reaching the client, whether the client left, stopped reading, a proxy cut the response or the write of `done` itself failed, is logged once as `admin seed-audio aborted before done` with the cause, not as `completed`. Look for that line in the server log when a client saw no `done`.
+* Disconnect (closing curl, network drop) is handled: the server cancels the run via `ctx.Done()` so no quota is wasted on a dropped client. The server log reports what the server saw. `admin seed-audio aborted before done`, logged once with the cause, means its own write of a line failed or the request was cancelled: the client left, stopped reading, or the connection was cut before `done` was written. `completed` means the server wrote `done` without an error, which is not proof that the client got it: a proxy can accept the last bytes and lose them, as happened once on production. When a client saw no `done`, look for either line, and if it says `completed`, check `audio_url` in the database before re-running. A re-run is safe either way, since it skips words that already have audio.
 
 ## Development
 
