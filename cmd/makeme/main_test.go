@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"sync"
 	"testing"
@@ -22,6 +23,7 @@ import (
 type recordingBotAPI struct {
 	mu      sync.Mutex
 	methods []string
+	forms   []url.Values // multipart fields of each call, same order as methods
 }
 
 func (a *recordingBotAPI) called() []string {
@@ -30,12 +32,23 @@ func (a *recordingBotAPI) called() []string {
 	return append([]string(nil), a.methods...)
 }
 
+func (a *recordingBotAPI) form(i int) url.Values {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	return a.forms[i]
+}
+
 func newRecordingBot(t *testing.T) (*telegram.Bot, *recordingBotAPI) {
 	t.Helper()
 	api := &recordingBotAPI{}
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var form url.Values
+		if err := r.ParseMultipartForm(1 << 20); err == nil {
+			form = r.MultipartForm.Value
+		}
 		api.mu.Lock()
 		api.methods = append(api.methods, r.URL.Path)
+		api.forms = append(api.forms, form)
 		api.mu.Unlock()
 		w.Header().Set("Content-Type", "application/json")
 		fmt.Fprint(w, `{"ok":true,"result":true}`)
@@ -68,6 +81,15 @@ func TestConfigureWebhook_SetsWebhookOutsideLocalMode(t *testing.T) {
 	}
 	if got := api.called(); len(got) != 1 || got[0] != "/bottest-token/setWebhook" {
 		t.Fatalf("Bot API calls = %v, want one setWebhook", got)
+	}
+	// The secret must reach Telegram from the config: without it Telegram sends
+	// no header and the router answers every real update with 401.
+	form := api.form(0)
+	if got := form.Get("url"); got != cfg.WebhookURL {
+		t.Errorf("url = %q, want %q", got, cfg.WebhookURL)
+	}
+	if got := form.Get("secret_token"); got != cfg.TelegramWebhookSecret {
+		t.Errorf("secret_token = %q, want %q", got, cfg.TelegramWebhookSecret)
 	}
 }
 

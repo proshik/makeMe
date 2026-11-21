@@ -54,11 +54,15 @@ func (f *fakeBotAPI) recorded() []string {
 // the test covers the route as server.New mounts it rather than the guard on
 // its own. No database: an update without a sender skips user resolution, and
 // an unknown command is answered by the default handler alone.
+//
+// Handlers run synchronously on the single worker (WithNotAsyncHandlers): by
+// default the library starts a goroutine per update, and then the order of
+// replies would say nothing about the order of updates.
 func newWebhookRouter(t *testing.T, secret string) (http.Handler, *fakeBotAPI) {
 	t.Helper()
 	api, apiSrv := newFakeBotAPI(t)
 	tgBot, err := telegram.New("test-token", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
-		bot.WithSkipGetMe(), bot.WithServerURL(apiSrv.URL))
+		bot.WithSkipGetMe(), bot.WithServerURL(apiSrv.URL), bot.WithNotAsyncHandlers())
 	if err != nil {
 		t.Fatalf("telegram.New: %v", err)
 	}
@@ -126,9 +130,10 @@ func TestWebhook_WrongOrMissingSecretIsRejectedAndNotProcessed(t *testing.T) {
 		}
 	}
 
-	// Updates are consumed in order by a single worker, so once the valid one
-	// has been answered any rejected update that slipped into the queue would
-	// have been answered too. Only chat 42 may appear.
+	// Updates are consumed in order by a single worker that runs each handler
+	// to completion, so once the valid one has been answered any rejected
+	// update that slipped into the queue would have been answered first. Only
+	// chat 42 may appear.
 	secret := testWebhookSecret
 	if code := postUpdate(t, h, 42, &secret); code != http.StatusOK {
 		t.Fatalf("valid update: got %d, want 200", code)
@@ -139,15 +144,75 @@ func TestWebhook_WrongOrMissingSecretIsRejectedAndNotProcessed(t *testing.T) {
 	}
 }
 
+// The guard on its own, where "not processed" is decided synchronously: next
+// must not run at all, and the body must stay unread.
+func TestWebhookAuth_RejectsWithoutCallingNext(t *testing.T) {
+	cases := []struct {
+		name   string
+		secret string
+		header *string
+		want   int
+	}{
+		{"missing header", testWebhookSecret, nil, http.StatusUnauthorized},
+		{"wrong secret", testWebhookSecret, strPtr("wrong"), http.StatusUnauthorized},
+		{"secret with a suffix", testWebhookSecret, strPtr(testWebhookSecret + "x"), http.StatusUnauthorized},
+		{"no secret configured, no header", "", nil, http.StatusServiceUnavailable},
+		{"no secret configured, empty header", "", strPtr(""), http.StatusServiceUnavailable},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			h := webhookAuth(c.secret, func(w http.ResponseWriter, r *http.Request) {
+				t.Fatal("next ran for a rejected request")
+			})
+			body := &readSpy{r: strings.NewReader(`{"update_id":1}`)}
+			req := httptest.NewRequest(http.MethodPost, "/webhook", body)
+			if c.header != nil {
+				req.Header.Set(webhookSecretHeader, *c.header)
+			}
+			rr := httptest.NewRecorder()
+			h(rr, req)
+			if rr.Code != c.want {
+				t.Fatalf("got %d, want %d", rr.Code, c.want)
+			}
+			if body.read {
+				t.Fatal("request body was read")
+			}
+		})
+	}
+}
+
+func TestWebhookAuth_CorrectSecretCallsNext(t *testing.T) {
+	called := false
+	h := webhookAuth(testWebhookSecret, func(w http.ResponseWriter, r *http.Request) { called = true })
+	req := httptest.NewRequest(http.MethodPost, "/webhook", nil)
+	req.Header.Set(webhookSecretHeader, testWebhookSecret)
+	h(httptest.NewRecorder(), req)
+	if !called {
+		t.Fatal("next did not run for the correct secret")
+	}
+}
+
+type readSpy struct {
+	r    *strings.Reader
+	read bool
+}
+
+func (s *readSpy) Read(p []byte) (int, error) {
+	s.read = true
+	return s.r.Read(p)
+}
+
+func strPtr(s string) *string { return &s }
+
+// Through the real router: with no secret configured the endpoint is closed.
+// That nothing is processed is covered synchronously by
+// TestWebhookAuth_RejectsWithoutCallingNext.
 func TestWebhook_NoSecretConfiguredClosesEndpoint(t *testing.T) {
-	h, api := newWebhookRouter(t, "")
+	h, _ := newWebhookRouter(t, "")
 	any := "whatever"
 	for _, header := range []*string{nil, &any} {
 		if code := postUpdate(t, h, 7, header); code != http.StatusServiceUnavailable {
 			t.Errorf("got %d, want 503", code)
 		}
-	}
-	if got := api.recorded(); len(got) != 0 {
-		t.Fatalf("bot answered %v with the endpoint closed", got)
 	}
 }
