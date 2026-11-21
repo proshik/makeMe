@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -104,5 +105,23 @@ func TestBotOptions_CarryInitTimeoutIntoGetMe(t *testing.T) {
 	}
 	if err := newBot(5 * time.Second); err != nil {
 		t.Fatalf("getMe within the configured timeout failed: %v", err)
+	}
+}
+
+// Webhook settings are checked by the server, not by config.Load (the seed
+// commands share Load), so run itself has to refuse them, and before
+// migrations: DATABASE_URL points nowhere, and reaching it would fail with a
+// connection error instead.
+func TestRun_RejectsWebhookSettingsBeforeMigrations(t *testing.T) {
+	t.Setenv("DATABASE_URL", "postgres://x:y@127.0.0.1:1/z?sslmode=disable")
+	t.Setenv("TELEGRAM_TOKEN", "1:test")
+	t.Setenv("WEBHOOK_URL", "")
+	t.Setenv("TELEGRAM_LOCAL_MODE", "")
+	t.Setenv("TELEGRAM_WEBHOOK_SECRET", "")
+	t.Setenv("TELEGRAM_INIT_TIMEOUT", "")
+
+	err := run(context.Background())
+	if err == nil || !strings.Contains(err.Error(), "WEBHOOK_URL is required") {
+		t.Fatalf("run = %v, want the WEBHOOK_URL error", err)
 	}
 }

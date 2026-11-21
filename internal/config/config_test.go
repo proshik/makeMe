@@ -18,9 +18,38 @@ func setBaseEnv(t *testing.T) {
 	t.Setenv("TELEGRAM_INIT_TIMEOUT", "")
 }
 
+// loadServer is what cmd/makeme does on startup: Load, then ValidateWebhook.
+func loadServer() (*Config, error) {
+	cfg, err := Load()
+	if err != nil {
+		return nil, err
+	}
+	if err := cfg.ValidateWebhook(); err != nil {
+		return nil, err
+	}
+	return cfg, nil
+}
+
+// cmd/seed and cmd/seed-audio call Load for DATABASE_URL only. Webhook settings
+// they never use must not stop them: neither an empty WEBHOOK_URL nor one
+// without a secret.
+func TestLoad_DoesNotRequireWebhookSettings(t *testing.T) {
+	for _, url := range []string{"", "https://example.com/webhook"} {
+		setBaseEnv(t)
+		t.Setenv("WEBHOOK_URL", url)
+		cfg, err := Load()
+		if err != nil {
+			t.Fatalf("WEBHOOK_URL=%q: Load: %v", url, err)
+		}
+		if cfg.DatabaseURL != "postgres://x" {
+			t.Fatalf("DatabaseURL = %q", cfg.DatabaseURL)
+		}
+	}
+}
+
 func TestLoad_EmptyWebhookURLWithoutLocalModeFails(t *testing.T) {
 	setBaseEnv(t)
-	_, err := Load()
+	_, err := loadServer()
 	if err == nil || !strings.Contains(err.Error(), "WEBHOOK_URL is required") ||
 		!strings.Contains(err.Error(), "TELEGRAM_LOCAL_MODE=true") {
 		t.Fatalf("got %v, want an error naming WEBHOOK_URL and the way out", err)
@@ -30,7 +59,7 @@ func TestLoad_EmptyWebhookURLWithoutLocalModeFails(t *testing.T) {
 func TestLoad_LocalModeWithoutWebhookURL(t *testing.T) {
 	setBaseEnv(t)
 	t.Setenv("TELEGRAM_LOCAL_MODE", "true")
-	cfg, err := Load()
+	cfg, err := loadServer()
 	if err != nil {
 		t.Fatalf("Load: %v", err)
 	}
@@ -42,7 +71,7 @@ func TestLoad_LocalModeWithoutWebhookURL(t *testing.T) {
 func TestLoad_LocalModeFalseIsNotLocal(t *testing.T) {
 	setBaseEnv(t)
 	t.Setenv("TELEGRAM_LOCAL_MODE", "false")
-	if _, err := Load(); err == nil || !strings.Contains(err.Error(), "WEBHOOK_URL is required") {
+	if _, err := loadServer(); err == nil || !strings.Contains(err.Error(), "WEBHOOK_URL is required") {
 		t.Fatalf("got %v, want WEBHOOK_URL is required", err)
 	}
 }
@@ -52,7 +81,7 @@ func TestLoad_LocalModeWithWebhookURLFails(t *testing.T) {
 	t.Setenv("TELEGRAM_LOCAL_MODE", "true")
 	t.Setenv("WEBHOOK_URL", "https://example.com/webhook")
 	t.Setenv("TELEGRAM_WEBHOOK_SECRET", "abc")
-	if _, err := Load(); err == nil || !strings.Contains(err.Error(), "mutually exclusive") {
+	if _, err := loadServer(); err == nil || !strings.Contains(err.Error(), "mutually exclusive") {
 		t.Fatalf("got %v, want a mutually-exclusive error", err)
 	}
 }
@@ -62,7 +91,7 @@ func TestLoad_LocalModeWithWebhookURLFails(t *testing.T) {
 func TestLoad_LocalModeTypoFails(t *testing.T) {
 	setBaseEnv(t)
 	t.Setenv("TELEGRAM_LOCAL_MODE", "ture")
-	if _, err := Load(); err == nil || !strings.Contains(err.Error(), "TELEGRAM_LOCAL_MODE must be true or false") {
+	if _, err := loadServer(); err == nil || !strings.Contains(err.Error(), "TELEGRAM_LOCAL_MODE must be true or false") {
 		t.Fatalf("got %v, want a TELEGRAM_LOCAL_MODE parse error", err)
 	}
 }
@@ -70,7 +99,7 @@ func TestLoad_LocalModeTypoFails(t *testing.T) {
 func TestLoad_WebhookURLWithoutSecretFails(t *testing.T) {
 	setBaseEnv(t)
 	t.Setenv("WEBHOOK_URL", "https://example.com/webhook")
-	_, err := Load()
+	_, err := loadServer()
 	if err == nil || !strings.Contains(err.Error(), "TELEGRAM_WEBHOOK_SECRET is required") {
 		t.Fatalf("got %v, want an error naming TELEGRAM_WEBHOOK_SECRET", err)
 	}
@@ -80,7 +109,7 @@ func TestLoad_WebhookURLWithSecret(t *testing.T) {
 	setBaseEnv(t)
 	t.Setenv("WEBHOOK_URL", "https://example.com/webhook")
 	t.Setenv("TELEGRAM_WEBHOOK_SECRET", "abc_DEF-123")
-	cfg, err := Load()
+	cfg, err := loadServer()
 	if err != nil {
 		t.Fatalf("Load: %v", err)
 	}
@@ -110,7 +139,7 @@ func TestLoad_WebhookSecretFormat(t *testing.T) {
 			setBaseEnv(t)
 			t.Setenv("WEBHOOK_URL", "https://example.com/webhook")
 			t.Setenv("TELEGRAM_WEBHOOK_SECRET", c.secret)
-			_, err := Load()
+			_, err := loadServer()
 			if c.ok && err != nil {
 				t.Fatalf("want ok, got %v", err)
 			}
@@ -140,7 +169,7 @@ func TestLoad_TelegramInitTimeout(t *testing.T) {
 			setBaseEnv(t)
 			t.Setenv("TELEGRAM_LOCAL_MODE", "true")
 			t.Setenv("TELEGRAM_INIT_TIMEOUT", c.value)
-			cfg, err := Load()
+			cfg, err := loadServer()
 			if !c.ok {
 				if err == nil || !strings.Contains(err.Error(), "TELEGRAM_INIT_TIMEOUT") {
 					t.Fatalf("got %v, want a TELEGRAM_INIT_TIMEOUT error", err)

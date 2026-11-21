@@ -50,6 +50,9 @@ func run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	if err := cfg.ValidateWebhook(); err != nil {
+		return err
+	}
 
 	setupLogger(cfg.LogLevel)
 

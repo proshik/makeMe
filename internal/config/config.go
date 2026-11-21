@@ -25,7 +25,7 @@ type Config struct {
 	AdminToken            string // bearer token for /admin/* endpoints; empty disables them
 
 	// Telegram delivery. Exactly one of WebhookURL and TelegramLocalMode is
-	// set; validateWebhook refuses both and neither.
+	// set; ValidateWebhook refuses both and neither.
 	WebhookURL string
 	// TelegramWebhookSecret is sent to Telegram as setWebhook's secret_token
 	// and required back in X-Telegram-Bot-Api-Secret-Token on every POST
@@ -113,9 +113,6 @@ func Load() (*Config, error) {
 		return nil, err
 	}
 	cfg.TelegramInitTimeout = initTimeout
-	if err := cfg.validateWebhook(); err != nil {
-		return nil, err
-	}
 
 	return cfg, nil
 }
@@ -125,7 +122,12 @@ func Load() (*Config, error) {
 // migrations and seeding, so it is checked before anything else runs.
 var webhookSecretPattern = regexp.MustCompile(`^[A-Za-z0-9_-]{1,256}$`)
 
-func (c *Config) validateWebhook() error {
+// ValidateWebhook checks how the server receives updates. It is separate from
+// Load because only cmd/makeme serves the webhook: cmd/seed and cmd/seed-audio
+// load the same environment for DATABASE_URL and must not fail over settings
+// they never use. The server calls it right after Load, before migrations and
+// before any Telegram call.
+func (c *Config) ValidateWebhook() error {
 	if c.TelegramWebhookSecret != "" && !webhookSecretPattern.MatchString(c.TelegramWebhookSecret) {
 		return fmt.Errorf("TELEGRAM_WEBHOOK_SECRET must be 1-256 characters of A-Z, a-z, 0-9, _ or - (generate one with: openssl rand -hex 32)")
 	}
@@ -136,7 +138,7 @@ func (c *Config) validateWebhook() error {
 		return fmt.Errorf("WEBHOOK_URL is required: with it empty, setWebhook would delete the webhook of the bot whose token is in TELEGRAM_TOKEN. For local development without a webhook set TELEGRAM_LOCAL_MODE=true")
 	}
 	if c.WebhookURL != "" && c.TelegramWebhookSecret == "" {
-		return fmt.Errorf("TELEGRAM_WEBHOOK_SECRET is required when WEBHOOK_URL is set: without it /webhook accepts forged updates (generate one with: openssl rand -hex 32)")
+		return fmt.Errorf("TELEGRAM_WEBHOOK_SECRET is required when WEBHOOK_URL is set: without it Telegram's updates cannot be told from forged ones (generate one with: openssl rand -hex 32)")
 	}
 	return nil
 }
