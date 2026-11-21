@@ -289,7 +289,7 @@ Copy `.env.example` to `.env` and fill in the values:
 | `PORT` | `8080` | HTTP server port |
 | `DATABASE_URL` | `postgres://makeme:makeme@localhost:5432/makeme?sslmode=disable` | PostgreSQL connection string |
 | `TELEGRAM_TOKEN` | `123456:ABC-DEF...` | Bot token from [@BotFather](https://t.me/BotFather) |
-| `WEBHOOK_URL` | `https://example.com/webhook` | Public URL where Telegram sends updates. **Required unless `TELEGRAM_LOCAL_MODE=true`**: startup refuses an empty value, because setting an empty webhook deletes the bot's webhook. It must be an absolute `https://` URL with a host; anything else is refused at startup too, since Telegram can drop the current webhook before rejecting a malformed one. For local development with real updates use [ngrok](https://ngrok.com): `ngrok http 8080`, then set the resulting `https://xxxx.ngrok-free.app/webhook` |
+| `WEBHOOK_URL` | `https://example.com/webhook` | Public URL where Telegram sends updates. **Required unless `TELEGRAM_LOCAL_MODE=true`**: startup refuses an empty value, because setting an empty webhook deletes the bot's webhook. It must be an absolute `https://` URL with a host, a port Telegram delivers to (443 when omitted, or 80, 88, 8443; the public port, not `PORT`) and the path `/webhook`; anything else is refused at startup too, since Telegram can drop the current webhook before rejecting a URL it does not accept. The value is not repeated in the error, as it may carry credentials. For local development with real updates use [ngrok](https://ngrok.com): `ngrok http 8080`, then set the resulting `https://xxxx.ngrok-free.app/webhook` |
 | `TELEGRAM_LOCAL_MODE` | `false` | `true` starts the bot without touching its webhook: no `setWebhook` call, so Telegram keeps delivering wherever the webhook already points. Usually that is nowhere or another environment, and this process gets only what is posted to `/webhook` by hand; if the existing webhook is a tunnel to this very port and the secrets match, real updates arrive. Outgoing messages still work. Mutually exclusive with `WEBHOOK_URL` (startup fails if both are set). Must parse as a boolean; a typo is an error, not `false`. |
 | `TELEGRAM_WEBHOOK_SECRET` | `(empty)` | Secret Telegram sends back in `X-Telegram-Bot-Api-Secret-Token` on every update; `/webhook` answers 401 without it. **Required whenever `WEBHOOK_URL` is set**: startup fails otherwise. 1–256 characters of `A-Za-z0-9_-` (Telegram's own limit, checked at startup): `openssl rand -hex 32`. Base64 does not fit, since `+`, `/` and `=` are outside the set. With it empty `/webhook` answers 503. |
 | `TELEGRAM_INIT_TIMEOUT` | `30s` | How long startup waits for `getMe`, the call `go-telegram/bot` makes before the bot exists (its own default is 5s). A Go duration (`30s`, `1m`), at most `60s`: the library's HTTP client cuts every request at one minute, so a longer wait would never happen. A bad, non-positive or larger value is a startup error, not a silent default. |
@@ -349,14 +349,18 @@ down. Local mode never calls `setWebhook` and leaves the webhook exactly as it
 was, so Telegram keeps delivering wherever it pointed before. Normally that
 means this process gets no updates of its own; if the dev bot's webhook is an
 old tunnel to this port, stop the tunnel or real updates will keep arriving.
-`cmd/seed` and `cmd/seed-audio` do not look at any of this: they need only
+`cmd/seed` and `cmd/seed-audio` do not look at any of this, not even at a
+malformed `TELEGRAM_LOCAL_MODE` or `TELEGRAM_INIT_TIMEOUT`: they need only
 `DATABASE_URL` and `TELEGRAM_TOKEN`.
 
 To feed the bot an update by hand, set `TELEGRAM_WEBHOOK_SECRET` for the server
 (without it `/webhook` answers 503) and send the same header Telegram would.
 The value in `.env` reaches only the Go process, not your shell, so export the
 same value where you run curl, and replace `<your chat id>` with your numeric
-Telegram chat id:
+Telegram chat id. Open the chat with the dev bot and press Start first: a bot
+cannot message a user who never started it, and the reply in that chat is the
+result to look for. `/webhook` answers 200 either way, because the handler's
+`sendMessage` error never reaches the webhook caller.
 
 ```sh
 export TELEGRAM_WEBHOOK_SECRET=<the value the server was started with>
@@ -455,24 +459,31 @@ kept serving. Restarting the serving task re-registers its own URL and secret.
 **Changing the secret later** (a new value, same URL) refuses updates for a
 short while: once the new task registers the new value, the old task still
 expects the old one and answers 401 to whatever reaches it until it stops.
-Telegram retries a failed delivery, so these updates are delayed rather than
-lost. Watch `getWebhookInfo` until the pending count is back to 0.
+Telegram retries a failed delivery, but only a limited number of times, so a
+short cutover delays updates while a long one, or a failed new task left
+behind by the old one, can lose them. A pending count back at 0 does not tell
+the two apart, since dropped updates leave the queue too. After the cutover,
+compare `last_error_date` in `getWebhookInfo` with the time of the deploy and
+confirm delivery with a fresh `/start`. If 401s keep coming, restart the task
+that is serving so it registers its own secret again.
 
 **Rolling back to a build without the check** gives up the authentication, and
 the cutover is the same short window in reverse: the old build calls
 `setWebhook` without `secret_token` on startup (before its own port is open),
 and until the hardened task stops, Telegram's requests without the header reach
-it and get 401, to be retried. If the rolled-back task then fails to start, the
-hardened one keeps serving against a registration with no secret and refuses
-everything; redeploy or restart the hardened build so it registers its secret
-again, then confirm with `getWebhookInfo` and a fresh `/start`.
+it and get 401. Telegram retries them a limited number of times, so the same
+caveat applies: a short cutover delays updates, a long one can lose them. If
+the rolled-back task then fails to start, the hardened one keeps serving
+against a registration with no secret and refuses everything; redeploy or
+restart the hardened build so it registers its secret again, then confirm with
+`getWebhookInfo` and a fresh `/start`.
 
 #### Steps for a new environment
 
 1. Register an OAuth application for the bot and obtain `TELEGRAM_CLIENT_ID` / `TELEGRAM_CLIENT_SECRET`. These are **not** the same as `TELEGRAM_TOKEN`.
 2. `openssl rand -base64 32` → `JWT_SECRET`. Startup fails if it is shorter than 32 bytes decoded, so a bad value surfaces immediately rather than on first login. `openssl rand -hex 32` → `TELEGRAM_WEBHOOK_SECRET` (hex, because base64 falls outside Telegram's character set).
 3. Set `APP_BASE_URL` to the public origin. The redirect URI is derived as `$APP_BASE_URL/auth/telegram/callback` and must match what was registered exactly.
-4. Deploy `ghcr.io/proshik/makeme:<sha>` with the environment above. In the logs expect `migrations applied`, three `seed:` lines, `telegram webhook set` and `web UI enabled`; then confirm in this order, since each step depends on the previous one working:
+4. Deploy `ghcr.io/proshik/makeme:<sha>` with the environment above. In the logs expect `migrations applied`, three `seed:` lines, `web UI enabled` and then `telegram webhook set` right before `starting server`; then confirm in this order, since each step depends on the previous one working:
    - `GET /login` renders and the button leads to Telegram.
    - Signing in lands back on `/` as the right user. A user who already exists in the bot must keep their level and progress.
    - A WebSocket client holding the `auth_token` cookie keeps `wss://<host>/ws` open longer than the platform's idle timeout. The server pings every 25s; a shorter proxy timeout will cut the socket. On krill it held 6.5 minutes.
