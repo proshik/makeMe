@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -109,10 +110,6 @@ func run(ctx context.Context) error {
 		return err
 	}
 
-	if err := configureWebhook(ctx, cfg, tgBot); err != nil {
-		return err
-	}
-
 	loc, err := time.LoadLocation(cfg.Timezone)
 	if err != nil {
 		slog.Warn("unknown timezone, falling back to UTC", "timezone", cfg.Timezone)
@@ -163,6 +160,20 @@ func run(ctx context.Context) error {
 		IdleTimeout:  60 * time.Second,
 	}
 
+	// The webhook is registered last, once everything that can fail locally has
+	// succeeded and the port is bound. setWebhook changes where Telegram
+	// delivers and with which secret; a task that registered and then died
+	// (bad JWT_SECRET, port taken) would leave the task still serving with a
+	// registration it never asked for.
+	ln, err := net.Listen("tcp", srv.Addr)
+	if err != nil {
+		return fmt.Errorf("listen on %s: %w", srv.Addr, err)
+	}
+	if err := configureWebhook(ctx, cfg, tgBot); err != nil {
+		ln.Close()
+		return err
+	}
+
 	go func() {
 		<-ctx.Done()
 		slog.Info("shutting down server")
@@ -172,7 +183,7 @@ func run(ctx context.Context) error {
 	}()
 
 	slog.Info("starting server", "port", cfg.Port)
-	if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+	if err := srv.Serve(ln); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}
 
@@ -188,12 +199,15 @@ func botOptions(cfg *config.Config) []bot.Option {
 }
 
 // configureWebhook points Telegram at this process, or, in local mode, leaves
-// the bot's webhook exactly as it is. Local mode receives no updates: the bot
-// still sends (scheduler, replies to anything posted to /webhook by hand), but
-// Telegram keeps delivering to wherever the webhook already pointed.
+// the bot's webhook exactly as it is. Telegram then keeps delivering to
+// wherever that webhook already points, usually nowhere or another
+// environment, so a local process normally receives only what is posted to
+// /webhook by hand. If the existing webhook is a tunnel to this very port and
+// the secrets match, real updates do arrive. The bot still sends either way
+// (scheduler, replies).
 func configureWebhook(ctx context.Context, cfg *config.Config, tgBot *telegram.Bot) error {
 	if cfg.TelegramLocalMode {
-		slog.Warn("TELEGRAM_LOCAL_MODE: webhook left untouched, Telegram will not deliver updates to this process")
+		slog.Warn("TELEGRAM_LOCAL_MODE: webhook left untouched, Telegram keeps delivering wherever it already points")
 		return nil
 	}
 	return tgBot.SetWebhook(ctx, cfg.WebhookURL, cfg.TelegramWebhookSecret)
