@@ -17,6 +17,11 @@ import (
 
 const testWebhookSecret = "s3cret_value-123"
 
+// telegramSecretHeader is spelled out rather than taken from the
+// implementation's constant: a typo there would otherwise be shared by the
+// test and the handler, and every real update would get 401.
+const telegramSecretHeader = "X-Telegram-Bot-Api-Secret-Token"
+
 // fakeBotAPI stands in for api.telegram.org and records the chat of every
 // sendMessage. A processed update is one that made the bot answer, so this is
 // what tells "handled" from "rejected" — not the status code alone.
@@ -79,7 +84,7 @@ func postUpdate(t *testing.T, h http.Handler, chatID int64, header *string) int 
 	req := httptest.NewRequest(http.MethodPost, "/webhook", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 	if header != nil {
-		req.Header.Set(webhookSecretHeader, *header)
+		req.Header.Set(telegramSecretHeader, *header)
 	}
 	rr := httptest.NewRecorder()
 	h.ServeHTTP(rr, req)
@@ -113,6 +118,7 @@ func TestWebhook_WrongOrMissingSecretIsRejectedAndNotProcessed(t *testing.T) {
 
 	wrong := "not-the-secret"
 	prefix := testWebhookSecret[:len(testWebhookSecret)-1]
+	sameLength := "X" + testWebhookSecret[1:] // one character changed, same length
 	empty := ""
 	cases := []struct {
 		name   string
@@ -123,6 +129,7 @@ func TestWebhook_WrongOrMissingSecretIsRejectedAndNotProcessed(t *testing.T) {
 		{"empty header", 102, &empty},
 		{"wrong secret", 103, &wrong},
 		{"prefix of the secret", 104, &prefix},
+		{"same length, one character off", 105, &sameLength},
 	}
 	for _, c := range cases {
 		if code := postUpdate(t, h, c.chat, c.header); code != http.StatusUnauthorized {
@@ -156,6 +163,7 @@ func TestWebhookAuth_RejectsWithoutCallingNext(t *testing.T) {
 		{"missing header", testWebhookSecret, nil, http.StatusUnauthorized},
 		{"wrong secret", testWebhookSecret, strPtr("wrong"), http.StatusUnauthorized},
 		{"secret with a suffix", testWebhookSecret, strPtr(testWebhookSecret + "x"), http.StatusUnauthorized},
+		{"same length, one character off", testWebhookSecret, strPtr("X" + testWebhookSecret[1:]), http.StatusUnauthorized},
 		{"no secret configured, no header", "", nil, http.StatusServiceUnavailable},
 		{"no secret configured, empty header", "", strPtr(""), http.StatusServiceUnavailable},
 	}
@@ -167,7 +175,7 @@ func TestWebhookAuth_RejectsWithoutCallingNext(t *testing.T) {
 			body := &readSpy{r: strings.NewReader(`{"update_id":1}`)}
 			req := httptest.NewRequest(http.MethodPost, "/webhook", body)
 			if c.header != nil {
-				req.Header.Set(webhookSecretHeader, *c.header)
+				req.Header.Set(telegramSecretHeader, *c.header)
 			}
 			rr := httptest.NewRecorder()
 			h(rr, req)
@@ -185,7 +193,7 @@ func TestWebhookAuth_CorrectSecretCallsNext(t *testing.T) {
 	called := false
 	h := webhookAuth(testWebhookSecret, func(w http.ResponseWriter, r *http.Request) { called = true })
 	req := httptest.NewRequest(http.MethodPost, "/webhook", nil)
-	req.Header.Set(webhookSecretHeader, testWebhookSecret)
+	req.Header.Set(telegramSecretHeader, testWebhookSecret)
 	h(httptest.NewRecorder(), req)
 	if !called {
 		t.Fatal("next did not run for the correct secret")
