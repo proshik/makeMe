@@ -185,3 +185,35 @@ func TestLoad_TelegramInitTimeout(t *testing.T) {
 		})
 	}
 }
+
+// Telegram drops the current registration before it parses the new URL, so a
+// malformed one is caught here rather than handed to setWebhook.
+func TestValidateWebhook_URLShape(t *testing.T) {
+	cases := []struct {
+		url string
+		ok  bool
+	}{
+		{"https://example.com/webhook", true},
+		{"https://xxxx.ngrok-free.app/webhook", true},
+		{"https://example.com:8443/webhook", true},
+		{"https://", false},
+		{"https:///webhook", false},
+		{"http://example.com/webhook", false},
+		{"example.com/webhook", false},
+		{"://bad", false},
+	}
+	for _, c := range cases {
+		t.Run(c.url, func(t *testing.T) {
+			setBaseEnv(t)
+			t.Setenv("WEBHOOK_URL", c.url)
+			t.Setenv("TELEGRAM_WEBHOOK_SECRET", "abc")
+			_, err := loadServer()
+			if c.ok && err != nil {
+				t.Fatalf("want ok, got %v", err)
+			}
+			if !c.ok && (err == nil || !strings.Contains(err.Error(), "absolute https URL")) {
+				t.Fatalf("want a URL error, got %v", err)
+			}
+		})
+	}
+}

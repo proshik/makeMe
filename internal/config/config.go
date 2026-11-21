@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 	"regexp"
 	"strconv"
@@ -136,6 +137,12 @@ func (c *Config) ValidateWebhook() error {
 	}
 	if !c.TelegramLocalMode && c.WebhookURL == "" {
 		return fmt.Errorf("WEBHOOK_URL is required: with it empty, setWebhook would delete the webhook of the bot whose token is in TELEGRAM_TOKEN. For local development without a webhook set TELEGRAM_LOCAL_MODE=true")
+	}
+	if c.WebhookURL != "" {
+		u, err := url.Parse(c.WebhookURL)
+		if err != nil || u.Scheme != "https" || u.Hostname() == "" {
+			return fmt.Errorf("WEBHOOK_URL must be an absolute https URL with a host, got %q: setWebhook with a malformed URL can drop the current webhook before Telegram rejects it", c.WebhookURL)
+		}
 	}
 	if c.WebhookURL != "" && c.TelegramWebhookSecret == "" {
 		return fmt.Errorf("TELEGRAM_WEBHOOK_SECRET is required when WEBHOOK_URL is set: without it Telegram's updates cannot be told from forged ones (generate one with: openssl rand -hex 32)")
