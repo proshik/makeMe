@@ -113,6 +113,9 @@ func Load() (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
+	if initTimeout > MaxTelegramInitTimeout {
+		return nil, fmt.Errorf("TELEGRAM_INIT_TIMEOUT must be at most %s, got %s: go-telegram/bot's HTTP client cuts every request at %s, so a longer wait would never happen", MaxTelegramInitTimeout, initTimeout, MaxTelegramInitTimeout)
+	}
 	cfg.TelegramInitTimeout = initTimeout
 
 	return cfg, nil
@@ -173,6 +176,11 @@ func getEnvBool(key string, fallback bool) bool {
 // the library's 5s, still well inside krill's 60s healthcheck start period
 // together with migrations and seeding (~7s on production).
 const DefaultTelegramInitTimeout = 30 * time.Second
+
+// MaxTelegramInitTimeout is the ceiling go-telegram/bot v1.20.0 imposes
+// anyway: bot.New builds its http.Client with a fixed one-minute Timeout
+// (defaultPollTimeout), which ends getMe whatever the context allows.
+const MaxTelegramInitTimeout = time.Minute
 
 // getEnvDuration reads a positive Go duration ("30s", "1m"). Unlike getEnvInt
 // it rejects a bad value instead of falling back: a timeout that silently

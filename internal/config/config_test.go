@@ -159,6 +159,8 @@ func TestLoad_TelegramInitTimeout(t *testing.T) {
 		{"", DefaultTelegramInitTimeout, true},
 		{"45s", 45 * time.Second, true},
 		{"1m", time.Minute, true},
+		{"61s", 0, false}, // past the library HTTP client's own 60s cut-off
+		{"2m", 0, false},
 		{"30", 0, false}, // no unit: an error, not 30ns and not the default
 		{"0s", 0, false},
 		{"-5s", 0, false},
