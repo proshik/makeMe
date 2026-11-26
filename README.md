@@ -1,10 +1,78 @@
 # makeMe
 
-Gamified English learning platform via Telegram bot. Users join groups and compete daily by completing English tasks adapted to their level.
+Gamified English learning platform for Russian speakers: a Telegram bot and a web UI with Telegram login, sharing one PostgreSQL state. Users join groups and compete daily by completing English tasks adapted to their level.
 
-## Tech Stack
+## Screenshots
 
-Go, PostgreSQL (pgx/sqlc/goose), chi, [go-telegram/bot](https://github.com/go-telegram/bot)
+The web UI on demo data, in its dark and light themes (the image follows your GitHub theme).
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/tasks-question-dark.png">
+  <img src="docs/images/tasks-question-light.png" alt="Daily task round: a grammar question with four options, task 6 of 10, level scale A1–C2 with B2 lit">
+</picture>
+
+<table>
+  <tr>
+    <td width="50%">
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/tasks-feedback-dark.png">
+  <img src="docs/images/tasks-feedback-light.png" alt="Feedback after a wrong answer: the correct option and the grammar rule behind it">
+</picture>
+
+<sub>Wrong answer: the correct option and the rule</sub>
+    </td>
+    <td width="50%">
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/words-drill-dark.png">
+  <img src="docs/images/words-drill-light.png" alt="Words drill: session counters, progress by CEFR level, per-mode tallies and a multiple-choice card">
+</picture>
+
+<sub>Words: active recall in four modes, progress by level</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/assessment-question-dark.png">
+  <img src="docs/images/assessment-question-light.png" alt="Level test: question 18 of 30, grammar phase">
+</picture>
+
+<sub>Level test: 30 adaptive questions</sub>
+    </td>
+    <td width="50%">
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/assessment-result-dark.png">
+  <img src="docs/images/assessment-result-light.png" alt="Level test result: B2, 23 of 30 correct">
+</picture>
+
+<sub>Test result with the level and the score</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/leaderboard-dark.png">
+  <img src="docs/images/leaderboard-light.png" alt="Group leaderboard for today: three players with normalized scores">
+</picture>
+
+<sub>Group leaderboard, normalized by level</sub>
+    </td>
+    <td width="50%">
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/home-dark.png">
+  <img src="docs/images/home-light.png" alt="Home page after sign-in: greeting and the current level">
+</picture>
+
+<sub>Home after sign-in</sub>
+    </td>
+  </tr>
+</table>
 
 ## Features
 
@@ -107,597 +175,45 @@ User A (B2)                         User B (B1)
   │  "  Место: 1 из 2"                │  "  Место: 2 из 2"
 ```
 
-## Database Schema
+## Quick start
 
-```
-users
-├── id              BIGSERIAL PK
-├── telegram_id     BIGINT UNIQUE NOT NULL
-├── username        TEXT
-├── first_name      TEXT NOT NULL
-├── level           TEXT NOT NULL  (A1/A2/B1/B2/C1/C2)
-├── onboarded       BOOLEAN NOT NULL
-├── created_at      TIMESTAMPTZ
-└── updated_at      TIMESTAMPTZ
-
-groups
-├── id              BIGSERIAL PK
-├── name            TEXT NOT NULL
-├── invite_code     TEXT UNIQUE NOT NULL
-├── created_by      BIGINT FK → users(id)
-└── created_at      TIMESTAMPTZ
-
-memberships
-├── id              BIGSERIAL PK
-├── group_id        BIGINT FK → groups(id) ON DELETE CASCADE
-├── user_id         BIGINT FK → users(id) ON DELETE CASCADE
-├── role            TEXT NOT NULL  (owner/member)
-├── joined_at       TIMESTAMPTZ
-└── UNIQUE(group_id, user_id)
-
-assessment_sessions
-├── id                  BIGSERIAL PK
-├── user_id             BIGINT FK → users(id)
-├── status              TEXT NOT NULL  (in_progress/completed)
-├── current_level       TEXT NOT NULL  (A1–C2)
-├── determined_level    TEXT           (A1–C2, NULL until completed)
-├── pending_question    JSONB          (question shown to user, used to verify answer)
-├── consecutive_correct INT NOT NULL   (correct answers in a row; 2 needed to promote level)
-├── created_at          TIMESTAMPTZ
-└── completed_at        TIMESTAMPTZ
-
-assessment_answers
-├── id              BIGSERIAL PK
-├── session_id      BIGINT FK → assessment_sessions(id) ON DELETE CASCADE
-├── question_level  TEXT NOT NULL  (A1–C2)
-├── question_text   TEXT NOT NULL
-├── options         JSONB NOT NULL
-├── correct_option  INT NOT NULL
-├── user_option     INT NOT NULL
-├── correct         BOOLEAN NOT NULL
-└── created_at      TIMESTAMPTZ
-
-words
-├── id              BIGSERIAL PK
-├── english         TEXT NOT NULL
-├── russian         TEXT NOT NULL
-├── level           TEXT NOT NULL  (A1–C2)
-├── example         TEXT
-├── transcription   TEXT           (IPA, e.g. /ˈwɜːrd/, cached from Free Dictionary API)
-└── audio_url       TEXT           (MP3 URL, cached from Free Dictionary API)
-
-review_cards  (SRS / spaced repetition)
-├── id              BIGSERIAL PK
-├── user_id         BIGINT FK → users(id)
-├── word_id         BIGINT FK → words(id)
-├── ease_factor     REAL NOT NULL  (SM-2, default 2.5)
-├── interval_days   INT NOT NULL
-├── repetitions     INT NOT NULL
-├── next_review_date DATE NOT NULL
-├── updated_at      TIMESTAMPTZ
-└── UNIQUE(user_id, word_id)
-
-daily_sets
-├── id              BIGSERIAL PK
-├── user_id         BIGINT FK → users(id)
-├── group_id        BIGINT FK → groups(id)
-├── date            DATE NOT NULL
-├── round           INT NOT NULL   (0-based; increments when current set is fully answered)
-├── created_at      TIMESTAMPTZ
-└── UNIQUE(user_id, group_id, date, round)
-
-tasks
-├── id              BIGSERIAL PK
-├── daily_set_id    BIGINT FK → daily_sets(id)
-├── type            TEXT NOT NULL  (vocab/grammar)
-├── level           TEXT NOT NULL  (A1–C2)
-├── prompt          TEXT NOT NULL
-├── options         JSONB
-├── answer          TEXT NOT NULL
-├── metadata        JSONB
-└── position        INT NOT NULL
-
-task_results
-├── id              BIGSERIAL PK
-├── task_id         BIGINT FK → tasks(id)
-├── user_id         BIGINT FK → users(id)
-├── response        TEXT NOT NULL
-├── correct         BOOLEAN NOT NULL
-├── score           INT NOT NULL
-├── skipped         BOOLEAN NOT NULL (true when user tapped "🤷 Не знаю")
-├── duration_ms     INT
-├── created_at      TIMESTAMPTZ
-└── UNIQUE(task_id, user_id)
-
-scores
-├── id              BIGSERIAL PK
-├── user_id         BIGINT FK → users(id)
-├── group_id        BIGINT FK → groups(id)
-├── date            DATE NOT NULL
-├── raw             INT NOT NULL   (sum of task scores)
-├── normalized      REAL NOT NULL  (raw × level coefficient)
-├── created_at      TIMESTAMPTZ
-├── updated_at      TIMESTAMPTZ
-└── UNIQUE(user_id, group_id, date)
-
-grammar_questions
-├── id              BIGSERIAL PK
-├── level           TEXT NOT NULL  (A1–C2)
-├── category        TEXT NOT NULL  (Murphy topic, e.g. "Present Simple")
-├── subcategory     TEXT NOT NULL  DEFAULT 'general'  (affirmative/negative/interrogative/spelling/general)
-├── prompt          TEXT NOT NULL  (fill-in-the-blank with ___)
-├── options         JSONB NOT NULL (array of 4 strings)
-├── answer          TEXT NOT NULL  (correct option value)
-└── UNIQUE(level, prompt)
-
-grammar_categories
-├── name            TEXT PK        (category name, e.g. "Present Simple")
-└── explanation     TEXT NOT NULL  (theory shown in /learn)
-
-word_learning_progress  (per-mode counters for /words)
-├── user_id              BIGINT FK → users(id) ON DELETE CASCADE
-├── word_id              BIGINT FK → words(id) ON DELETE CASCADE
-├── en_ru_mc_correct     SMALLINT NOT NULL DEFAULT 0  (0..2)
-├── ru_en_mc_correct     SMALLINT NOT NULL DEFAULT 0
-├── en_ru_typing_correct SMALLINT NOT NULL DEFAULT 0
-├── ru_en_typing_correct SMALLINT NOT NULL DEFAULT 0
-├── learned              BOOLEAN NOT NULL DEFAULT FALSE
-├── learned_at           TIMESTAMPTZ
-├── started_at           TIMESTAMPTZ NOT NULL DEFAULT now()
-├── updated_at           TIMESTAMPTZ NOT NULL DEFAULT now()
-└── PK(user_id, word_id)
-
-words_sessions  (the 10-word picks for /words; one open at a time)
-├── id                BIGSERIAL PK
-├── user_id           BIGINT FK → users(id) ON DELETE CASCADE
-├── started_on        DATE NOT NULL
-├── word_ids          BIGINT[] NOT NULL  (the 10 picks)
-├── last_word_id      BIGINT             (anti-repeat cursor)
-├── error_counts      JSONB NOT NULL DEFAULT '{}'   (word_id → mistakes in this session)
-├── deferred_word_ids BIGINT[] NOT NULL DEFAULT '{}' (words excluded via "⏭ Отложить")
-├── created_at        TIMESTAMPTZ
-└── completed_at      TIMESTAMPTZ        (NULL while open; UNIQUE per user when NULL)
-
-pending_typing_prompts  (waiting for the user's typed reply, both /words and /tasks)
-├── user_id    BIGINT PK FK → users(id) ON DELETE CASCADE
-├── chat_id    BIGINT NOT NULL
-├── source     TEXT NOT NULL  ('words' | 'tasks')
-├── payload    JSONB NOT NULL  ({session_id, word_id, mode} for words; {task_id} for tasks)
-├── expires_at TIMESTAMPTZ NOT NULL
-└── created_at TIMESTAMPTZ
-```
-
-Level coefficients for normalized scores: A1=0.6, A2=0.8, B1=1.0, B2=1.15, C1=1.3, C2=1.5
-
-Relations:
-- `users` 1 ←→ N `memberships` N ←→ 1 `groups`
-- `users` 1 ←→ N `assessment_sessions` 1 ←→ N `assessment_answers`
-- `users` 1 ←→ N `review_cards` N ←→ 1 `words`
-- `users` 1 ←→ N `daily_sets` N ←→ 1 `groups`
-- `daily_sets` 1 ←→ N `tasks` 1 ←→ 1 `task_results`
-- `users` 1 ←→ N `word_learning_progress` N ←→ 1 `words`
-- `users` 1 ←→ N `words_sessions`
-- `users` 1 ←→ 0..1 `pending_typing_prompts`
-- `groups.created_by` → `users.id`
-
-## Environment Variables
-
-Copy `.env.example` to `.env` and fill in the values:
-
-| Variable | Example | Description |
-|---|---|---|
-| `PORT` | `8080` | HTTP server port |
-| `DATABASE_URL` | `postgres://makeme:makeme@localhost:5432/makeme?sslmode=disable` | PostgreSQL connection string |
-| `TELEGRAM_TOKEN` | `123456:ABC-DEF...` | Bot token from [@BotFather](https://t.me/BotFather) |
-| `WEBHOOK_URL` | `https://example.com/webhook` | Public URL where Telegram sends updates. **Required unless `TELEGRAM_LOCAL_MODE=true`**: startup refuses an empty value, because setting an empty webhook deletes the bot's webhook. It must be an absolute `https://` URL with a host, a port Telegram delivers to (443 when omitted, or 80, 88, 8443; the public port, not `PORT`) and the path `/webhook`; anything else is refused at startup too, since Telegram can drop the current webhook before rejecting a URL it does not accept. The value is not repeated in the error, as it may carry credentials. For local development with real updates use [ngrok](https://ngrok.com): `ngrok http 8080`, then set the resulting `https://xxxx.ngrok-free.app/webhook` |
-| `TELEGRAM_LOCAL_MODE` | `false` | `true` starts the bot without touching its webhook: no `setWebhook` call, so Telegram keeps delivering wherever the webhook already points. Usually that is nowhere or another environment, and this process gets only what is posted to `/webhook` by hand; if the existing webhook is a tunnel to this very port and the secrets match, real updates arrive. Outgoing messages still work. Mutually exclusive with `WEBHOOK_URL` (startup fails if both are set). Must parse as a boolean; a typo is an error, not `false`. |
-| `TELEGRAM_WEBHOOK_SECRET` | `(empty)` | Secret Telegram sends back in `X-Telegram-Bot-Api-Secret-Token` on every update; `/webhook` answers 401 without it. **Required whenever `WEBHOOK_URL` is set**: startup fails otherwise. 1–256 characters of `A-Za-z0-9_-` (Telegram's own limit, checked at startup): `openssl rand -hex 32`. Base64 does not fit, since `+`, `/` and `=` are outside the set. With it empty `/webhook` answers 503. |
-| `TELEGRAM_INIT_TIMEOUT` | `30s` | How long startup waits for `getMe`, the call `go-telegram/bot` makes before the bot exists (its own default is 5s). A Go duration (`30s`, `1m`), at most `60s`: the library's HTTP client cuts every request at one minute, so a longer wait would never happen. A bad, non-positive or larger value is a startup error, not a silent default. |
-| `LOG_LEVEL` | `info` | Log level: `debug`, `info`, `warn`, `error` |
-| `WORDS_FILE` | `data/words.json` | Word list seeded on every startup |
-| `GRAMMAR_QUESTIONS_FILE` | `data/grammar.json` | Grammar questions seeded on every startup |
-| `GRAMMAR_CATEGORIES_FILE` | `data/grammar_categories.json` | Grammar category explanations (`/learn` theory) seeded on every startup |
-| `SCHEDULER_TIME` | `21:00` | Time to send daily summaries (HH:MM, 24h) |
-| `TIMEZONE` | `Europe/Moscow` | Timezone for the scheduler |
-| `MAX_ROUNDS_PER_DAY` | `5` | Max task rounds a user can run per day (one round = 10 tasks) |
-| `ADMIN_TOKEN` | `(empty)` | Bearer token for `/admin/*` HTTP endpoints. Leave empty to disable them (they return 503). Generate with `openssl rand -hex 32`. |
-| `APP_BASE_URL` | `https://makeme.example.com` | Public origin of the web UI. `redirect_uri` is derived as `$APP_BASE_URL/auth/telegram/callback` — register that exact URL with Telegram. |
-| `TELEGRAM_CLIENT_ID` | `(empty)` | OAuth client id. Separate from `TELEGRAM_TOKEN`. |
-| `TELEGRAM_CLIENT_SECRET` | `(empty)` | OAuth client secret. |
-| `JWT_SECRET` | `(empty)` | Base64 key for session JWTs, ≥32 bytes decoded. `openssl rand -base64 32`. Startup fails if it is shorter or not base64. |
-| `JWT_TTL_HOURS` | `24` | Session lifetime; the `auth_token` cookie max-age is derived from it. |
-| `COOKIE_SECURE` | `true` | Set `false` for local http development. Chrome and Firefox accept a `Secure` cookie from `http://localhost`; Safari drops it silently, and no browser accepts it from `http://192.168.x.x`, so testing from a phone needs this too. |
-| `TELEGRAM_OAUTH_BASE_URL` | `https://oauth.telegram.org` | OIDC provider base. Point it at a login broker for local development. |
-| `TELEGRAM_EXPECTED_ISSUER` | `https://oauth.telegram.org` | The exact `iss` the id_token must carry, compared byte for byte. Changed together with the base URL and never derived from it: pointing the flow somewhere else has to be deliberate. |
-
-The web UI is optional: with `APP_BASE_URL`, `TELEGRAM_CLIENT_ID`, `TELEGRAM_CLIENT_SECRET` or `JWT_SECRET` unset it is not mounted and only the bot runs. A warning is logged at startup saying which variables are missing.
-
-### Local development without ngrok
-
-Telegram only accepts publicly resolvable HTTPS redirect URIs, which is why the
-login used to be untestable locally. [telegram-login-broker](../telegram-login-broker)
-solves that: it is registered in BotFather once and forwards the browser to any
-loopback port afterwards. Run it in mock mode and point two variables at it:
+The app needs PostgreSQL and the token of a **separate dev bot**: startup calls
+Telegram's `getMe`, so a placeholder token is not enough, and the scheduler and
+replies send real messages through whichever token is configured.
 
 ```sh
-TELEGRAM_OAUTH_BASE_URL=http://127.0.0.1:8091
-TELEGRAM_EXPECTED_ISSUER=http://127.0.0.1:8091
-TELEGRAM_CLIENT_ID=makeme
-TELEGRAM_CLIENT_SECRET=dev-secret     # must match the broker's BROKER_CLIENTS
-COOKIE_SECURE=false
+cp .env.example .env
+# TELEGRAM_TOKEN       a dev bot from @BotFather, never the production one
+# TELEGRAM_LOCAL_MODE  true, with WEBHOOK_URL empty: the bot's webhook is left alone
+# DATABASE_URL         postgres://makeme:makeme@postgres:5432/makeme?sslmode=disable for compose
+
+docker compose up --build        # app + PostgreSQL; migrations and seed data run on startup
+curl http://localhost:8080/health
 ```
 
-The whole exchange can be exercised without starting the bot at all:
+Without Docker, point `DATABASE_URL` at a local PostgreSQL and run `make run`.
 
-```sh
-BROKER_URL=http://127.0.0.1:8091 BROKER_CLIENT_ID=makeme BROKER_CLIENT_SECRET=dev-secret \
-  go test ./internal/web -run TestLoginAgainstALiveBroker -v
-```
+The web UI is mounted only when `APP_BASE_URL`, `TELEGRAM_CLIENT_ID`,
+`TELEGRAM_CLIENT_SECRET` and `JWT_SECRET` are set. To sign in locally without
+real Telegram, run [telegram-login-broker](../telegram-login-broker) in mock mode
+and point the OAuth variables at it, as described in
+[docs/development.md](docs/development.md#local-development-without-ngrok).
 
-That test drives this package's own `OIDCClient` — not a stub — through a real
-broker: authorization URL, PKCE, code exchange, id_token parsing, and a replay of
-the spent code. Without `BROKER_URL` it skips, so `go test ./...` stays hermetic.
+## Documentation
 
-What is already proven and what still has to be checked against real Telegram is
-tracked in the broker's [docs/VERIFICATION.md](../telegram-login-broker/docs/VERIFICATION.md).
-
-Start the binary itself with `TELEGRAM_LOCAL_MODE=true` and `WEBHOOK_URL`
-unset. Without one of the two it refuses to start: an empty `WEBHOOK_URL` used
-to reach `setWebhook` and **delete the webhook** of whichever bot's token was in
-`TELEGRAM_TOKEN`, so a local run with the production token took production
-down. Local mode never calls `setWebhook` and leaves the webhook exactly as it
-was, so Telegram keeps delivering wherever it pointed before. Normally that
-means this process gets no updates of its own; if the dev bot's webhook is an
-old tunnel to this port, stop the tunnel or real updates will keep arriving.
-`cmd/seed` and `cmd/seed-audio` do not look at any of this, not even at a
-malformed `TELEGRAM_LOCAL_MODE` or `TELEGRAM_INIT_TIMEOUT`: they need only
-`DATABASE_URL` and `TELEGRAM_TOKEN`.
-
-To feed the bot an update by hand, set `TELEGRAM_WEBHOOK_SECRET` for the server
-(without it `/webhook` answers 503) and send the same header Telegram would.
-The value in `.env` reaches only the Go process, not your shell, so export the
-same value where you run curl, and replace `<your chat id>` with your numeric
-Telegram chat id. Open the chat with the dev bot and press Start first: a bot
-cannot message a user who never started it, and the reply in that chat is the
-result to look for. `/webhook` answers 200 either way, because the handler's
-`sendMessage` error never reaches the webhook caller.
-
-```sh
-export TELEGRAM_WEBHOOK_SECRET=<the value the server was started with>
-curl -X POST http://localhost:8080/webhook \
-  -H "X-Telegram-Bot-Api-Secret-Token: $TELEGRAM_WEBHOOK_SECRET" \
-  -H "Content-Type: application/json" \
-  -d '{"update_id":1,"message":{"message_id":1,"date":0,"chat":{"id":<your chat id>,"type":"private"},"text":"/help"}}'
-```
-
-Use a separate dev bot all the same: the scheduler and every reply send real
-messages through whichever token is configured.
-
-### Deployment on krill
-
-Production runs on krill since 2026-11-20, as a single replica pulled from GHCR;
-the web UI is mounted, the bot works on the webhook. Confirmed by observation
-there: signing in with real Telegram returns an `id_token` that carries the `id`
-claim, a user who already existed in the bot lands in their own profile with
-their level and progress, the browser keeps the `Secure` session cookie, `/ws`
-held through krill's proxy for 6.5 minutes with pings answered, and
-`POST /admin/seed-audio` filled `audio_url` for every level. What is still
-unproven is listed under "Веб-интерфейс: что не проверено" in `docs/plan.md`.
-
-#### Where the image comes from
-
-krill deploys ready-made images rather than building from source. CI publishes
-one on every push to `master`, after the tests pass:
-
-```
-ghcr.io/proshik/makeme:<commit-sha>   # deploy this one — it pins the exact build
-ghcr.io/proshik/makeme:latest
-```
-
-The name is lower-case on purpose: GHCR rejects upper case, so it is not the
-repository's `makeMe`. The image is `linux/amd64` only, listens on `8080`
-(`EXPOSE 8080`, matching the `PORT` default), runs as uid 10001, and carries
-`migrations/` and `data/` under `/app`. Migrations and the JSON seed run on every
-start, so a fresh database needs nothing beyond the variables below. The package
-is public, so krill pulls it anonymously: the app's registry is "Public (no
-auth)", no credential needed. Deploy by full commit sha, never `latest`.
-
-The app's healthcheck is `GET /health`, which answers 200 without touching the
-database. krill rolls out `start-first`: the new task has to start and turn
-healthy before the old one stops, so a build that fails on startup (a missing
-variable, `getMe` failing) leaves the previous version running. That is what
-makes a startup error the safe way to reject a bad configuration.
-
-#### Environment on krill
-
-Values live in krill's secret store, never in the repository.
-
-| Variable | Why it is required |
+| Document | Contents |
 |---|---|
-| `DATABASE_URL` | Startup fails without it. |
-| `TELEGRAM_TOKEN` | Startup fails without it. The **production** bot. |
-| `WEBHOOK_URL` | `https://<host>/webhook`. Startup fails with it empty (unless `TELEGRAM_LOCAL_MODE=true`, which production must not set). |
-| `TELEGRAM_WEBHOOK_SECRET` | `openssl rand -hex 32`. Startup fails without it while `WEBHOOK_URL` is set. Add it **before** deploying a build that requires it: the old build ignores the variable, the new one refuses to start without it. |
-| `APP_BASE_URL` | Public origin; the redirect URI is derived from it. |
-| `TELEGRAM_CLIENT_ID`, `TELEGRAM_CLIENT_SECRET` | OAuth pair from BotFather. Without them the web UI is not mounted. |
-| `JWT_SECRET` | Session key, ≥32 bytes base64. Without it the web UI is not mounted. |
-| `ADMIN_TOKEN` | Needed for `POST /admin/seed-audio`; without it every `/admin/*` returns 503. |
-
-Leave `TELEGRAM_OAUTH_BASE_URL`, `TELEGRAM_EXPECTED_ISSUER`, `COOKIE_SECURE` and
-`TELEGRAM_LOCAL_MODE` at their defaults in production: the first two point at
-Telegram itself, the cookie must stay `Secure`, and local mode would leave the
-webhook unregistered. `TELEGRAM_INIT_TIMEOUT` (30s), `PORT`, `TIMEZONE`,
-`SCHEDULER_TIME` and the rest are optional (see the table above).
-
-#### Turning on the webhook secret
-
-A build that requires `TELEGRAM_WEBHOOK_SECRET` is rolled out in this order:
-
-1. Generate the value with `openssl rand -hex 32` and add it to the app's
-   environment **first**. The running build does not read it. If saving the
-   variable restarts the app, the restarted old build calls `setWebhook` without
-   a secret, as it always did.
-2. Deploy the new build by sha. It registers the webhook with the secret only
-   after everything else has started and its port is bound, right before it
-   serves (`telegram webhook set` in the log). From then on Telegram sends the
-   header. While both tasks run, the old one accepts every request and the new
-   one checks the header, so nothing is refused. Had the variable been
-   forgotten, the log names it (`TELEGRAM_WEBHOOK_SECRET is required when
-   WEBHOOK_URL is set`), the new task fails before migrations and before any
-   Telegram call, never turns healthy, and the old one keeps serving with the
-   webhook as it was.
-3. Check after the deploy: `getWebhookInfo` shows the same URL, a pending count
-   of 0 and no `last_error_message` (a 401 there means Telegram holds a
-   different secret than the app); `/start` in the bot answers; a `POST /webhook`
-   without the header gets 401.
-
-If a deploy fails after `telegram webhook set` appeared in its log, or
-`setWebhook` itself returned an error, check `getWebhookInfo` before anything
-else: Telegram may have dropped or changed the registration while the old task
-kept serving. Restarting the serving task re-registers its own URL and secret.
-
-**Changing the secret later** (a new value, same URL) refuses updates for a
-short while: once the new task registers the new value, the old task still
-expects the old one and answers 401 to whatever reaches it until it stops.
-Telegram retries a failed delivery, but only a limited number of times, so a
-short cutover delays updates while a long one, or a failed new task left
-behind by the old one, can lose them. A pending count back at 0 does not tell
-the two apart, since dropped updates leave the queue too. After the cutover,
-compare `last_error_date` in `getWebhookInfo` with the time of the deploy and
-confirm delivery with a fresh `/start`. If 401s keep coming, restart the task
-that is serving so it registers its own secret again.
-
-**Rolling back to a build without the check** gives up the authentication, and
-the cutover is the same short window in reverse: the old build calls
-`setWebhook` without `secret_token` on startup (before its own port is open),
-and until the hardened task stops, Telegram's requests without the header reach
-it and get 401. Telegram retries them a limited number of times, so the same
-caveat applies: a short cutover delays updates, a long one can lose them. If
-the rolled-back task then fails to start, the hardened one keeps serving
-against a registration with no secret and refuses everything; redeploy or
-restart the hardened build so it registers its secret again, then confirm with
-`getWebhookInfo` and a fresh `/start`.
-
-#### Steps for a new environment
-
-1. Register an OAuth application for the bot and obtain `TELEGRAM_CLIENT_ID` / `TELEGRAM_CLIENT_SECRET`. These are **not** the same as `TELEGRAM_TOKEN`.
-2. `openssl rand -base64 32` → `JWT_SECRET`. Startup fails if it is shorter than 32 bytes decoded, so a bad value surfaces immediately rather than on first login. `openssl rand -hex 32` → `TELEGRAM_WEBHOOK_SECRET` (hex, because base64 falls outside Telegram's character set).
-3. Set `APP_BASE_URL` to the public origin. The redirect URI is derived as `$APP_BASE_URL/auth/telegram/callback` and must match what was registered exactly.
-4. Deploy `ghcr.io/proshik/makeme:<sha>` with the environment above. In the logs expect `migrations applied`, three `seed:` lines, `web UI enabled` and then `telegram webhook set` right before `starting server`; then confirm in this order, since each step depends on the previous one working:
-   - `GET /login` renders and the button leads to Telegram.
-   - Signing in lands back on `/` as the right user. A user who already exists in the bot must keep their level and progress.
-   - A WebSocket client holding the `auth_token` cookie keeps `wss://<host>/ws` open longer than the platform's idle timeout. The server pings every 25s; a shorter proxy timeout will cut the socket. On krill it held 6.5 minutes.
-   - Answer a task in the bot with the browser open on `/leaderboard`: the standings should move without a reload.
-5. **After the first deploy, run `POST /admin/seed-audio`** level by level (see [Production workflow](#production-workflow)). `audio_url` is not in `data/words.json` and the startup seeder never fills it, so on a fresh database it is empty for every word, and until then the "Послушать" button has nothing to play.
-
-## Web UI
-
-| Route | Description |
-|---|---|
-| `GET /login` | Sign-in page. Redirects to `/` if already signed in. |
-| `GET /auth/telegram` | Starts OAuth: mints `state` + PKCE verifier into 5-minute HttpOnly cookies, redirects to Telegram. |
-| `GET /auth/telegram/callback` | Verifies `state`, exchanges the code for an `id_token`, resolves the Telegram identity via `user.Service.Register` (idempotent by `telegram_id`, so bot users keep their row), sets the `auth_token` cookie. |
-| `GET /logout` | Clears the session cookie. |
-| `GET /` | Home. Requires auth. |
-| `GET /tasks` | Today's round. Generates or resumes it, auto-creating a solo group if the user has none — the same rule the bot follows. |
-| `GET /tasks/next` | Next slot as an htmx fragment. Deliberately reads the *current* set instead of generating: `GenerateDaily` opens the next round once the current one is answered, so generating here would roll the user into a new round instead of showing the summary. |
-| `POST /tasks/{id}/answer` | Records a choice, a typed answer or a skip via `task.Service`, scores it, and returns the feedback fragment. |
-| `GET /assess` | Starts or resumes the 30-question level test. The current level is deliberately not shown during the run — it moves adaptively after every answer, and showing it would turn the test into a game against the system. |
-| `POST /assess/answer` | Records an option or a skip, returns the next question or the result — level, score, and a per-question breakdown so the verdict is justified. |
-| `GET /words` | Opens or resumes the ten-word active-recall session, with per-mode tallies and live per-CEFR-level progress. |
-| `GET /words/next` | Next drill as a fragment. Completing the last one closes the session, so the following visit picks a fresh ten. |
-| `POST /words/{id}/answer` | Records a choice, a typed answer or a skip. Multiple-choice correctness is decided server-side from the submitted text — the correct index is never sent to the browser. |
-| `POST /words/{id}/know` | Retires a word the user already knows across all four modes and drops it into spaced repetition. |
-| `POST /words/{id}/defer` | Drops a word from the rest of the session, keeping its progress. Offered only past `words.DeferThreshold` mistakes on that word. |
-
-| `GET /learn` | Grammar topics at the user's level and the one above it. |
-| `GET /learn/topic?name=…` | Theory plus a fresh random seed, so re-entering a topic reshuffles the order. |
-| `GET /learn/practice?name=…&seed=…&i=…` | One question of a run. The run keeps no server-side state: seed plus index reproduce the same sample, so a refresh does not lose the user's place. |
-| `POST /learn/answer` | Checks the answer and returns the feedback fragment. The rule is shown only when the answer was wrong — after a correct one it is noise. |
-
-| `GET /leaderboard` | Group standings, day or month. `?group=` is honoured only for groups the user belongs to — any other id falls back to their own, so an id cannot expose another group's standings. |
-| `GET /profile` | Level, monthly score, streak, vocabulary split by how each word got there, per-CEFR-level progress, group list. |
-| `GET /groups`, `POST /groups/create`, `POST /groups/join` | Create a group (returns an invite code) or join by code. A wrong code and a missing group give the same message, so codes cannot be probed. |
-
-Topic names travel as query values rather than path segments: categories like `can/can't` carry slashes, which a path segment would mangle.
-
-`/learn` and `/words` write no score rows — not contributing to the leaderboard is its one behavioural difference from `/tasks`, and a test guards it.
-| `GET /static/*` | Self-hosted assets, served from the binary via `embed.FS`. |
-
-Asset URLs carry a `?v=` token derived from a hash of every embedded file, so `Cache-Control: immutable` is safe — a new build produces new URLs. Without it a deploy would leave browsers on the previous stylesheet for a year.
-
-Session cookies are `HttpOnly`, `Secure`, `SameSite=Lax` — Lax is the CSRF defence for cookie auth, which is why the POST handlers carry no separate CSRF token. The `id_token` signature is deliberately not verified: it arrives from Telegram's token endpoint over TLS server-to-server, and there is no public JWKS to check against; `exp`, `aud` and `iss` are validated as defence in depth.
-
-### Live updates
-
-`GET /ws` is a WebSocket carrying event names, not rendered HTML. A tab may be on any page, so the server cannot know what to swap; it says what changed and the client refetches through the ordinary handlers, keeping one rendering path for both the first load and the update.
-
-Two events exist. `progress` goes to the user's own sessions when they answer anywhere. `leaderboard` goes to everyone in the group, and to the user themselves, but only when the answer actually scored — a wrong answer cannot move the standings.
-
-What each page does with an event is a deliberate split. The leaderboard refetches itself (`hx-trigger="makeme:leaderboard from:body"`): it is a passive page with nothing to lose. Tasks and words only reveal a notice offering to reload — pulling the slot out from under someone who is typing an answer is worse than showing them something slightly stale.
-
-Four things this needed that are easy to miss:
-
-- `http.Server`'s `WriteTimeout` is the usual suspect for a socket that dies on a timer, and this server sets one — but it does not apply. `net/http` clears both deadlines when a connection is hijacked, which `websocket.Accept` does. `TestSocketOutlivesWriteTimeout` pins that down against a deliberately short timeout, so the assumption is rechecked if the value or the library ever changes.
-- The hub cannot tell sessions apart, so the tab that answered also receives `progress`. Threading a socket identity through a domain event would drag transport into the domain; the client suppresses the notice for three seconds after its own request instead.
-- The hub is required. `realtime.js` is on every page and always opens `/ws`, so a web UI without a hub is broken rather than degraded: the first production deploy shipped with the hub created but never passed into `web.Deps`, `/ws` answered 404 and every tab kept reconnecting, with nothing in the logs. `web.New` now returns `ErrNoHub` instead, and the binary refuses to start (`web: Deps.Hub is nil; the web UI needs the realtime hub`), so the same slip fails the deploy. With the web UI disabled no hub is needed.
-- The hub is in-process, so events reach only sessions on this instance. The domain talks to `task.Notifier`, not to the hub, so a Postgres `LISTEN/NOTIFY` implementation can replace it without the domain noticing.
-
-### Navigation
-
-The header carries two levels, because it holds two different kinds of thing. On the left are places to work — Задания, Слова, Грамматика, Рейтинг — with the current one marked by an amber underline and `aria-current="page"`. On the right is the user: a chip with their name and level opening a menu with Профиль, Группы, appearance and Выйти.
-
-That menu is a native `<details>`, not a scripted dropdown: `script-src 'self'` forbids inline handlers, and a disclosure element is keyboard-accessible with no JavaScript at all. `app.js` adds only what `<details>` lacks — closing on an outside click and on Escape.
-
-Below 720px the account name is hidden (the level chip stays, since it carries information) and the sections scroll horizontally rather than wrapping. The breakpoint is measured, not guessed: at 606px the four sections overflowed by 20px while the name still occupied the chip.
-
-### Assets are self-hosted, and Tailwind is pre-built
-
-Everything the pages load comes from our own origin (`internal/web/static/`, embedded into the binary): the built Tailwind stylesheet, htmx 2.0.4, and the four fonts of the «Табло» system — Oswald, IBM Plex Sans, IBM Plex Mono, and Charis SIL for IPA transcriptions.
-
-Two separate decisions here, for two separate reasons.
-
-**Nothing is loaded from a CDN.** A CDN means depending on someone else's uptime and — the deciding factor — being unable to close the CSP. With everything local the app ships `default-src 'self'; script-src 'self'`, with no `'unsafe-inline'` for scripts. That in turn constrains the templates: no inline `<script>`, no `on*=""` handlers, no htmx `hx-on` / `js:` expressions — behaviour lives in `static/js/app.js` and hangs off `data-action` attributes. Four tests guard all of this: the CSP directives, the absence of `unsafe-inline` in `script-src`, the absence of inline scripts and handlers in rendered pages, and any page referencing an external host.
-
-`style-src` does keep `'unsafe-inline'`: templates carry inline `style=""` for design-token colours, and style injection is far less dangerous than script execution — an accepted trade-off rather than a nonce pipeline.
-
-**Tailwind is compiled ahead of time, not in the browser.** `cdn.tailwindcss.com` is the Play CDN, which Tailwind documents as development-only: it ships the compiler and generates CSS on every page load. Instead, `make css` runs the standalone Tailwind CLI (a single binary — no Node, no `npm install`) over `internal/web/templates/**` and writes `internal/web/static/tailwind.css`. That output is **committed**, because `//go:embed` needs the file present at compile time — which also means `docker build` stays a plain Go build with no asset step.
-
-```bash
-make css         # rebuild after editing templates
-make css-check   # fails if the committed CSS is stale (runs in CI)
-```
-
-`tailwind.config.js` zeroes the `borderRadius` and `boxShadow` scales outright rather than via `extend`, so `rounded-lg` and `shadow-md` do not exist at all — the design system forbids radii and shadows, and a test asserts they never appear in the built CSS.
-
-## Admin Endpoints
-
-Protected by `Authorization: Bearer $ADMIN_TOKEN`. Disabled when `ADMIN_TOKEN` is empty (responds 503).
-
-### `POST /admin/seed-audio`
-
-Bulk-fetches transcription + audio_url from the Free Dictionary API for words at the given CEFR levels and persists them to the `words` table. Idempotent: words that already have `audio_url` are skipped.
-
-Body (JSON):
-```json
-{ "levels": ["A1"], "delay_ms": 1500 }
-```
-
-**Pass `delay_ms: 1500` explicitly.** It is the pause between calls to `api.dictionaryapi.dev`, and on production 500 ms got throttled: 429s came in waves, about 20 words through and the next 20 refused, ~40% of A1 failed. At 1500 ms whole levels went through without a single 429. The server's own default when `delay_ms` is omitted is still 500 ms, and `cmd/seed-audio` defaults to 150 ms.
-
-Response: streamed `application/x-ndjson`, one line per event (start of level / per-word result / final summary). Use `curl -N` so output isn't buffered.
-
-A run lasts minutes, far longer than the server's 10s `WriteTimeout`, which is a deadline on the whole response rather than on each line. For this response only, the handler replaces it with a 30s deadline on each line, re-armed right before every write; every other endpoint keeps the global one. The gap between lines does not count, so a slow dictionary lookup or a large `delay_ms` does not cut the stream. Without that the stream was cut after ~10s with a few lines delivered and no `done`. The per-line bound is what still releases a run whose client keeps the connection open but stops reading: the write fails, net/http cancels the request context, the seeder stops and the handler returns. The handler's own `Flush` check does not see that failure behind chi, whose wrapper implements plain `http.Flusher`, so the cancelled context is what marks the run as cut. `TestSeedAudio_StreamOutlivesServerTimeouts`, `TestSeedAudio_StalledClientReleasesRun` and `TestSeedAudio_ClientDisconnectCancelsRun` run the handler behind a real `http.Server` with sub-second timeouts and the same middleware as production — the deadlines reach the connection only through the middleware's `Unwrap`, so a wrapper without it would turn every run into a 500; flush errors, by contrast, stop at chi's wrapper. On production, runs of 4.5 and 6 minutes reached `done` through krill's proxy intact. A single 30-minute run over five levels did not: the server wrote everything and logged `completed`, but the client got the stream without its last ~2 KB and no `done`, and exited after four minutes of silence. Where the tail was lost was not established. The data was unaffected, because writes happen on the server; the outcome was checked in the database. Hence the advice below to send one or two levels per request.
-
-```bash
-curl -N -X POST https://your-host.example.com/admin/seed-audio \
-  -H "Authorization: Bearer $ADMIN_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"levels":["A1"],"delay_ms":1500}'
-```
-
-For local seeding without HTTP, the same logic ships as `cmd/seed-audio`:
-```bash
-go run ./cmd/seed-audio -levels=A1 -delay-ms=1500
-```
-
-#### Production workflow
-
-`audio_url` is **not** part of `data/words.json` and is **not** copied across environments by the on-startup seeder (`UpsertWord` only touches english/russian/level/example/transcription). After deploying to production, populate audio with:
-
-1. Generate and set a token (do this once, store in your secret manager):
-   ```bash
-   openssl rand -hex 32   # → 64 hex chars
-   ```
-   Set the value as `ADMIN_TOKEN` in the production environment and redeploy so the service picks it up.
-
-2. From any machine with HTTPS access to prod, run **one or two levels per request**, with `delay_ms` 1500:
-   ```bash
-   curl -N -X POST https://your-prod.example.com/admin/seed-audio \
-     -H "Authorization: Bearer $ADMIN_TOKEN" \
-     -H "Content-Type: application/json" \
-     -d '{"levels":["A1"],"delay_ms":1500}'
-   ```
-   Stream of ndjson events ends with a `{"event":"done", ...}` summary line. Each word without audio costs one API call plus `delay_ms`, so budget about 1.5 s per word still missing audio: on production A1 and A2 hold 520–560 words each, ~13–14 minutes per level from scratch, while B1 to C2 hold ~150 each, so two of them fit in ~8 minutes. Words that already have audio cost nothing. Long streams are where the tail went missing on production (see above); short ones arrived whole.
-
-3. **If 429 appears** (`"status":"failed","error":"unexpected status: 429"`), Free Dictionary throttled you: `delay_ms` is too low. Re-run the same levels with 1500; the run is idempotent, so already-populated rows are skipped. Words that came back `not_found` have no `audio_url` either, so every re-run asks the API about them again and spends `delay_ms` on each.
-
-4. **Adding more levels** later: same call, change `levels`, still one or two at a time.
-
-#### Limits to expect
-
-* Free Dictionary returns no audio at all for ~3–5% of common words (e.g. `look`, `room`, `sea`); they end up as `"status":"not_found"` and stay with empty `audio_url`. The user-facing `🔊 Послушать` button will reply "Произношение не найдено" for these — acceptable for v1.
-* Disconnect (closing curl, network drop) is handled: the server cancels the run via `ctx.Done()` so no quota is wasted on a dropped client. The server log reports what the server saw. `admin seed-audio aborted before done`, logged once with the cause, means its own write of a line failed or the request was cancelled: the client left, stopped reading, or the connection was cut before `done` was written. `completed` means the server wrote `done` without an error, which is not proof that the client got it: a proxy can accept the last bytes and lose them, as happened once on production. When a client saw no `done`, look for either line, and if it says `completed`, check `audio_url` in the database before re-running. A re-run is safe either way, since it skips words that already have audio.
-
-## Development
-
-```bash
-cp .env.example .env   # fill in values (see table above)
-
-make install-tools     # install sqlc + goose (uses the public Go proxy)
-make sqlc              # regenerate sqlc code after changing queries/
-make css               # rebuild the web stylesheet after editing templates
-make run               # start the server (applies migrations + seeds on startup)
-make build             # build binary
-
-make migrate-up        # apply migrations manually (the app also does this on startup)
-make migrate-down      # roll back one migration
-make migrate-create name=add_something   # scaffold a new goose migration
-```
-
-### Docker image
-
-```bash
-docker build --platform linux/amd64 -t makeme:local .
-```
-
-The builder stage runs on the host's own platform and cross-compiles to the
-target, so this works on Apple Silicon too. Running the Go toolchain itself under
-qemu crashes in `go mod download`. `tailwind.css` is not rebuilt inside the image:
-`//go:embed` takes the committed file, so run `make css` first if templates
-changed. `.dockerignore` keeps `.env` out of the build context. The context is
-copied wholesale, and without that rule real tokens would end up in an image
-layer.
-
-`docker compose up` builds the same image and runs it next to PostgreSQL. Use a
-dev bot's token in `.env`, and either `TELEGRAM_LOCAL_MODE=true` or a public
-`WEBHOOK_URL` with `TELEGRAM_WEBHOOK_SECRET`; see "Local development without
-ngrok" above.
-
-### Seed data
-
-Three JSON files are seeded automatically every time the application starts — no separate command needed:
-
-| File | Contents | Count |
-|---|---|---|
-| `data/words.json` | vocabulary (english/russian/level/example/transcription) | 1100 |
-| `data/grammar.json` | grammar questions (level/category/subcategory/prompt/options/answer) | 768 |
-| `data/grammar_categories.json` | per-category theory shown in `/learn` | 113 |
-
-To add content, edit the relevant JSON file and restart the app; upserts are idempotent. A missing or malformed file is logged as a warning and skipped — startup still succeeds.
-
-`cmd/seed` is a standalone CLI for loading one of these files into the DB without starting the server (`go run ./cmd/seed data/words.json`). It is redundant with the startup seeder and only useful for one-off imports against a remote database.
-
-IPA transcription and audio pronunciation are fetched on demand from the [Free Dictionary API](https://dictionaryapi.dev/) (no key required) the first time a user taps **🔊 Послушать** on a vocabulary card, then cached in the DB.
-
-## Testing
-
-Integration tests in `internal/telegram/` use TestContainers (PostgreSQL + WireMock 3.13.0). Docker must be running for those. Every other package has plain unit tests and needs no Docker.
-
-```bash
-go test ./internal/telegram/ -v -count=1   # integration suite (needs Docker)
-go test -race ./...                        # everything — this is what CI runs
-```
-
-CI (`.github/workflows/ci.yml`) has three jobs:
-
-- **test** — on every push and PR to `master`: `make css-check`, then `go test -v -race ./...` with the Go version from `go.mod`. The runner has Docker, so the testcontainers suites run there too.
-- **docker-build** — on PRs only: builds the image for `linux/amd64` without pushing, so a broken Dockerfile shows up before the merge.
-- **publish** — on push to `master` or a manual run on `master`, after `test`: pushes `ghcr.io/proshik/makeme:latest` and `:<sha>` with the workflow's `GITHUB_TOKEN` (`packages: write`).
-
-The workflow can also be started by hand (`workflow_dispatch`: **Actions → CI → Run workflow**, or `gh workflow run ci.yml --ref master`). On `master` a manual run tests and publishes, just like a push; on any other branch it only runs `test`.
-
-A newer push to a PR cancels the older run. On `master` a running publish is never interrupted and runs go one at a time, so `latest` is never overwritten by an older commit. GitHub keeps only the newest *pending* run, though, so in a burst of pushes an intermediate commit may get no image.
+| [docs/configuration.md](docs/configuration.md) | Environment variables |
+| [docs/development.md](docs/development.md) | `make` targets, local development with the login broker, Docker image, seed data, tests and CI |
+| [docs/web-ui.md](docs/web-ui.md) | Web UI routes, live updates over `/ws`, navigation, self-hosted assets and the CSP |
+| [docs/database.md](docs/database.md) | Database schema and relations |
+| [docs/admin.md](docs/admin.md) | `/admin/*` endpoints and the audio seeding workflow |
+| [docs/deployment.md](docs/deployment.md) | Production on krill: image, environment, webhook secret, checklist for a new environment |
+| [docs/plan.md](docs/plan.md) | Roadmap and changelog (in Russian) |
+
+## Tech Stack
+
+Go, PostgreSQL (pgx/sqlc/goose), chi, [go-telegram/bot](https://github.com/go-telegram/bot)
 
 ## License
 

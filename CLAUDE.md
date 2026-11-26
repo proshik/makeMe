@@ -67,7 +67,7 @@ Tasks are generated daily and differ each day.
 
 ### Progress Tracking
 - After completing any work, always update `docs/plan.md` — mark each completed item with `[x]` and phase header with `[DONE]`. Top of the file has a `## Реализованные фичи (changelog)` section — prepend new entries there.
-- After completing any work, always update `README.md` — add new commands, update the database schema, update the typical flow diagram, document any new env vars or admin endpoints.
+- After completing any work, always update the docs: new commands and the typical flow diagram in `README.md`; the database schema in `docs/database.md`; env vars in `docs/configuration.md`; admin endpoints in `docs/admin.md`; web routes in `docs/web-ui.md`; local development, tests and CI in `docs/development.md`.
 - If there is no plan file, mention this to the user and suggest creating one.
 
 ### Seed Data — NEVER use migrations for content
@@ -83,7 +83,7 @@ Tasks are generated daily and differ each day.
 #### Audio (`words.audio_url`) is NOT in JSON
 - `data/words.json` does not carry `audio_url`. The startup seeder (`UpsertWord`) writes only english/russian/level/example/transcription, and never overwrites `audio_url`.
 - Audio is fetched lazily from the Free Dictionary API: by users tapping the **🔊 Послушать** button, or in bulk via the admin endpoint / CLI.
-- After deploying to a new environment (or after adding many new words), populate audio with `POST /admin/seed-audio` — see README "Production workflow" section. Same logic available offline as `go run ./cmd/seed-audio -levels=...`.
+- After deploying to a new environment (or after adding many new words), populate audio with `POST /admin/seed-audio` — see "Production workflow" in `docs/admin.md`. Same logic available offline as `go run ./cmd/seed-audio -levels=...`.
 - Idempotent: re-running skips rows that already have `audio_url`. ~3–5% of common words have no audio in the API at all (`look`, `room`, `sea`, …) — that's expected; the user-facing button replies "Произношение не найдено" for those.
 
 #### Admin endpoints
@@ -149,7 +149,7 @@ Web UI login (`internal/web`) — rules that are load-bearing, not preferences:
   token endpoint, and following one reads the id_token from wherever the last hop
   pointed.
 - Local development runs against [telegram-login-broker](../telegram-login-broker);
-  see the README. Start the binary locally with `TELEGRAM_LOCAL_MODE=true` and a
+  see `docs/development.md`. Start the binary locally with `TELEGRAM_LOCAL_MODE=true` and a
   **separate dev bot**. An empty `WEBHOOK_URL` without local mode is a startup
   error, and `Bot.SetWebhook` refuses an empty URL: Telegram reads it as
   deleteWebhook, which used to take down whichever bot's token was configured.
