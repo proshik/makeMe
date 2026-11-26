@@ -239,8 +239,10 @@ func templateFuncs(staticVersion string) template.FuncMap {
 			}
 			return out
 		},
-		// paragraphs splits stored theory on blank lines so a rule keeps its
-		// structure instead of collapsing into one wall of text.
+		// paragraphs splits stored theory into its lines (headings, "•" items),
+		// dropping blank ones, so a rule keeps its structure instead of
+		// collapsing into one wall of text. Each piece stays a plain string:
+		// html/template escapes it, so data never becomes markup.
 		"paragraphs": func(text string) []string {
 			out := []string{}
 			for _, p := range strings.Split(strings.ReplaceAll(text, "\r\n", "\n"), "\n") {
