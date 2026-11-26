@@ -698,3 +698,7 @@ CI (`.github/workflows/ci.yml`) has three jobs:
 The workflow can also be started by hand (`workflow_dispatch`: **Actions → CI → Run workflow**, or `gh workflow run ci.yml --ref master`). On `master` a manual run tests and publishes, just like a push; on any other branch it only runs `test`.
 
 A newer push to a PR cancels the older run. On `master` a running publish is never interrupted and runs go one at a time, so `latest` is never overwritten by an older commit. GitHub keeps only the newest *pending* run, though, so in a burst of pushes an intermediate commit may get no image.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
