@@ -11,7 +11,8 @@ users
 ├── level           TEXT NOT NULL  (A1/A2/B1/B2/C1/C2)
 ├── onboarded       BOOLEAN NOT NULL
 ├── created_at      TIMESTAMPTZ
-└── updated_at      TIMESTAMPTZ
+├── updated_at      TIMESTAMPTZ
+└── show_rule_on_correct BOOLEAN NOT NULL DEFAULT false  (web setting: rule after a correct answer too; the bot ignores it)
 
 groups
 ├── id              BIGSERIAL PK

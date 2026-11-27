@@ -73,6 +73,35 @@
     {{end}}
   </section>
 
+  {{/* Настройки. Переключатель — кнопка отправки формы со значением,
+       противоположным текущему: работает без JS, а role="switch" и
+       aria-checked сообщают состояние экранному чтецу. */}}
+  <section class="panel p-7 mb-8" id="settings">
+    <h2 class="font-display text-2xl font-semibold mb-6">Настройки</h2>
+    {{if .Saved}}
+    <div class="flex items-stretch mb-6" style="background:var(--cell)">
+      <span style="width:8px; flex:none; background:var(--right)"></span>
+      <p class="px-5 py-3 text-base">Настройка сохранена.</p>
+    </div>
+    {{end}}
+    <form method="post" action="/profile/settings"
+          class="flex items-center gap-6 pt-4 flex-wrap" style="border-top:1px solid var(--rule)">
+      <input type="hidden" name="show_rule_on_correct" value="{{if .User.ShowRuleOnCorrect}}0{{else}}1{{end}}">
+      <div class="flex-1" style="min-width:18ch">
+        <p id="setting-rule">Показывать правило и после верного ответа</p>
+        <p class="font-mono text-xs mt-1" style="color:var(--dim)">
+          После ошибки правило показывается всегда. Действует в «Заданиях» и «Грамматике».
+        </p>
+      </div>
+      <button type="submit" class="switch" role="switch"
+              aria-checked="{{if .User.ShowRuleOnCorrect}}true{{else}}false{{end}}"
+              aria-labelledby="setting-rule">
+        <span{{if not .User.ShowRuleOnCorrect}} data-on="1"{{end}}>выкл</span>
+        <span{{if .User.ShowRuleOnCorrect}} data-on="1"{{end}}>вкл</span>
+      </button>
+    </form>
+  </section>
+
   <section class="panel p-7">
     <div class="flex items-baseline justify-between gap-4 mb-6 flex-wrap">
       <h2 class="font-display text-2xl font-semibold">Группы</h2>

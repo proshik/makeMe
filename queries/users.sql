@@ -17,4 +17,7 @@ SELECT * FROM users WHERE id = $1;
 UPDATE users SET level = $2, onboarded = true, updated_at = now() WHERE id = $1;
 
 -- name: ListAllUsers :many
-SELECT id, telegram_id, username, first_name, level, onboarded, created_at, updated_at FROM users ORDER BY id;
+SELECT id, telegram_id, username, first_name, level, onboarded, created_at, updated_at, show_rule_on_correct FROM users ORDER BY id;
+
+-- name: UpdateUserShowRuleOnCorrect :exec
+UPDATE users SET show_rule_on_correct = $2, updated_at = now() WHERE id = $1;

@@ -11,13 +11,10 @@
 
     <h1 class="font-display text-4xl font-semibold mb-6">{{.Topic}}</h1>
 
-    {{if .Explanation}}
+    {{$doc := rule .Explanation}}
+    {{if not $doc.Empty}}
       <div class="rule pt-6 mb-8">
-        {{/* Теория хранится с переводами строк — сохраняем их разбиением
-             на абзацы, иначе правило слипается в одну простыню. */}}
-        {{range paragraphs .Explanation}}
-        <p class="text-base leading-relaxed mb-3">{{.}}</p>
-        {{end}}
+        {{template "rule_doc" $doc}}
       </div>
     {{else}}
       <p class="text-base mb-8" style="color:var(--dim)">Описание для этой темы пока не добавлено.</p>

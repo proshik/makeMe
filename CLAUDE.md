@@ -83,6 +83,7 @@ Tasks are generated daily and differ each day.
 #### Audio (`words.audio_url`) is NOT in JSON
 - `data/words.json` does not carry `audio_url`. The startup seeder (`UpsertWord`) writes only english/russian/level/example/transcription, and never overwrites `audio_url`.
 - Audio is fetched lazily from the Free Dictionary API: by users tapping the **🔊 Послушать** button, or in bulk via the admin endpoint / CLI.
+- The API's mp3 URLs have been returning 404 across the board (checked 2026-11 for `shirt`, `hello`, `cat`). The web UI's «Послушать» therefore falls back to browser speech synthesis (Web Speech API, `en-US`) when the recording fails or `audio_url` is empty — so in the web the button works even without audio; the bot has no fallback.
 - After deploying to a new environment (or after adding many new words), populate audio with `POST /admin/seed-audio` — see "Production workflow" in `docs/admin.md`. Same logic available offline as `go run ./cmd/seed-audio -levels=...`.
 - Idempotent: re-running skips rows that already have `audio_url`. ~3–5% of common words have no audio in the API at all (`look`, `room`, `sea`, …) — that's expected; the user-facing button replies "Произношение не найдено" for those.
 

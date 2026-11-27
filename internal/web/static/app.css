@@ -328,3 +328,105 @@ a { color: inherit; text-underline-offset: 4px; }
   gap: 1rem;
   flex-wrap: wrap;
 }
+
+/* Переключатель настройки: две створки «выкл / вкл», горит выбранная.
+   Это одна кнопка отправки формы — нажатие переводит в другое положение. */
+.switch {
+  display: inline-flex;
+  gap: 3px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  flex: none;
+}
+.switch span {
+  background: var(--cell);
+  color: var(--dim);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .8rem;
+  padding: .45rem .8rem;
+}
+.switch span[data-on="1"] { background: var(--amber); color: var(--btn-ink); font-weight: 600; }
+.switch:hover span:not([data-on="1"]) { background: var(--cell-2); color: var(--chalk); }
+.switch:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+
+/* ── Правило грамматики (fragments/rule.html) ──────────────────────────
+   Раньше правило шло сплошной лентой абзацев одного цвета, и читать его было
+   трудно. Теперь вступление — лид, каждый раздел — своя плашка-ячейка с
+   янтарным заголовком, как подпись на табло. Внутри цвет несёт смысл:
+   английский пример — основной текст, перевод — приглушённый, неверная форма —
+   --wrong и зачёркнута, верная — --right. Полоска слева у ошибки — та же лампа,
+   что у вариантов ответа, только тоньше: состояние цветом, не иконкой. */
+/* minmax(0, 1fr) и min-width: 0 — иначе элемент сетки растёт по самой
+   длинной строке таблицы, и на телефоне страница уезжает вбок. */
+.ruledoc        { display: grid; grid-template-columns: minmax(0, 1fr); gap: 3px; }
+.ruledoc-lead   { font-size: 1.125rem; line-height: 1.6; margin-bottom: 1.1rem; }
+.ruledoc-sec    { background: var(--cell); padding: 1rem 1.25rem 1.1rem; min-width: 0; }
+.ruledoc-h {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 500;
+  font-size: 1.05rem;
+  color: var(--amber-ink);
+  margin-bottom: .6rem;
+}
+.ruledoc-list   { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: .6rem; }
+.ruledoc-li     { position: relative; line-height: 1.5; min-width: 0; }
+/* Пункт «•» — квадратная метка, а не точка шрифта: скруглений в системе нет. */
+.ruledoc-li[data-item="1"] { padding-left: 1.1rem; }
+.ruledoc-li[data-item="1"]::before {
+  content: "";
+  position: absolute;
+  left: 0; top: .62em;
+  width: 6px; height: 6px;
+  background: var(--dim);
+}
+.ruledoc-label {
+  display: block;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .75rem;
+  color: var(--dim);
+  margin-bottom: .1rem;
+}
+.ruledoc-en     { display: block; font-weight: 500; }
+.ruledoc-ru     { display: block; color: var(--dim); font-size: .94em; }
+.ruledoc-wrong,
+.ruledoc-right  { display: block; border-left: 3px solid currentColor; padding-left: .55rem; }
+.ruledoc-wrong  { color: var(--wrong); }
+.ruledoc-wrong s { text-decoration-thickness: 1px; }
+.ruledoc-right  { color: var(--right); font-weight: 500; }
+.ruledoc-wrong + .ruledoc-right { margin-top: 2px; }
+.ruledoc-note   { display: block; color: var(--dim); font-size: .94em; margin-top: .15rem; }
+/* Таблицы спряжений выровнены пробелами — моноширинный шрифт и pre держат
+   колонки; на узком экране строка прокручивается, а не ломает страницу. */
+.ruledoc-table {
+  display: block;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .85rem;
+  white-space: pre;
+  overflow-x: auto;
+}
+
+/* В фидбеке правило — справка под результатом, а не главное на экране. */
+.ruledoc-compact .ruledoc-lead { font-size: 1rem; color: var(--dim); margin-bottom: .8rem; }
+.ruledoc-compact .ruledoc-li   { font-size: .95rem; }
+
+/* Авто-переход в /words: полоса под результатом убывает за то время, что
+   осталось до следующего слова. Только transform — без перерасчёта раскладки.
+   Длительность ставит app.js из data-autoadvance. */
+.advance-bar {
+  height: 3px;
+  background: var(--amber);
+  transform-origin: left center;
+  animation: advance-shrink linear forwards;
+}
+@keyframes advance-shrink {
+  from { transform: scaleX(1); }
+  to   { transform: scaleX(0); }
+}
+/* Без анимации полоса просто стоит: переход всё равно случится по таймеру,
+   а «Дальше» остаётся под рукой. */
+@media (prefers-reduced-motion: reduce) {
+  .advance-bar { animation: none; opacity: .5; }
+}

@@ -18,7 +18,7 @@ ON CONFLICT (telegram_id) DO UPDATE
     SET username   = EXCLUDED.username,
         first_name = EXCLUDED.first_name,
         updated_at = now()
-RETURNING id, telegram_id, username, first_name, level, onboarded, created_at, updated_at
+RETURNING id, telegram_id, username, first_name, level, onboarded, created_at, updated_at, show_rule_on_correct
 `
 
 type CreateUserParams struct {
@@ -39,12 +39,13 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.Onboarded,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ShowRuleOnCorrect,
 	)
 	return i, err
 }
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, telegram_id, username, first_name, level, onboarded, created_at, updated_at FROM users WHERE id = $1
+SELECT id, telegram_id, username, first_name, level, onboarded, created_at, updated_at, show_rule_on_correct FROM users WHERE id = $1
 `
 
 func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
@@ -59,12 +60,13 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 		&i.Onboarded,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ShowRuleOnCorrect,
 	)
 	return i, err
 }
 
 const getUserByTelegramID = `-- name: GetUserByTelegramID :one
-SELECT id, telegram_id, username, first_name, level, onboarded, created_at, updated_at FROM users WHERE telegram_id = $1
+SELECT id, telegram_id, username, first_name, level, onboarded, created_at, updated_at, show_rule_on_correct FROM users WHERE telegram_id = $1
 `
 
 func (q *Queries) GetUserByTelegramID(ctx context.Context, telegramID int64) (User, error) {
@@ -79,12 +81,13 @@ func (q *Queries) GetUserByTelegramID(ctx context.Context, telegramID int64) (Us
 		&i.Onboarded,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ShowRuleOnCorrect,
 	)
 	return i, err
 }
 
 const listAllUsers = `-- name: ListAllUsers :many
-SELECT id, telegram_id, username, first_name, level, onboarded, created_at, updated_at FROM users ORDER BY id
+SELECT id, telegram_id, username, first_name, level, onboarded, created_at, updated_at, show_rule_on_correct FROM users ORDER BY id
 `
 
 func (q *Queries) ListAllUsers(ctx context.Context) ([]User, error) {
@@ -105,6 +108,7 @@ func (q *Queries) ListAllUsers(ctx context.Context) ([]User, error) {
 			&i.Onboarded,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.ShowRuleOnCorrect,
 		); err != nil {
 			return nil, err
 		}
@@ -127,5 +131,19 @@ type UpdateUserLevelParams struct {
 
 func (q *Queries) UpdateUserLevel(ctx context.Context, arg UpdateUserLevelParams) error {
 	_, err := q.db.Exec(ctx, updateUserLevel, arg.ID, arg.Level)
+	return err
+}
+
+const updateUserShowRuleOnCorrect = `-- name: UpdateUserShowRuleOnCorrect :exec
+UPDATE users SET show_rule_on_correct = $2, updated_at = now() WHERE id = $1
+`
+
+type UpdateUserShowRuleOnCorrectParams struct {
+	ID                int64 `json:"id"`
+	ShowRuleOnCorrect bool  `json:"show_rule_on_correct"`
+}
+
+func (q *Queries) UpdateUserShowRuleOnCorrect(ctx context.Context, arg UpdateUserShowRuleOnCorrectParams) error {
+	_, err := q.db.Exec(ctx, updateUserShowRuleOnCorrect, arg.ID, arg.ShowRuleOnCorrect)
 	return err
 }

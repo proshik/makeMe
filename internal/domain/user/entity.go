@@ -74,4 +74,9 @@ type User struct {
 	Onboarded  bool
 	CreatedAt  time.Time
 	UpdatedAt  time.Time
+
+	// ShowRuleOnCorrect is a web setting: show the grammar rule after a
+	// correct answer too. After a wrong answer the rule is always shown.
+	// The Telegram bot does not read it.
+	ShowRuleOnCorrect bool
 }

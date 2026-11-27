@@ -64,11 +64,7 @@
               hx-post="/words/{{.WordID}}/know" hx-target="#wordslot" hx-swap="outerHTML">
         Уже знаю это слово
       </button>
-      {{if .AudioURL}}
-      <button type="button" class="btn btn-ghost" data-action="play-audio" data-src="{{.AudioURL}}">
-        Послушать
-      </button>
-      {{end}}
+      {{template "listen_button" .}}
     </div>
 
   </section>

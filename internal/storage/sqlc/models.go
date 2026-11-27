@@ -128,14 +128,15 @@ type TaskResult struct {
 }
 
 type User struct {
-	ID         int64              `json:"id"`
-	TelegramID int64              `json:"telegram_id"`
-	Username   pgtype.Text        `json:"username"`
-	FirstName  string             `json:"first_name"`
-	Level      string             `json:"level"`
-	Onboarded  bool               `json:"onboarded"`
-	CreatedAt  pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt  pgtype.Timestamptz `json:"updated_at"`
+	ID                int64              `json:"id"`
+	TelegramID        int64              `json:"telegram_id"`
+	Username          pgtype.Text        `json:"username"`
+	FirstName         string             `json:"first_name"`
+	Level             string             `json:"level"`
+	Onboarded         bool               `json:"onboarded"`
+	CreatedAt         pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt         pgtype.Timestamptz `json:"updated_at"`
+	ShowRuleOnCorrect bool               `json:"show_rule_on_correct"`
 }
 
 type Word struct {

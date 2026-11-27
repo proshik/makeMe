@@ -166,6 +166,7 @@ func (s *Server) Mount(r chi.Router) {
 		priv.Get("/leaderboard", s.handleLeaderboard)
 		priv.Get("/leaderboard/table", s.handleLeaderboardTable)
 		priv.Get("/profile", s.handleProfile)
+		priv.Post("/profile/settings", s.handleProfileSettings)
 		priv.Get("/groups", s.handleGroups)
 		priv.Post("/groups/create", s.handleGroupCreate)
 		priv.Post("/groups/join", s.handleGroupJoin)
@@ -239,19 +240,11 @@ func templateFuncs(staticVersion string) template.FuncMap {
 			}
 			return out
 		},
-		// paragraphs splits stored theory into its lines (headings, "•" items),
-		// dropping blank ones, so a rule keeps its structure instead of
-		// collapsing into one wall of text. Each piece stays a plain string:
-		// html/template escapes it, so data never becomes markup.
-		"paragraphs": func(text string) []string {
-			out := []string{}
-			for _, p := range strings.Split(strings.ReplaceAll(text, "\r\n", "\n"), "\n") {
-				if p = strings.TrimSpace(p); p != "" {
-					out = append(out, p)
-				}
-			}
-			return out
-		},
+		// rule splits stored theory into lead, sections and typed lines (see
+		// rule.go) so the "rule_doc" template can draw examples and mistakes
+		// apart. Every part stays a plain string: html/template escapes it, so
+		// data never becomes markup.
+		"rule": parseRule,
 		// plural picks the Russian form: 1 вопрос, 2 вопроса, 5 вопросов.
 		// Without it the interface says "1 вопросов", which reads as broken.
 		"plural": func(n int, one, few, many string) string {

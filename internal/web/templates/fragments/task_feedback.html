@@ -21,14 +21,11 @@
       </div>
     </div>
 
-    {{if .Explanation}}
-    <div class="rule pt-5 mb-7">
-      {{/* Правило хранится с переводами строк: заголовки, пункты «•». Одним
-           <p> оно слипается в простыню, поэтому каждая строка — свой абзац,
-           как в /learn. Текст экранирует шаблон, HTML из данных не проходит. */}}
-      {{range paragraphs .Explanation}}
-      <p class="text-[.95rem] leading-relaxed mb-2" style="color:var(--dim)">{{.}}</p>
-      {{end}}
+    {{/* После ошибки правило есть всегда, после верного ответа — по настройке
+         в профиле; решает обработчик. Тот же компонент, что на странице темы. */}}
+    {{with .Explanation}}
+    <div class="rule pt-5 mb-7 ruledoc-compact">
+      {{template "rule_doc" (rule .)}}
     </div>
     {{end}}
 

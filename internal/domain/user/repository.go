@@ -7,5 +7,6 @@ type Repository interface {
 	GetByTelegramID(ctx context.Context, telegramID int64) (*User, error)
 	GetByID(ctx context.Context, id int64) (*User, error)
 	UpdateLevel(ctx context.Context, id int64, level Level) error
+	UpdateShowRuleOnCorrect(ctx context.Context, id int64, show bool) error
 	ListAll(ctx context.Context) ([]User, error)
 }

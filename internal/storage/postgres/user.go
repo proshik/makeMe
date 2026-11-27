@@ -65,6 +65,17 @@ func (r *UserRepository) UpdateLevel(ctx context.Context, id int64, level user.L
 	return nil
 }
 
+func (r *UserRepository) UpdateShowRuleOnCorrect(ctx context.Context, id int64, show bool) error {
+	err := r.q.UpdateUserShowRuleOnCorrect(ctx, sqlc.UpdateUserShowRuleOnCorrectParams{
+		ID:                id,
+		ShowRuleOnCorrect: show,
+	})
+	if err != nil {
+		return fmt.Errorf("update user show rule on correct: %w", err)
+	}
+	return nil
+}
+
 func (r *UserRepository) ListAll(ctx context.Context) ([]user.User, error) {
 	rows, err := r.q.ListAllUsers(ctx)
 	if err != nil {
@@ -87,5 +98,7 @@ func toUser(row sqlc.User) *user.User {
 		Onboarded:  row.Onboarded,
 		CreatedAt:  row.CreatedAt.Time,
 		UpdatedAt:  row.UpdatedAt.Time,
+
+		ShowRuleOnCorrect: row.ShowRuleOnCorrect,
 	}
 }

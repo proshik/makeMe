@@ -110,7 +110,7 @@ To add content, edit the relevant JSON file and restart the app; upserts are ide
 
 `cmd/seed` is a standalone CLI for loading one of these files into the DB without starting the server (`go run ./cmd/seed data/words.json`). It is redundant with the startup seeder and only useful for one-off imports against a remote database.
 
-IPA transcription and audio pronunciation are fetched on demand from the [Free Dictionary API](https://dictionaryapi.dev/) (no key required) the first time a user taps **🔊 Послушать** on a vocabulary card, then cached in the DB.
+IPA transcription and audio pronunciation are fetched on demand from the [Free Dictionary API](https://dictionaryapi.dev/) (no key required) the first time a user taps **🔊 Послушать** on a vocabulary card, then cached in the DB. The API's mp3 links currently return 404; the web UI then speaks the word with the browser's speech synthesis instead (see [web-ui.md](web-ui.md#listening)). The bot has no such fallback.
 
 ## Testing
 

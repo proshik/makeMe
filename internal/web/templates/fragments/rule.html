@@ -1,0 +1,37 @@
+{{/* Правило грамматики: вступление отдельным абзацем, каждый раздел — своя
+     плашка с заголовком. Один компонент на страницу темы и на оба фидбека,
+     чтобы правило везде читалось одинаково.
+
+     Вход — ruleDoc из функции rule (internal/web/rule.go). Всё в нём —
+     обычный текст, шаблон его экранирует. Неразобранная строка приходит как
+     text и выводится как есть, поэтому ничего не теряется. */}}
+{{define "rule_doc"}}
+<div class="ruledoc">
+  {{range .Lead}}<p class="ruledoc-lead">{{template "rule_line" .}}</p>{{end}}
+  {{range .Sections}}
+  <section class="ruledoc-sec">
+    {{if .Heading}}<h3 class="ruledoc-h">{{.Heading}}</h3>{{end}}
+    <ul class="ruledoc-list">
+      {{range .Lines}}<li class="ruledoc-li"{{if and .Bullet (not .IsMistake)}} data-item="1"{{end}}>{{template "rule_line" .}}</li>
+      {{end}}
+    </ul>
+  </section>
+  {{end}}
+</div>
+{{end}}
+
+{{/* Одна строка правила. Пример — английский основным цветом, перевод
+     приглушённым строкой ниже. Ошибка — неверный вариант зачёркнут и окрашен
+     --wrong, верный — --right; подписи для экранных чтецов, потому что
+     зачёркивание и цвет они не передают. */}}
+{{define "rule_line"}}
+{{- if .Label}}<span class="ruledoc-label">{{.Label}}</span>{{end}}
+{{- if .IsExample}}<span class="ruledoc-en" lang="en">{{.English}}</span><span class="ruledoc-ru">{{.Russian}}</span>
+{{- else if .IsMistake}}
+  {{- if .Wrong}}<span class="ruledoc-wrong"><span class="sr-only">Неверно: </span><s lang="en">{{.Wrong}}</s></span>{{end}}
+  {{- if .Right}}<span class="ruledoc-right"><span class="sr-only">Верно: </span><span lang="en">{{.Right}}</span></span>{{end}}
+  {{- if .Note}}<span class="ruledoc-note">{{.Note}}</span>{{end}}
+{{- else if .IsTable}}<span class="ruledoc-table">{{.Text}}</span>
+{{- else}}<span class="ruledoc-text">{{.Text}}</span>
+{{- end}}
+{{- end}}

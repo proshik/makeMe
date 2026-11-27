@@ -77,6 +77,14 @@ func (f *fakeUserRepo) UpdateLevel(_ context.Context, id int64, level user.Level
 	return user.ErrNotFound
 }
 
+func (f *fakeUserRepo) UpdateShowRuleOnCorrect(_ context.Context, id int64, show bool) error {
+	if u, ok := f.byID[id]; ok {
+		u.ShowRuleOnCorrect = show
+		return nil
+	}
+	return user.ErrNotFound
+}
+
 func (f *fakeUserRepo) ListAll(context.Context) ([]user.User, error) { return nil, nil }
 
 type testEnv struct {

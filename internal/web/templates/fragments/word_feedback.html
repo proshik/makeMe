@@ -1,7 +1,11 @@
 {{/* Ответ на слово. В отличие от заданий баллов здесь нет — /words не идёт
      в зачёт лидерборда, и показывать нулевой счёт значило бы врать. */}}
+{{/* Авто-переход: data-autoadvance — сколько миллисекунд ждать до следующего
+     слова; app.js нажимает «Дальше» сам. Нет атрибута — ждём кнопку: так
+     бывает, когда карточка предлагает отложить слово или сообщает, что оно
+     выучено. Enter и клик по «Дальше» работают сразу в любом случае. */}}
 {{define "word_feedback"}}
-<div id="wordslot">
+<div id="wordslot"{{if .AutoAdvanceMS}} data-autoadvance="{{.AutoAdvanceMS}}"{{end}}>
   <section class="panel p-7">
 
     <div class="flex items-stretch mb-6" style="background:var(--cell)">
@@ -15,6 +19,9 @@
         {{end}}
       </div>
     </div>
+    {{if .AutoAdvanceMS}}
+    <div class="advance-bar -mt-6 mb-6" style="animation-duration:{{.AutoAdvanceMS}}ms" aria-hidden="true"></div>
+    {{end}}
 
     <div class="mb-7">
       <p class="font-display text-4xl leading-none mb-2" style="font-weight:500">{{.English}}</p>
@@ -33,10 +40,9 @@
     {{end}}
 
     <div class="flex items-center gap-3 flex-wrap">
-      <button class="btn" hx-get="/words/next" hx-target="#wordslot" hx-swap="outerHTML">Дальше</button>
-      {{if .AudioURL}}
-      <button type="button" class="btn btn-ghost" data-action="play-audio" data-src="{{.AudioURL}}">Послушать</button>
-      {{end}}
+      <button class="btn" data-advance-next
+              hx-get="/words/next" hx-target="#wordslot" hx-swap="outerHTML">Дальше</button>
+      {{template "listen_button" .}}
       {{if .OfferDefer}}
       {{/* Появляется только когда слово упорно не даётся: больше пяти ошибок
            за сессию. Прогресс сохраняется, слово вернётся в следующий раз. */}}

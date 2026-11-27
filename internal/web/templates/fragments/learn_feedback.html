@@ -16,13 +16,11 @@
       </div>
     </div>
 
-    {{/* Правило показываем только при ошибке: после верного ответа это шум,
-         а теорию пользователь только что читал на странице темы. */}}
-    {{if and .Explanation (not .Correct)}}
-    <div class="rule pt-5 mb-7">
-      {{range paragraphs .Explanation}}
-      <p class="text-[.95rem] leading-relaxed mb-2" style="color:var(--dim)">{{.}}</p>
-      {{end}}
+    {{/* Правило после ошибки показывается всегда, после верного ответа — по
+         настройке в профиле. Решает обработчик: пустое поле значит «не надо». */}}
+    {{with .Explanation}}
+    <div class="rule pt-5 mb-7 ruledoc-compact">
+      {{template "rule_doc" (rule .)}}
     </div>
     {{end}}
 

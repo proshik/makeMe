@@ -27,13 +27,19 @@ type profilePage struct {
 	ByLevel            []words.LevelProgress
 
 	Groups []group.Group
+
+	// Saved confirms the settings form after its redirect back here.
+	Saved bool
 }
 
 func (s *Server) handleProfile(w http.ResponseWriter, r *http.Request) {
 	u := UserFromContext(r.Context())
 	ctx := r.Context()
 
-	page := profilePage{chrome: chrome{User: u, Section: SectionAccount}}
+	page := profilePage{
+		chrome: chrome{User: u, Section: SectionAccount},
+		Saved:  r.URL.Query().Get("saved") == "1",
+	}
 
 	now := time.Now()
 	if score, err := s.scoringSvc.GetMonthlyScore(ctx, u.ID, now.Format("2006-01")); err == nil {
@@ -66,6 +72,40 @@ func (s *Server) handleProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	s.render(w, "profile.html", page)
+}
+
+// handleProfileSettings saves the settings block of /profile. It is an
+// ordinary form POST like /groups/create: the SameSite=Lax auth cookie is the
+// CSRF defence (see setCookie), so there is no separate token. The value is
+// explicit rather than "present means on", so a stray submit cannot flip it.
+//
+// Redirect after the write, so a reload of the confirmation does not post
+// again.
+func (s *Server) handleProfileSettings(w http.ResponseWriter, r *http.Request) {
+	u := UserFromContext(r.Context())
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "bad form", http.StatusBadRequest)
+		return
+	}
+
+	var show bool
+	switch r.FormValue("show_rule_on_correct") {
+	case "1":
+		show = true
+	case "0":
+		show = false
+	default:
+		http.Error(w, "bad value", http.StatusBadRequest)
+		return
+	}
+
+	if err := s.userSvc.SetShowRuleOnCorrect(r.Context(), u.ID, show); err != nil {
+		slog.Error("web: save settings", "user_id", u.ID, "error", err)
+		s.renderError(w, "Не удалось сохранить настройку. Попробуйте позже.")
+		return
+	}
+	slog.Info("web: settings saved", "user_id", u.ID, "show_rule_on_correct", show)
+	http.Redirect(w, r, "/profile?saved=1", http.StatusSeeOther)
 }
 
 // --- leaderboard ---------------------------------------------------------

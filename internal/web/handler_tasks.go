@@ -2,6 +2,7 @@ package web
 
 import (
 	"errors"
+	"html"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -26,7 +27,15 @@ type taskView struct {
 	Word        string // headword for vocab tasks, shown at display size
 	Transcript  string // IPA — only when the English side is the prompt
 	Example     string // example sentence, same condition as Transcript
-	AudioURL    string
+	// Prompt is Task.Prompt without the HTML escaping the domain applies for
+	// Telegram's HTML parse mode. html/template escapes it again on output, so
+	// passing Task.Prompt through showed "I&#39;ll" on the page.
+	Prompt string
+	// AudioText is the English word "Послушать" speaks, AudioURL the
+	// recording tried first. Both stay empty when hearing the word would give
+	// the answer away: RU→EN and fill-in-the-blank.
+	AudioText string
+	AudioURL  string
 }
 
 // tasksPage wraps a slot for the full-page render.
@@ -156,6 +165,7 @@ func (s *Server) buildTaskView(r *http.Request, t *task.Task, round, position, t
 		Total:       total,
 		Instruction: taskInstruction(t),
 		Typing:      isTyping(t),
+		Prompt:      html.UnescapeString(t.Prompt),
 	}
 
 	// Vocab tasks carry a word id; pull the record so the card can show the
@@ -169,7 +179,6 @@ func (s *Server) buildTaskView(r *http.Request, t *task.Task, round, position, t
 	if t.Type == task.TypeVocab && t.Metadata != nil {
 		if id := metaInt64(t.Metadata["word_id"]); id > 0 {
 			if word, err := s.srsRepo.GetWordByID(r.Context(), id); err == nil && word != nil {
-				v.AudioURL = word.AudioURL
 				switch t.Metadata["subtype"] {
 				case task.VocabSubtypeRuEn, task.VocabSubtypeTypingRuEn:
 					v.Word = word.Russian
@@ -179,6 +188,7 @@ func (s *Server) buildTaskView(r *http.Request, t *task.Task, round, position, t
 					v.Word = word.English
 					v.Transcript = word.Transcription
 					v.Example = word.Example
+					v.AudioText, v.AudioURL = word.English, word.AudioURL
 				}
 			}
 		}
@@ -244,7 +254,7 @@ func (s *Server) handleTaskAnswer(w http.ResponseWriter, r *http.Request) {
 		Score:   result.Score,
 		Level:   t.Level,
 	}
-	if !result.Correct && t.Type == task.TypeGrammar && t.Metadata != nil {
+	if t.Type == task.TypeGrammar && t.Metadata != nil && showRule(u, result.Correct) {
 		// The generator already stamps the category explanation onto the task,
 		// so no repository lookup is needed here.
 		fb.Explanation, _ = t.Metadata["explanation"].(string)
@@ -350,4 +360,11 @@ func metaInt64(v any) int64 {
 	default:
 		return 0
 	}
+}
+
+// showRule decides whether answer feedback carries the grammar rule. After a
+// mistake it always does — that is the moment it helps. After a correct answer
+// only when the user asked for it in the profile settings.
+func showRule(u *user.User, correct bool) bool {
+	return !correct || (u != nil && u.ShowRuleOnCorrect)
 }

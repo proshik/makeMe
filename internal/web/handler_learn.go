@@ -60,7 +60,7 @@ type learnFeedback struct {
 	Correct     bool
 	Chosen      string
 	Answer      string
-	Explanation string
+	Explanation string // empty when the rule is not to be shown, see showRule
 	Done        bool
 	CorrectRun  int
 }
@@ -179,16 +179,18 @@ func (s *Server) handleLearnAnswer(w http.ResponseWriter, r *http.Request) {
 	// /learn is practice, not assessment: nothing is scored and nothing is
 	// written to the SRS. It exists so a rule can be drilled on demand.
 	fb := learnFeedback{
-		Topic:       topic,
-		Seed:        seed,
-		NextIndex:   index + 1,
-		Total:       slot.Total,
-		Correct:     correct,
-		Chosen:      chosen,
-		Answer:      slot.Question.Answer,
-		Explanation: slot.Question.Explanation,
-		Done:        index+1 >= slot.Total,
-		CorrectRun:  correctRun,
+		Topic:      topic,
+		Seed:       seed,
+		NextIndex:  index + 1,
+		Total:      slot.Total,
+		Correct:    correct,
+		Chosen:     chosen,
+		Answer:     slot.Question.Answer,
+		Done:       index+1 >= slot.Total,
+		CorrectRun: correctRun,
+	}
+	if showRule(UserFromContext(r.Context()), correct) {
+		fb.Explanation = slot.Question.Explanation
 	}
 	s.render(w, "learn_feedback", fb)
 }

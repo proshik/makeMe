@@ -30,7 +30,7 @@
       {{if .Transcript}}<p class="ipa text-2xl mb-2">{{.Transcript}}</p>{{end}}
       {{if .Example}}<p class="text-base mb-8" style="color:var(--dim)"><i>{{.Example}}</i></p>{{else}}<div class="mb-8"></div>{{end}}
     {{else}}
-      <p class="font-display text-3xl leading-snug mb-8" style="font-weight:400">{{.Task.Prompt}}</p>
+      <p class="font-display text-3xl leading-snug mb-8" style="font-weight:400">{{.Prompt}}</p>
     {{end}}
 
     <form hx-post="/tasks/{{.Task.ID}}/answer" hx-target="#slot" hx-swap="outerHTML">
@@ -42,8 +42,7 @@
         <div class="flex items-center gap-3 flex-wrap">
           <button type="submit" class="btn">Проверить</button>
           <button type="submit" name="skip" value="1" class="btn btn-ghost">Не знаю</button>
-          {{if .AudioURL}}<button type="button" class="btn btn-ghost"
-              data-action="play-audio" data-src="{{.AudioURL}}">Послушать</button>{{end}}
+          {{template "listen_button" .}}
         </div>
       {{else}}
         <div class="grid gap-[3px] mb-7">
@@ -57,8 +56,7 @@
         </div>
         <div class="flex items-center gap-3 flex-wrap">
           <button type="submit" name="skip" value="1" class="btn btn-ghost">Не знаю</button>
-          {{if .AudioURL}}<button type="button" class="btn btn-ghost"
-              data-action="play-audio" data-src="{{.AudioURL}}">Послушать</button>{{end}}
+          {{template "listen_button" .}}
         </div>
       {{end}}
     </form>
@@ -66,3 +64,12 @@
   </section>
 </div>
 {{end}}
+
+{{/* «Послушать»: сначала запись (data-src), если её нет или она не играет —
+     синтез речи браузера по data-text (static/js/app.js). Кнопки нет, когда
+     AudioText пуст: в режимах RU→EN и fill-blank слово и есть ответ.
+     Общая для заданий и слов: у обоих view есть AudioText и AudioURL. */}}
+{{define "listen_button"}}
+{{- if .AudioText}}<button type="button" class="btn btn-ghost" data-action="play-audio"
+    {{- with .AudioURL}} data-src="{{.}}"{{end}} data-text="{{.AudioText}}">Послушать</button>{{end}}
+{{- end}}

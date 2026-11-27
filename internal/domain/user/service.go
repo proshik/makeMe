@@ -49,3 +49,12 @@ func (s *Service) UpdateLevel(ctx context.Context, userID int64, level Level) er
 	}
 	return nil
 }
+
+// SetShowRuleOnCorrect stores whether the web interface shows the grammar rule
+// after a correct answer as well as after a wrong one.
+func (s *Service) SetShowRuleOnCorrect(ctx context.Context, userID int64, show bool) error {
+	if err := s.repo.UpdateShowRuleOnCorrect(ctx, userID, show); err != nil {
+		return fmt.Errorf("update show rule on correct: %w", err)
+	}
+	return nil
+}

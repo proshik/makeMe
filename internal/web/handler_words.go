@@ -11,6 +11,12 @@ import (
 	"makeMe/internal/domain/words"
 )
 
+// Pauses before /words moves on by itself after an answer.
+const (
+	autoAdvanceCorrectMS = 1000
+	autoAdvanceWrongMS   = 3000
+)
+
 // wordSlot is one drill of one word in one mode.
 type wordSlot struct {
 	SessionID int64
@@ -21,6 +27,7 @@ type wordSlot struct {
 	Prompt      string // the side being asked: English for EN→RU, Russian for RU→EN
 	Transcript  string // IPA, only meaningful when the English side is shown
 	Example     string
+	AudioText   string // English word to speak; empty in RU→EN modes, where it is the answer
 	AudioURL    string
 	Instruction string
 	Options     []string
@@ -57,7 +64,13 @@ type wordFeedback struct {
 	English    string
 	Russian    string
 	Transcript string
+	AudioText  string
 	AudioURL   string
+	// AutoAdvanceMS moves on to the next word by itself: a short beat after a
+	// correct answer, long enough to read the right one after a mistake. Zero
+	// when the card asks for a decision (defer the word) or announces that the
+	// word is learned — those wait for the button.
+	AutoAdvanceMS int
 }
 
 func (s *Server) handleWords(w http.ResponseWriter, r *http.Request) {
@@ -136,7 +149,6 @@ func (s *Server) buildWordSlot(r *http.Request, sessionID int64, status *words.S
 		WordID:    word.ID,
 		Mode:      slot.Mode,
 		Typing:    slot.IsTyping(),
-		AudioURL:  word.AudioURL,
 		Shown:     status.ModesCompleted,
 		Total:     status.ModesTotal,
 		Counts:    s.modeCounts(r, session.UserID, word.ID),
@@ -145,12 +157,14 @@ func (s *Server) buildWordSlot(r *http.Request, sessionID int64, status *words.S
 	switch slot.Mode {
 	case words.ModeEnRuMC:
 		view.Prompt, view.Transcript, view.Example = word.English, word.Transcription, word.Example
+		view.AudioText, view.AudioURL = word.English, word.AudioURL
 		view.Instruction = "Выберите перевод на русский"
 	case words.ModeRuEnMC:
 		view.Prompt = word.Russian
 		view.Instruction = "Выберите перевод на английский"
 	case words.ModeEnRuTyping:
 		view.Prompt, view.Transcript = word.English, word.Transcription
+		view.AudioText, view.AudioURL = word.English, word.AudioURL
 		view.Instruction = "Введите перевод на русский"
 	case words.ModeRuEnTyping:
 		view.Prompt = word.Russian
@@ -318,7 +332,15 @@ func (s *Server) renderWordFeedback(w http.ResponseWriter, r *http.Request, sess
 	}
 	if word, err := s.srsRepo.GetWordByID(r.Context(), wordID); err == nil {
 		fb.English, fb.Russian = word.English, word.Russian
-		fb.Transcript, fb.AudioURL = word.Transcription, word.AudioURL
+		fb.Transcript, fb.AudioText, fb.AudioURL = word.Transcription, word.English, word.AudioURL
+	}
+	switch {
+	case fb.OfferDefer || fb.Learned:
+		// Wait for the button.
+	case fb.Correct:
+		fb.AutoAdvanceMS = autoAdvanceCorrectMS
+	default:
+		fb.AutoAdvanceMS = autoAdvanceWrongMS
 	}
 	s.render(w, "word_feedback", fb)
 }
