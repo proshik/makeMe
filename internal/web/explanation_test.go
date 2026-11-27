@@ -58,6 +58,10 @@ func TestTaskFeedbackRendersRuleInBlocksEscaped(t *testing.T) {
 	if n := strings.Count(out, `class="ruledoc-sec"`); n != 3 {
 		t.Errorf("sections = %d, want 3", n)
 	}
+	// The last block opens with a captioned line: its caption is a heading.
+	if want := `<h3 class="ruledoc-h">Частая ошибка</h3>`; !strings.Contains(out, want) {
+		t.Errorf("feedback lacks %q:\n%s", want, out)
+	}
 	if strings.Contains(out, "<script>") || strings.Contains(out, "<b>bold") {
 		t.Errorf("markup from the rule text reached the page unescaped:\n%s", out)
 	}

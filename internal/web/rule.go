@@ -26,7 +26,23 @@ type ruleDoc struct {
 
 type ruleSection struct {
 	Heading string // without the trailing colon; empty for a block that opens with an ordinary line
+	// Caption is set instead of Heading when the block opens with a
+	// captioned line rather than a heading: "Present Simple: don't / doesn't
+	// + V". Its Label is drawn as the section heading, the rest under it.
+	// Captioned items inside a list ("• После глагола: …") are not captions.
+	Caption *ruleLine
 	Lines   []ruleLine
+}
+
+// CaptionBody is the caption without its label, for drawing under the
+// heading.
+func (s ruleSection) CaptionBody() ruleLine {
+	if s.Caption == nil {
+		return ruleLine{}
+	}
+	l := *s.Caption
+	l.Label = ""
+	return l
 }
 
 type ruleLineKind string
@@ -107,6 +123,9 @@ func parseRule(text string) ruleDoc {
 			cur.Lines = append(cur.Lines, parsed)
 		case blockIndex == 0:
 			doc.Lead = append(doc.Lead, parsed)
+		case !parsed.Bullet && parsed.Label != "":
+			doc.Sections = append(doc.Sections, ruleSection{Caption: &parsed})
+			cur = &doc.Sections[len(doc.Sections)-1]
 		default:
 			doc.Sections = append(doc.Sections, ruleSection{Lines: []ruleLine{parsed}})
 			cur = &doc.Sections[len(doc.Sections)-1]
@@ -311,6 +330,9 @@ func (d ruleDoc) String() string {
 		var lines []string
 		if s.Heading != "" {
 			lines = append(lines, s.Heading+":")
+		}
+		if s.Caption != nil {
+			lines = append(lines, s.Caption.String())
 		}
 		for _, l := range s.Lines {
 			lines = append(lines, l.String())

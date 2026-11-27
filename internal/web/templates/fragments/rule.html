@@ -11,10 +11,16 @@
   {{range .Sections}}
   <section class="ruledoc-sec">
     {{if .Heading}}<h3 class="ruledoc-h">{{.Heading}}</h3>{{end}}
-    <ul class="ruledoc-list">
+    {{/* Блок открывается строкой-подписью («Present Simple: don't / doesn't
+         + V»): подпись — тот же янтарный заголовок, а то, что после
+         двоеточия, — строкой под ним. Текст — тем же акцентом, пример или
+         ошибка — своими цветами. */}}
+    {{with .Caption}}<h3 class="ruledoc-h">{{.Label}}</h3>{{end}}
+    {{if .Caption}}{{with .CaptionBody}}<p class="ruledoc-caption">{{template "rule_line" .}}</p>{{end}}{{end}}
+    {{if .Lines}}<ul class="ruledoc-list">
       {{range .Lines}}<li class="ruledoc-li"{{if and .Bullet (not .IsMistake)}} data-item="1"{{end}}>{{template "rule_line" .}}</li>
       {{end}}
-    </ul>
+    </ul>{{end}}
   </section>
   {{end}}
 </div>

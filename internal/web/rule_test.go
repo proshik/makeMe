@@ -62,10 +62,17 @@ func TestParseRuleSplitsLeadSectionsAndLineKinds(t *testing.T) {
 		t.Errorf("right-only line = %+v", l)
 	}
 
-	loose := doc.Sections[3]
-	if loose.Heading != "" || loose.Lines[0].Label != "Прилагательные на -ly (НЕ наречия)" ||
-		loose.Lines[0].Bullet || loose.Lines[1].Kind != ruleMistake {
-		t.Errorf("block opening with a plain line = %+v", loose)
+	// A block opening with a captioned line gets the caption as its heading;
+	// the rest of that line goes under it, the list follows.
+	capt := doc.Sections[3]
+	if capt.Heading != "" || capt.Caption == nil || capt.Caption.Label != "Прилагательные на -ly (НЕ наречия)" ||
+		capt.CaptionBody().Text != "friendly, lovely." || capt.CaptionBody().Label != "" ||
+		len(capt.Lines) != 1 || capt.Lines[0].Kind != ruleMistake {
+		t.Errorf("block opening with a captioned line = %+v", capt)
+	}
+	// Captioned items inside a list stay items.
+	if use.Caption != nil || use.Lines[0].Label == "" {
+		t.Errorf("a captioned list item must not become a caption: %+v", use)
 	}
 
 	if l := doc.Sections[4].Lines[0]; l.Kind != ruleTable || l.Text != "I      | me    | my" {
@@ -90,6 +97,41 @@ func TestParseRuleLeavesAmbiguousLinesAsText(t *testing.T) {
 		if l.String() != line {
 			t.Errorf("%q rebuilt as %q", line, l.String())
 		}
+	}
+}
+
+// Only the first line of a block can be a caption, and only a plain one: an
+// unlabelled opening line or a bulleted one stays a list line, and the lead
+// paragraph keeps its own captions.
+func TestParseRuleCaptionOnlyOpensABlock(t *testing.T) {
+	doc := parseRule("Форма: as if + Past Simple\n\n" +
+		"Present Simple: don't / doesn't + V\n" +
+		"• I don't like coffee.\n" +
+		"Подсказка: не в начале блока\n\n" +
+		"• Пункт: с подписью первым\n\n" +
+		"Просто строка без подписи\n\n" +
+		"Частая ошибка: ✗ Turn on it. → ✓ Turn it on.")
+
+	if len(doc.Lead) != 1 || doc.Lead[0].Label != "Форма" {
+		t.Errorf("lead = %+v", doc.Lead)
+	}
+	if len(doc.Sections) != 4 {
+		t.Fatalf("sections = %+v", doc.Sections)
+	}
+	ps := doc.Sections[0]
+	if ps.Caption == nil || ps.Caption.Label != "Present Simple" || ps.CaptionBody().Text != "don't / doesn't + V" {
+		t.Errorf("caption = %+v", ps)
+	}
+	if len(ps.Lines) != 2 || ps.Lines[1].Label != "Подсказка" {
+		t.Errorf("a captioned line later in the block stays a line: %+v", ps.Lines)
+	}
+	for i, sec := range doc.Sections[1:3] {
+		if sec.Caption != nil {
+			t.Errorf("section %d must not get a caption: %+v", i+1, sec)
+		}
+	}
+	if m := doc.Sections[3]; m.Caption == nil || m.Caption.Label != "Частая ошибка" || !m.CaptionBody().IsMistake() {
+		t.Errorf("captioned mistake = %+v", m)
 	}
 }
 
@@ -163,7 +205,12 @@ func TestParseRuleKeepsEveryShippedExplanation(t *testing.T) {
 			t.Errorf("%s: no lead paragraph", c.Name)
 		}
 		for _, s := range doc.Sections {
-			for _, l := range s.Lines {
+			lines := s.Lines
+			if s.Caption != nil {
+				counts["caption"]++
+				lines = append([]ruleLine{*s.Caption}, lines...)
+			}
+			for _, l := range lines {
 				counts[l.Kind]++
 				// "✗ … → Если сам, то: …" mixes notations on purpose and
 				// stays text; every other ✗ line must be recognised.
@@ -178,7 +225,7 @@ func TestParseRuleKeepsEveryShippedExplanation(t *testing.T) {
 	if len(unparsedMistakes) > 0 {
 		t.Errorf("mistake lines left as text:\n%s", strings.Join(unparsedMistakes, "\n"))
 	}
-	for _, k := range []ruleLineKind{ruleExample, ruleMistake, ruleTable, ruleText} {
+	for _, k := range []ruleLineKind{ruleExample, ruleMistake, ruleTable, ruleText, "caption"} {
 		if counts[k] == 0 {
 			t.Errorf("no %s lines recognised across all categories", k)
 		}
