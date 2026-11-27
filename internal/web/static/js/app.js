@@ -139,9 +139,31 @@
     }, ms);
   }
   document.body.addEventListener('htmx:beforeRequest', clearAdvance);
-  document.body.addEventListener('htmx:afterSwap', function (e) {
-    armAdvance(e.target);
-  });
+
+  // Следующий слот приезжает вместе с ответом: фидбек несёт его в инертном
+  // <template data-next-slot> (заданиям и словам). «Дальше» — клик, Enter или
+  // таймер выше — подменяет фидбек этим слотом без второго запроса к серверу.
+  // Перехват в фазе захвата: до обработчика htmx на самой кнопке, иначе
+  // запрос всё равно ушёл бы. Шаблона нет — ничего не делаем, и кнопка
+  // работает как раньше, через hx-get.
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-advance-next]');
+    if (!btn || !window.htmx) return;
+    var root = btn.closest('#slot, #wordslot');
+    var tpl = root && root.querySelector('template[data-next-slot]');
+    var el = tpl && tpl.content.querySelector('#slot, #wordslot');
+    if (!el) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    clearAdvance();
+    el = document.importNode(el, true);
+    root.replaceWith(el);
+    // Разметка из <template> htmx ещё не видел: без process формы слота не
+    // отправятся через htmx. htmx:afterSwap здесь не случится — то, что он
+    // делает для подменённого слота, вызываем сами.
+    window.htmx.process(el);
+    afterSlotShown(el);
+  }, true);
 
   // Событие «прогресс изменился» на странице с вводом только показывает
   // предложение обновить. Автоподмена вырвала бы слот из-под рук у человека,
@@ -172,10 +194,15 @@
     if (e.target.closest('[data-action="reload"]')) location.reload();
   });
 
-  // Фокус в поле ввода после подмены слота, иначе печатать можно только
-  // после клика мышью.
-  document.body.addEventListener('htmx:afterSwap', function (e) {
-    var field = e.target.querySelector('.field');
+  // После подмены слота: фокус в поле ввода, иначе печатать можно только
+  // после клика мышью, и авто-переход для фидбека слова.
+  function afterSlotShown(root) {
+    if (!root || !root.querySelector) return;
+    var field = root.querySelector('.field');
     if (field) field.focus();
+    armAdvance(root);
+  }
+  document.body.addEventListener('htmx:afterSwap', function (e) {
+    afterSlotShown(e.target);
   });
 })();

@@ -66,6 +66,11 @@ type wordFeedback struct {
 	Transcript string
 	AudioText  string
 	AudioURL   string
+	// Next is the following drill, rendered inert into the feedback so
+	// "Дальше" can show it without a second round trip. Nil when the session
+	// is exhausted (the hx-get fallback then closes it) and when the card
+	// offers to defer the word — deferring changes what comes next.
+	Next *wordSlot
 	// AutoAdvanceMS moves on to the next word by itself: a short beat after a
 	// correct answer, long enough to read the right one after a mistake. Zero
 	// when the card asks for a decision (defer the word) or announces that the
@@ -142,7 +147,26 @@ func (s *Server) buildWordSlot(r *http.Request, sessionID int64, status *words.S
 		}
 		return nil, true, nil
 	}
+	return s.wordSlotView(r, slot, session, status)
+}
 
+// peekWordSlot builds the drill that would come next without writing
+// anything: when the session is exhausted it returns nil and leaves the
+// session open, so closing still happens on the user's own "Дальше".
+func (s *Server) peekWordSlot(r *http.Request, sessionID int64) (*wordSlot, error) {
+	slot, session, done, err := s.wordsSvc.PeekNextSlot(r.Context(), sessionID)
+	if err != nil || done {
+		return nil, err
+	}
+	status, err := s.wordsSvc.Status(r.Context(), session.UserID, session)
+	if err != nil {
+		return nil, err
+	}
+	view, _, err := s.wordSlotView(r, slot, session, &status)
+	return view, err
+}
+
+func (s *Server) wordSlotView(r *http.Request, slot *words.Slot, session *words.Session, status *words.StatusView) (*wordSlot, bool, error) {
 	word := slot.Word
 	view := &wordSlot{
 		SessionID: session.ID,
@@ -333,6 +357,14 @@ func (s *Server) renderWordFeedback(w http.ResponseWriter, r *http.Request, sess
 	if word, err := s.srsRepo.GetWordByID(r.Context(), wordID); err == nil {
 		fb.English, fb.Russian = word.English, word.Russian
 		fb.Transcript, fb.AudioText, fb.AudioURL = word.Transcription, word.English, word.AudioURL
+	}
+	if !fb.OfferDefer {
+		next, err := s.peekWordSlot(r, sessionID)
+		if err != nil {
+			// Not fatal: without the prefetched slot "Дальше" fetches it.
+			slog.Warn("web: prefetch next word", "session_id", sessionID, "error", err)
+		}
+		fb.Next = next
 	}
 	switch {
 	case fb.OfferDefer || fb.Learned:

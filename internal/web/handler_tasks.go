@@ -64,7 +64,11 @@ type feedbackView struct {
 	Score       int
 	Level       user.Level
 	HasNext     bool
-	Done        *roundSummary
+	// Next is the following task, rendered inert into the feedback so
+	// "Дальше" can show it without a second round trip. It is the same view
+	// /tasks/next would build: options only, never the answer or the rule.
+	Next *taskView
+	Done *roundSummary
 }
 
 func (s *Server) handleTasks(w http.ResponseWriter, r *http.Request) {
@@ -267,6 +271,9 @@ func (s *Server) handleTaskAnswer(w http.ResponseWriter, r *http.Request) {
 		if next, err := s.taskSvc.GetNextUnanswered(r.Context(), ds.ID, u.ID); err == nil {
 			if next != nil {
 				fb.HasNext = true
+				if answered, total, err := s.taskSvc.GetProgress(r.Context(), ds.ID, u.ID); err == nil {
+					fb.Next = s.buildTaskView(r, next, ds.Round, answered+1, total)
+				}
 			} else {
 				total, correct := 0, 0
 				if _, tt, err := s.taskSvc.GetProgress(r.Context(), ds.ID, u.ID); err == nil {

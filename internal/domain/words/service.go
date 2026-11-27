@@ -130,8 +130,23 @@ func (s *Service) LevelProgress(ctx context.Context, userID int64) ([]LevelProgr
 }
 
 // NextSlot returns the next slot to display for an open session, plus the
-// session itself (refreshed) and a sessionDone flag.
+// session itself (refreshed) and a sessionDone flag. When nothing is left it
+// closes the session.
 func (s *Service) NextSlot(ctx context.Context, sessionID int64) (*Slot, *Session, bool, error) {
+	return s.nextSlot(ctx, sessionID, true)
+}
+
+// PeekNextSlot is NextSlot without the one write: when nothing is left it
+// reports done but leaves the session open. The web uses it to send the next
+// drill along with the answer feedback, before the user has moved on — closing
+// the session there would happen behind their back. The pick itself is a pure
+// function of state already written by the answer (progress, the anti-repeat
+// cursor, deferrals), so the peeked slot is the one NextSlot would return.
+func (s *Service) PeekNextSlot(ctx context.Context, sessionID int64) (*Slot, *Session, bool, error) {
+	return s.nextSlot(ctx, sessionID, false)
+}
+
+func (s *Service) nextSlot(ctx context.Context, sessionID int64, completeWhenDone bool) (*Slot, *Session, bool, error) {
 	session, err := s.repo.GetSessionByID(ctx, sessionID)
 	if err != nil {
 		return nil, nil, false, err
@@ -154,8 +169,10 @@ func (s *Service) NextSlot(ctx context.Context, sessionID int64) (*Slot, *Sessio
 
 	slot, done := NextSlot(session, wordsByID, progress, s.now())
 	if done {
-		_ = s.repo.CompleteSession(ctx, session.ID)
-		session.CompletedAt = ptrTime(s.now())
+		if completeWhenDone {
+			_ = s.repo.CompleteSession(ctx, session.ID)
+			session.CompletedAt = ptrTime(s.now())
+		}
 		return nil, session, true, nil
 	}
 	return &slot, session, false, nil

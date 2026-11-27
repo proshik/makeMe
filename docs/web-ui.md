@@ -10,12 +10,12 @@
 | `GET /logout` | Clears the session cookie. |
 | `GET /` | Home. Requires auth. |
 | `GET /tasks` | Today's round. Generates or resumes it, auto-creating a solo group if the user has none — the same rule the bot follows. |
-| `GET /tasks/next` | Next slot as an htmx fragment. Deliberately reads the *current* set instead of generating: `GenerateDaily` opens the next round once the current one is answered, so generating here would roll the user into a new round instead of showing the summary. |
+| `GET /tasks/next` | Next slot as an htmx fragment. Deliberately reads the *current* set instead of generating: `GenerateDaily` opens the next round once the current one is answered, so generating here would roll the user into a new round instead of showing the summary. Usually not called: the answer feedback already carries the next slot; this is the fallback. |
 | `POST /tasks/{id}/answer` | Records a choice, a typed answer or a skip via `task.Service`, scores it, and returns the feedback fragment. A grammar task's rule is shown after a mistake or a skip always, after a correct answer only with the profile setting on. |
 | `GET /assess` | Starts or resumes the 30-question level test. The current level is deliberately not shown during the run — it moves adaptively after every answer, and showing it would turn the test into a game against the system. |
 | `POST /assess/answer` | Records an option or a skip, returns the next question or the result — level, score, and a per-question breakdown so the verdict is justified. |
 | `GET /words` | Opens or resumes the ten-word active-recall session, with per-mode tallies and live per-CEFR-level progress. |
-| `GET /words/next` | Next drill as a fragment. Completing the last one closes the session, so the following visit picks a fresh ten. |
+| `GET /words/next` | Next drill as a fragment. Completing the last one closes the session, so the following visit picks a fresh ten. Usually not called: the answer feedback already carries the next drill (see "The next slot travels with the answer"); this is the fallback and the path that closes an exhausted session. |
 | `POST /words/{id}/answer` | Records a choice, a typed answer or a skip. Multiple-choice correctness is decided server-side from the submitted text — the correct index is never sent to the browser. The feedback moves on by itself (see "Auto-advance in /words"). |
 | `POST /words/{id}/know` | Retires a word the user already knows across all four modes and drops it into spaced repetition. |
 | `POST /words/{id}/defer` | Drops a word from the rest of the session, keeping its progress. Offered only past `words.DeferThreshold` mistakes on that word. |
@@ -48,6 +48,16 @@ Every part stays a plain string escaped by `html/template`; nothing from the dat
 "Послушать" tries the recording in `data-src` first. The Free Dictionary API mp3 links currently return 404 across the board, so on any playback error — and when a word has no `audio_url` at all — `app.js` falls back to the browser's speech synthesis (Web Speech API, `lang="en-US"`) with the English word from `data-text`. Synthesis runs locally, so the CSP is unchanged. "Не воспроизводится" appears only when neither works.
 
 The button is not shown where hearing the word would give the answer away: RU→EN modes in `/words`, RU→EN and fill-in-the-blank tasks in `/tasks`. After the answer the `/words` feedback card offers it in every mode.
+
+## The next slot travels with the answer
+
+Every task used to cost two round trips: `POST …/answer` for the feedback, then `GET /tasks/next` (or `/words/next`) for the slot. With the database next to the app, the user-facing latency is mostly the network to the server, so the feedback now carries the next slot as well, inside an inert `<template data-next-slot>`. "Дальше" — a click, Enter, or the `/words` timer — replaces the feedback with that slot in `app.js` without a request, runs `htmx.process` on it (htmx has not seen markup from a template) and does what `htmx:afterSwap` would have done: focus the input, arm the timer. The interception runs in the capture phase so htmx's own click handler on the button never fires. Without a template the button falls back to its `hx-get`, exactly as before.
+
+- `/tasks`: the template is the same `task_slot` that `/tasks/next` renders — options only, never the answer or the rule. The last task of a round carries no template; the summary is in the feedback as before. If the prefetched task gets answered in the bot meanwhile, submitting it returns `HX-Refresh`, the same path as any stale answer.
+- `/words`: the next drill comes from `words.Service.PeekNextSlot`, which is `NextSlot` without its one write — when nothing is left it reports done but does not close the session; closing still happens on the user's own "Дальше" through `GET /words/next`. The pick itself depends only on state the answer already wrote, so the peeked drill is the one `/words/next` would show. No template when the card offers "Отложить до завтра": deferring changes what comes next.
+- `/learn` is unchanged.
+
+"Дальше" in `/tasks` is focused after the answer too, so Enter works there; it never auto-advances.
 
 ## Auto-advance in /words
 

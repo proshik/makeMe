@@ -30,7 +30,12 @@
     {{end}}
 
     {{if .HasNext}}
-      <button class="btn" hx-get="/tasks/next" hx-target="#slot" hx-swap="outerHTML">Дальше</button>
+      {{/* Следующее задание приезжает вместе с ответом, в инертном <template>:
+           «Дальше» показывает его без второго запроса (static/js/app.js).
+           hx-get остаётся запасным путём, если шаблона нет. */}}
+      {{with .Next}}<template data-next-slot>{{template "task_slot" .}}</template>{{end}}
+      <button class="btn" data-advance-next
+              hx-get="/tasks/next" hx-target="#slot" hx-swap="outerHTML">Дальше</button>
     {{else if .Done}}
       {{/* Итог набирается здесь же, а не отдельным фрагментом: вложить
            "task_done" нельзя — он несёт собственный id="slot". */}}

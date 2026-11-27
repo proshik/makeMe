@@ -39,6 +39,10 @@
     </div>
     {{end}}
 
+    {{/* Следующее слово — вместе с ответом, см. task_feedback. Его нет, когда
+         слова кончились (закрывает сессию запасной hx-get) и когда предложено
+         отложить слово: решение меняет следующий слот. */}}
+    {{with .Next}}<template data-next-slot>{{template "word_slot" .}}</template>{{end}}
     <div class="flex items-center gap-3 flex-wrap">
       <button class="btn" data-advance-next
               hx-get="/words/next" hx-target="#wordslot" hx-swap="outerHTML">Дальше</button>
