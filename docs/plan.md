@@ -2,6 +2,8 @@
 
 ## Реализованные фичи (changelog)
 
+- [DONE] **`CLAUDE.md` → `AGENTS.md`, документация сверена с кодом.** Правила для агентов переехали в `AGENTS.md` и написаны нейтрально к агенту; `CLAUDE.md` — одна строка `@AGENTS.md`, потому что Claude Code сам читает только его. В `AGENTS.md` исправлено неверное: `go-telegram/ui` в проекте не используется; фаза 9 сделана частично, а не «готовы фазы 1–10.6»; веб не подтягивает аудио из API, бот без аудио отвечает «Произношение для «…» не найдено.», а CSP допускает `media-src https:` для mp3; интеграционные тесты есть и в `internal/web`. Добавлены правила: формат теории в `data/grammar_categories.json` и что ловит, а чего не ловит `TestParseRuleKeepsEveryShippedExplanation`; следующий слот в фидбэке и `PeekNextSlot`, который не закрывает сессию; правило после ответа и `show_rule_on_correct`; одно экранирование промпта (домен экранирует под Telegram, веб снимает); sqlc (`make install-tools`, `make sqlc`; сгенерированный код из `83dc3ce` написан вручную, `sqlc@v1.30.0 diff` пуст); веб в статусе проекта; внутрипроцессный хаб в известных ограничениях. `docs/database.md`: таблица `scores` описана по миграции (`period`/`period_key` вместо `date`), добавлены `assessment_answers.skipped`, `UNIQUE(english, level)` и `ON DELETE CASCADE`. `docs/web-ui.md`: маршруты `/learn/next`, `/leaderboard/table`, `/ws` и своя 404. `docs/development.md`: тесты `internal/web` и colima, `make css-check`, проверка sqlc без установки. 404 у записей Free Dictionary везде описан как проверка curl от 2026-11-27, а не как постоянный факт.
+
 - [DONE] **Веб: блок со строкой-подписью получает заголовок раздела.** В части тем блок открывается не заголовком, а строкой вида «Present Simple: don't / doesn't + V». Раньше подпись шла мелким серым шрифтом над текстом, теперь `parseRule` кладёт такую строку в `ruleSection.Caption`: подпись рисуется тем же янтарным заголовком, что «Форма» и «Примеры», а то, что после двоеточия, — строкой сразу под ним тем же янтарным акцентом, но шрифтом текста (бывает длиной в предложение — «Подсказка: …»). Пример или ошибка после подписи остаются в своих цветах. Подписью считается только первая строка блока без «•»; пункты списка с подписью («• После глагола: …») не изменились. По всем темам таких блоков 83; проверка без потерь текста по-прежнему проходит.
 
 - [DONE] **Веб: следующее задание приезжает вместе с ответом.** Раньше каждое задание стоило двух запросов (ответ → фидбек, `GET /tasks/next` или `/words/next` → слот), а задержка у пользователя в основном сетевая. Теперь фидбек `/tasks` и `/words` несёт следующий слот в инертном `<template data-next-slot>`, и «Дальше» (клик, Enter, авто-переход) подменяет фидбек без запроса; `hx-get` остаётся запасным путём. Для `/tasks` это тот же `task_slot`, что у `/tasks/next` (варианты, без ответа и правила); на последнем задании раунда шаблона нет. Для `/words` — `words.Service.PeekNextSlot`: `NextSlot` без закрытия сессии, поэтому исчерпанную сессию по-прежнему закрывает «Дальше» пользователя; при предложении «Отложить до завтра» шаблона нет. Задание, отвеченное тем временем в боте, при отправке даёт `HX-Refresh`. `/learn` не менялся.
@@ -178,6 +180,7 @@ export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock
 > ⚠️ **Это первоначальный план структуры, а не текущее состояние репозитория.**
 > Реальное дерево ушло вперёд: добавились `internal/domain/words`, `internal/domain/srs`,
 > `internal/textmatch`, `internal/dictionary`, `internal/audio`, `internal/server/admin.go`,
+> `internal/web` (веб-интерфейс), `internal/realtime` (хаб `/ws`), `internal/seed`,
 > `cmd/seed`, `cmd/seed-audio`, а также хендлеры `handler_words.go`, `handler_learn.go`,
 > `handler_typing.go`, `words_format.go`. Запланированные, но так и не созданные файлы:
 > `internal/domain/task/translation.go` (фаза 11) и `internal/telegram/keyboard.go`
@@ -281,7 +284,8 @@ makeMe/
 ├── sqlc.yaml                        # Конфигурация sqlc
 ├── .env.example                     # Пример переменных окружения
 ├── Makefile                         # make run, migrate-up, migrate-down, sqlc, build
-└── CLAUDE.md
+├── AGENTS.md                        # Правила для агентов (в первоначальном плане был CLAUDE.md)
+└── CLAUDE.md                        # Одна строка @AGENTS.md: импорт для Claude Code
 ```
 
 ---

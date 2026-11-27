@@ -22,12 +22,17 @@
 | `GET /learn` | Grammar topics at the user's level and the one above it. |
 | `GET /learn/topic?name=…` | Theory plus a fresh random seed, so re-entering a topic reshuffles the order. |
 | `GET /learn/practice?name=…&seed=…&i=…` | One question of a run. The run keeps no server-side state: seed plus index reproduce the same sample, so a refresh does not lose the user's place. |
+| `GET /learn/next?name=…&seed=…&i=…&run=…` | The next question as a fragment, carrying the running count of correct answers (`run`). A question index past the sample, or an unknown topic, answers 204 with `HX-Refresh`. |
 | `POST /learn/answer` | Checks the answer and returns the feedback fragment. The rule is shown after a wrong answer always, after a correct one only with the profile setting on — by default it is noise, since the theory was on the previous screen. |
 | `GET /leaderboard` | Group standings, day or month. `?group=` is honoured only for groups the user belongs to — any other id falls back to their own, so an id cannot expose another group's standings. |
+| `GET /leaderboard/table` | Just the standings, as a fragment. This is what the live `leaderboard` event refetches, so an update travels the same code path as a page load; 204 when the user has no group. |
 | `GET /profile` | Level, monthly score, streak, vocabulary split by how each word got there, per-CEFR-level progress, settings, group list. |
 | `POST /profile/settings` | Saves `show_rule_on_correct` (`1` or `0`) ("Показывать правило и после верного ответа", off by default) and redirects to `/profile?saved=1`. Any other value is a 400. A plain form POST like `/groups/create`: the `SameSite=Lax` cookie is the CSRF defence. The Telegram bot does not read this setting. |
 | `GET /groups`, `POST /groups/create`, `POST /groups/join` | Create a group (returns an invite code) or join by code. A wrong code and a missing group give the same message, so codes cannot be probed. |
+| `GET /ws` | WebSocket for live updates (see "Live updates"). Requires auth. |
 | `GET /static/*` | Self-hosted assets, served from the binary via `embed.FS`. |
+
+Any other path gets the app's own 404 page, with navigation and the theme, instead of chi's bare response.
 
 Topic names travel as query values rather than path segments: categories like `can/can't` carry slashes, which a path segment would mangle.
 
@@ -45,7 +50,7 @@ Every part stays a plain string escaped by `html/template`; nothing from the dat
 
 ## Listening
 
-"Послушать" tries the recording in `data-src` first. The Free Dictionary API mp3 links currently return 404 across the board, so on any playback error — and when a word has no `audio_url` at all — `app.js` falls back to the browser's speech synthesis (Web Speech API, `lang="en-US"`) with the English word from `data-text`. Synthesis runs locally, so the CSP is unchanged. "Не воспроизводится" appears only when neither works.
+"Послушать" tries the recording in `data-src` first: the `audio_url` already stored for the word, since the web UI never calls the Free Dictionary API itself (the bot and `POST /admin/seed-audio` fill it). Those mp3 links answered 404 when checked with curl on 2026-11-27 (`shirt`, `hello`, `cat`); playback in a browser has not been checked. So on any playback error — and when a word has no `audio_url` at all — `app.js` falls back to the browser's speech synthesis (Web Speech API, `lang="en-US"`) with the English word from `data-text`. Synthesis runs locally, so the CSP is unchanged. "Не воспроизводится" appears only when neither works.
 
 The button is not shown where hearing the word would give the answer away: RU→EN modes in `/words`, RU→EN and fill-in-the-blank tasks in `/tasks`. After the answer the `/words` feedback card offers it in every mode.
 
@@ -90,7 +95,7 @@ Below 720px the account name is hidden (the level chip stays, since it carries i
 
 ## Assets are self-hosted, and Tailwind is pre-built
 
-Everything the pages load comes from our own origin (`internal/web/static/`, embedded into the binary): the built Tailwind stylesheet, htmx 2.0.4, and the four fonts of the «Табло» system — Oswald, IBM Plex Sans, IBM Plex Mono, and Charis SIL for IPA transcriptions.
+Everything the pages load comes from our own origin (`internal/web/static/`, embedded into the binary), except pronunciation mp3s, which `media-src 'self' https:` lets the page play straight from the Free Dictionary API rather than proxying them: the built Tailwind stylesheet, htmx 2.0.4, and the four fonts of the «Табло» system — Oswald, IBM Plex Sans, IBM Plex Mono, and Charis SIL for IPA transcriptions.
 
 Two separate decisions here, for two separate reasons.
 

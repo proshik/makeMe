@@ -8,6 +8,7 @@ cp .env.example .env   # fill in values (see configuration.md)
 make install-tools     # install sqlc + goose (uses the public Go proxy)
 make sqlc              # regenerate sqlc code after changing queries/
 make css               # rebuild the web stylesheet after editing templates
+make css-check         # fail if the committed stylesheet is stale (CI runs it)
 make run               # start the server (applies migrations + seeds on startup)
 make build             # build binary
 
@@ -15,6 +16,8 @@ make migrate-up        # apply migrations manually (the app also does this on st
 make migrate-down      # roll back one migration
 make migrate-create name=add_something   # scaffold a new goose migration
 ```
+
+`make sqlc` needs sqlc in `~/go/bin` (`make install-tools`). To check the generated code without installing anything, `go run github.com/sqlc-dev/sqlc/cmd/sqlc@v1.30.0 diff` compares `internal/storage/sqlc` with what `queries/` would produce; it reported no difference on 2026-11-28. The last change to it (`show_rule_on_correct`) was written by hand in the v1.30.0 format, which is why that check matters.
 
 ## Local development without ngrok
 
@@ -110,15 +113,23 @@ To add content, edit the relevant JSON file and restart the app; upserts are ide
 
 `cmd/seed` is a standalone CLI for loading one of these files into the DB without starting the server (`go run ./cmd/seed data/words.json`). It is redundant with the startup seeder and only useful for one-off imports against a remote database.
 
-IPA transcription and audio pronunciation are fetched on demand from the [Free Dictionary API](https://dictionaryapi.dev/) (no key required) the first time a user taps **🔊 Послушать** on a vocabulary card, then cached in the DB. The API's mp3 links currently return 404; the web UI then speaks the word with the browser's speech synthesis instead (see [web-ui.md](web-ui.md#listening)). The bot has no such fallback.
+IPA transcription and audio pronunciation come from the [Free Dictionary API](https://dictionaryapi.dev/) (no key required): the bot fetches them the first time a user taps **🔊 Послушать**, and `POST /admin/seed-audio` fills them in bulk (see [admin.md](admin.md)); both cache the result in `words`. The web UI never calls the API and plays the `audio_url` already stored. The API's mp3 links answered 404 when checked with curl on 2026-11-27 (`shirt`, `hello`, `cat`; not checked in a browser); the web UI then speaks the word with the browser's speech synthesis instead (see [web-ui.md](web-ui.md#listening)). The bot has no such fallback.
 
 ## Testing
 
-Integration tests in `internal/telegram/` use TestContainers (PostgreSQL + WireMock 3.13.0). Docker must be running for those. Every other package has plain unit tests and needs no Docker.
+Two packages have integration suites on TestContainers, so Docker must be running for them: `internal/telegram/` (PostgreSQL + WireMock 3.13.0 standing in for the Bot API) and `internal/web/` (PostgreSQL; the web adapter never calls Telegram). Every other package has plain unit tests and needs no Docker.
 
 ```bash
-go test ./internal/telegram/ -v -count=1   # integration suite (needs Docker)
+go test ./internal/telegram/ -v -count=1   # bot integration suite (needs Docker)
+go test ./internal/web/ -count=1           # web handlers over a real Postgres (needs Docker)
 go test -race ./...                        # everything — this is what CI runs
+```
+
+With colima instead of Docker Desktop, testcontainers does not find the socket on its own and fails with "rootless Docker not found". Point it at colima explicitly, and leave `TESTCONTAINERS_RYUK_DISABLED` unset:
+
+```bash
+export DOCKER_HOST=unix://$HOME/.colima/default/docker.sock
+export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock
 ```
 
 CI (`.github/workflows/ci.yaml`) has three jobs:

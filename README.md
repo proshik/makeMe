@@ -79,7 +79,7 @@ The web UI on demo data, in its dark and light themes (the image follows your Gi
 - **Adaptive assessment** — 30 adaptive questions in two phases: vocabulary (1–15) then grammar (16–30); starts at A1, requires 2 consecutive correct answers to promote a level; includes "I don't know" button and a full summary with level justification
 - **Daily tasks** — 5 vocabulary + 5 grammar tasks per set; up to 5 rounds per day per user (configurable via `MAX_ROUNDS_PER_DAY`); solo mode — no group required, one is auto-created; resumes where you left off. Each task shows a **🤷 Не знаю** button — honest skips are recorded separately and treated as wrong for SRS scheduling but don't penalise beyond 0 points.
 - **Spaced repetition (SM-2)** — vocabulary cards follow the SM-2 algorithm; new words appear when reviews are caught up
-- **Word bank** — 1100 words across A1–C2 (A1 292, A2 200, B1 166, B2 146, C1 149, C2 147) with IPA transcription and audio pronunciation (fetched on demand from Free Dictionary API, cached in DB)
+- **Word bank** — 1100 words across A1–C2 (A1 292, A2 200, B1 166, B2 146, C1 149, C2 147) with IPA transcription and audio pronunciation from the Free Dictionary API (fetched by the bot on demand or in bulk via `/admin/seed-audio`, cached in DB; the web UI falls back to the browser's speech synthesis when a recording does not play)
 - **Grammar questions** — stored in DB with Murphy's English Grammar in Use categories; 768 questions across A1–C2 over 113 categories; each tagged with subcategory (affirmative/negative/interrogative/spelling/general) for balanced `/learn` sessions
 - **Groups & leaderboards** — users join groups by invite code; daily and monthly leaderboards with normalized scores so different levels compete fairly (weekly is planned, not implemented)
 - **Fair scoring** — raw points multiplied by a level coefficient (A1=0.6 … C2=1.5) so a perfect A1 score ≈ a perfect C2 score
@@ -210,6 +210,7 @@ and point the OAuth variables at it, as described in
 | [docs/admin.md](docs/admin.md) | `/admin/*` endpoints and the audio seeding workflow |
 | [docs/deployment.md](docs/deployment.md) | Production on krill: image, environment, webhook secret, checklist for a new environment |
 | [docs/plan.md](docs/plan.md) | Roadmap and changelog (in Russian) |
+| [AGENTS.md](AGENTS.md) | Rules for coding agents working in this repository (`CLAUDE.md` imports it) |
 
 ## Tech Stack
 

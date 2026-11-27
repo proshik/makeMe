@@ -49,6 +49,7 @@ assessment_answers
 ├── correct_option  INT NOT NULL
 ├── user_option     INT NOT NULL
 ├── correct         BOOLEAN NOT NULL
+├── skipped         BOOLEAN NOT NULL DEFAULT false  (answered "Не знаю")
 └── created_at      TIMESTAMPTZ
 
 words
@@ -56,14 +57,15 @@ words
 ├── english         TEXT NOT NULL
 ├── russian         TEXT NOT NULL
 ├── level           TEXT NOT NULL  (A1–C2)
-├── example         TEXT
-├── transcription   TEXT           (IPA, e.g. /ˈwɜːrd/, cached from Free Dictionary API)
-└── audio_url       TEXT           (MP3 URL, cached from Free Dictionary API)
+├── example         TEXT NOT NULL DEFAULT ''
+├── transcription   TEXT NOT NULL DEFAULT ''  (IPA, e.g. /ˈwɜːrd/; from data/words.json or the Free Dictionary API)
+├── audio_url       TEXT NOT NULL DEFAULT ''  (MP3 URL from the Free Dictionary API; never in data/words.json)
+└── UNIQUE(english, level)
 
 review_cards  (SRS / spaced repetition)
 ├── id              BIGSERIAL PK
-├── user_id         BIGINT FK → users(id)
-├── word_id         BIGINT FK → words(id)
+├── user_id         BIGINT FK → users(id) ON DELETE CASCADE
+├── word_id         BIGINT FK → words(id) ON DELETE CASCADE
 ├── ease_factor     REAL NOT NULL  (SM-2, default 2.5)
 ├── interval_days   INT NOT NULL
 ├── repetitions     INT NOT NULL
@@ -73,8 +75,8 @@ review_cards  (SRS / spaced repetition)
 
 daily_sets
 ├── id              BIGSERIAL PK
-├── user_id         BIGINT FK → users(id)
-├── group_id        BIGINT FK → groups(id)
+├── user_id         BIGINT FK → users(id) ON DELETE CASCADE
+├── group_id        BIGINT FK → groups(id) ON DELETE CASCADE
 ├── date            DATE NOT NULL
 ├── round           INT NOT NULL   (0-based; increments when current set is fully answered)
 ├── created_at      TIMESTAMPTZ
@@ -82,7 +84,7 @@ daily_sets
 
 tasks
 ├── id              BIGSERIAL PK
-├── daily_set_id    BIGINT FK → daily_sets(id)
+├── daily_set_id    BIGINT FK → daily_sets(id) ON DELETE CASCADE
 ├── type            TEXT NOT NULL  (vocab/grammar)
 ├── level           TEXT NOT NULL  (A1–C2)
 ├── prompt          TEXT NOT NULL
@@ -93,8 +95,8 @@ tasks
 
 task_results
 ├── id              BIGSERIAL PK
-├── task_id         BIGINT FK → tasks(id)
-├── user_id         BIGINT FK → users(id)
+├── task_id         BIGINT FK → tasks(id) ON DELETE CASCADE
+├── user_id         BIGINT FK → users(id) ON DELETE CASCADE
 ├── response        TEXT NOT NULL
 ├── correct         BOOLEAN NOT NULL
 ├── score           INT NOT NULL
@@ -103,16 +105,15 @@ task_results
 ├── created_at      TIMESTAMPTZ
 └── UNIQUE(task_id, user_id)
 
-scores
+scores  (one row per user, group and period; every award updates a day row and a month row)
 ├── id              BIGSERIAL PK
 ├── user_id         BIGINT FK → users(id)
 ├── group_id        BIGINT FK → groups(id)
-├── date            DATE NOT NULL
+├── period          TEXT NOT NULL  ('day' | 'month'; there is no week)
+├── period_key      TEXT NOT NULL  ('2006-01-02' for day, '2006-01' for month)
 ├── raw             INT NOT NULL   (sum of task scores)
-├── normalized      REAL NOT NULL  (raw × level coefficient)
-├── created_at      TIMESTAMPTZ
-├── updated_at      TIMESTAMPTZ
-└── UNIQUE(user_id, group_id, date)
+├── normalized      FLOAT8 NOT NULL  (raw × level coefficient)
+└── UNIQUE(user_id, group_id, period, period_key)
 
 grammar_questions
 ├── id              BIGSERIAL PK
@@ -126,7 +127,7 @@ grammar_questions
 
 grammar_categories
 ├── name            TEXT PK        (category name, e.g. "Present Simple")
-└── explanation     TEXT NOT NULL  (theory shown in /learn)
+└── explanation     TEXT NOT NULL  (theory for /learn and the rule after a grammar answer; text format in AGENTS.md)
 
 word_learning_progress  (per-mode counters for /words)
 ├── user_id              BIGINT FK → users(id) ON DELETE CASCADE
@@ -168,6 +169,7 @@ Relations:
 - `users` 1 ←→ N `assessment_sessions` 1 ←→ N `assessment_answers`
 - `users` 1 ←→ N `review_cards` N ←→ 1 `words`
 - `users` 1 ←→ N `daily_sets` N ←→ 1 `groups`
+- `users` 1 ←→ N `scores` N ←→ 1 `groups`
 - `daily_sets` 1 ←→ N `tasks` 1 ←→ 1 `task_results`
 - `users` 1 ←→ N `word_learning_progress` N ←→ 1 `words`
 - `users` 1 ←→ N `words_sessions`
