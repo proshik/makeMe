@@ -27,11 +27,12 @@ Copy `.env.example` to `.env` and fill in the values:
 | `JWT_SECRET` | `(empty)` | Base64 key for session JWTs, ≥32 bytes decoded. `openssl rand -base64 32`. Startup fails if it is shorter or not base64. |
 | `JWT_TTL_HOURS` | `24` | Session lifetime; the `auth_token` cookie max-age is derived from it. |
 | `COOKIE_SECURE` | `true` | Set `false` for local http development. Chrome and Firefox accept a `Secure` cookie from `http://localhost`; Safari drops it silently, and no browser accepts it from `http://192.168.x.x`, so testing from a phone needs this too. |
-| `TELEGRAM_OAUTH_BASE_URL` | `https://oauth.telegram.org` | OIDC provider base. Point it at a login broker for local development. |
+| `TELEGRAM_OAUTH_BASE_URL` | `https://oauth.telegram.org` | OIDC provider base: the authorization and token endpoints are built from it. Changed only together with `TELEGRAM_EXPECTED_ISSUER`; the OIDC tests put a fake provider's URL in its place. |
 | `TELEGRAM_EXPECTED_ISSUER` | `https://oauth.telegram.org` | The exact `iss` the id_token must carry, compared byte for byte. Changed together with the base URL and never derived from it: pointing the flow somewhere else has to be deliberate. |
 
 The web UI is optional: with `APP_BASE_URL`, `TELEGRAM_CLIENT_ID`, `TELEGRAM_CLIENT_SECRET` or `JWT_SECRET` unset it is not mounted and only the bot runs. A warning is logged at startup saying which variables are missing.
 
-Local development (login broker, local mode, feeding `/webhook` by hand) is in
-[development.md](development.md#local-development-without-ngrok); the production
+Local development (why the web login is not checked live locally, local mode,
+feeding `/webhook` by hand) is in
+[development.md](development.md#local-development); the production
 environment is in [deployment.md](deployment.md#environment-on-krill).

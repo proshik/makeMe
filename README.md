@@ -194,17 +194,17 @@ curl http://localhost:8080/health
 Without Docker, point `DATABASE_URL` at a local PostgreSQL and run `make run`.
 
 The web UI is mounted only when `APP_BASE_URL`, `TELEGRAM_CLIENT_ID`,
-`TELEGRAM_CLIENT_SECRET` and `JWT_SECRET` are set. To sign in locally without
-real Telegram, run [telegram-login-broker](../telegram-login-broker) in mock mode
-and point the OAuth variables at it, as described in
-[docs/development.md](docs/development.md#local-development-without-ngrok).
+`TELEGRAM_CLIENT_SECRET` and `JWT_SECRET` are set. Signing in through Telegram
+works only on the domain registered for the OAuth client, so the web login is not
+checked live locally; see
+[docs/development.md](docs/development.md#local-development).
 
 ## Documentation
 
 | Document | Contents |
 |---|---|
 | [docs/configuration.md](docs/configuration.md) | Environment variables |
-| [docs/development.md](docs/development.md) | `make` targets, local development with the login broker, Docker image, seed data, tests and CI |
+| [docs/development.md](docs/development.md) | `make` targets, local development, Docker image, seed data, tests and CI |
 | [docs/web-ui.md](docs/web-ui.md) | Web UI routes, live updates over `/ws`, navigation, self-hosted assets and the CSP |
 | [docs/database.md](docs/database.md) | Database schema and relations |
 | [docs/admin.md](docs/admin.md) | `/admin/*` endpoints and the audio seeding workflow |

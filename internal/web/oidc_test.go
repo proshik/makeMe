@@ -278,14 +278,14 @@ func TestExchangeMatchesTheIssuerExactly(t *testing.T) {
 }
 
 func TestExchangeAcceptsAConfiguredIssuerOtherThanTelegram(t *testing.T) {
-	// This is what makes the broker usable: the expected issuer is configuration,
-	// not a substring rule, so pointing at a broker is a deliberate edit rather
-	// than something that happens to pass.
-	const brokerIssuer = "https://broker.example.com"
-	tok := idToken(t, claimsWith("iss", brokerIssuer))
+	// The expected issuer is configuration, not a substring rule, so pointing
+	// the client at another OIDC provider is a deliberate edit rather than
+	// something that happens to pass.
+	const otherIssuer = "https://id.example.com"
+	tok := idToken(t, claimsWith("iss", otherIssuer))
 	srv := stubTokenEndpoint(t, http.StatusOK, map[string]any{"id_token": tok})
 
-	c := NewOIDCClient(srv.URL, "client-1", "secret", "https://app/cb", brokerIssuer)
+	c := NewOIDCClient(srv.URL, "client-1", "secret", "https://app/cb", otherIssuer)
 	if _, err := c.Exchange(context.Background(), "code", "verifier"); err != nil {
 		t.Errorf("Exchange() = %v for the configured issuer", err)
 	}
@@ -344,7 +344,7 @@ func TestExchangeKeepsLargeTelegramIDsExact(t *testing.T) {
 func TestExchangeDoesNotFollowRedirects(t *testing.T) {
 	// Go's default client follows up to ten redirects. A token endpoint that
 	// answers 302 would have the client read an id_token from wherever it landed,
-	// which is a live bug independent of the broker.
+	// which is a live bug whichever provider the client points at.
 	var attacker *httptest.Server
 	attacker = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json")

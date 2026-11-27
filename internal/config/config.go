@@ -52,8 +52,8 @@ type Config struct {
 	TelegramOAuthBaseURL string // OIDC issuer base, overridable so tests can point at a stub
 	// TelegramExpectedIssuer is the exact iss the id_token must carry. It
 	// defaults to Telegram's own issuer and is set separately from the base URL
-	// on purpose: pointing the flow at a local login broker must be a deliberate
-	// change to both, not something one edit quietly enables.
+	// on purpose: pointing the flow at another OIDC provider must be a
+	// deliberate change to both, not something one edit quietly enables.
 	TelegramExpectedIssuer string
 	JWTSecret              string // base64, must decode to >=32 bytes for HS256
 	JWTTTLHours            int    // lifetime of the auth_token cookie and the JWT inside it

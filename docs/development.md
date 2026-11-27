@@ -19,36 +19,31 @@ make migrate-create name=add_something   # scaffold a new goose migration
 
 `make sqlc` needs sqlc in `~/go/bin` (`make install-tools`). To check the generated code without installing anything, `go run github.com/sqlc-dev/sqlc/cmd/sqlc@v1.30.0 diff` compares `internal/storage/sqlc` with what `queries/` would produce; it reported no difference on 2026-11-28. The last change to it (`show_rule_on_correct`) was written by hand in the v1.30.0 format, which is why that check matters.
 
-## Local development without ngrok
+## Local development
 
-Telegram only accepts publicly resolvable HTTPS redirect URIs, which is why the
-login used to be untestable locally. [telegram-login-broker](../../telegram-login-broker)
-solves that: it is registered in BotFather once and forwards the browser to any
-loopback port afterwards. Run it in mock mode and point two variables at it:
+### Web login is not checked live locally
 
-```sh
-TELEGRAM_OAUTH_BASE_URL=http://127.0.0.1:8091
-TELEGRAM_EXPECTED_ISSUER=http://127.0.0.1:8091
-TELEGRAM_CLIENT_ID=makeme
-TELEGRAM_CLIENT_SECRET=dev-secret     # must match the broker's BROKER_CLIENTS
-COOKIE_SECURE=false
-```
+Telegram redirects back only to an HTTPS redirect URI registered for the OAuth
+client, `$APP_BASE_URL/auth/telegram/callback` on a public domain. Signing in to
+the web UI through real Telegram OAuth therefore works only on that registered
+domain, which is production. A local run has no way to complete the login, so it
+is not exercised live; with `APP_BASE_URL`, `TELEGRAM_CLIENT_ID`,
+`TELEGRAM_CLIENT_SECRET` or `JWT_SECRET` unset the web UI is not mounted at all
+and only the bot runs.
 
-The whole exchange can be exercised without starting the bot at all:
+The login logic is covered by tests in `internal/web` that point the real
+`OIDCClient` at a fake OIDC provider, an `httptest` token endpoint that returns
+id_tokens the test builds itself. `oidc_test.go` covers the authorization URL,
+PKCE, the code exchange and every claim check (`iss`, `aud`, `exp`, `iat`, the
+`id` claim, ids above 2^53, a refused redirect); `handler_auth_test.go` covers
+`/auth/telegram` and its callback (state and verifier cookies, creating or
+reusing the user, the session cookie). `TELEGRAM_OAUTH_BASE_URL` and
+`TELEGRAM_EXPECTED_ISSUER` are what lets the client be pointed at such a provider;
+in a deployment both stay at `https://oauth.telegram.org`.
 
-```sh
-BROKER_URL=http://127.0.0.1:8091 BROKER_CLIENT_ID=makeme BROKER_CLIENT_SECRET=dev-secret \
-  go test ./internal/web -run TestLoginAgainstALiveBroker -v
-```
+### Running the bot locally
 
-That test drives this package's own `OIDCClient` — not a stub — through a real
-broker: authorization URL, PKCE, code exchange, id_token parsing, and a replay of
-the spent code. Without `BROKER_URL` it skips, so `go test ./...` stays hermetic.
-
-What is already proven and what still has to be checked against real Telegram is
-tracked in the broker's [docs/VERIFICATION.md](../../telegram-login-broker/docs/VERIFICATION.md).
-
-Start the binary itself with `TELEGRAM_LOCAL_MODE=true` and `WEBHOOK_URL`
+Start the binary with `TELEGRAM_LOCAL_MODE=true` and `WEBHOOK_URL`
 unset. Without one of the two it refuses to start: an empty `WEBHOOK_URL` used
 to reach `setWebhook` and **delete the webhook** of whichever bot's token was in
 `TELEGRAM_TOKEN`, so a local run with the production token took production
@@ -96,8 +91,7 @@ layer.
 
 `docker compose up` builds the same image and runs it next to PostgreSQL. Use a
 dev bot's token in `.env`, and either `TELEGRAM_LOCAL_MODE=true` or a public
-`WEBHOOK_URL` with `TELEGRAM_WEBHOOK_SECRET`; see "Local development without
-ngrok" above.
+`WEBHOOK_URL` with `TELEGRAM_WEBHOOK_SECRET`; see "Local development" above.
 
 ## Seed data
 

@@ -36,8 +36,8 @@ type OIDCClient struct {
 	redirectURI  string
 	// expectedIssuer is the exact iss the id_token must carry. It is
 	// configuration rather than a substring rule, so pointing this client at
-	// something other than Telegram — a local login broker, say — is a
-	// deliberate edit that fails loudly when it is wrong.
+	// something other than Telegram — another OIDC provider, or a fake one in
+	// tests — is a deliberate edit that fails loudly when it is wrong.
 	expectedIssuer string
 	http           *http.Client
 }

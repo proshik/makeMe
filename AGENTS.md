@@ -175,7 +175,7 @@ Web UI login (`internal/web`) — rules that are load-bearing, not preferences:
   hands the decision to whoever issued the token.
 - `iss` is compared **byte for byte** against `TELEGRAM_EXPECTED_ISSUER`, never by
   substring. It is configured separately from `TELEGRAM_OAUTH_BASE_URL` so that
-  pointing the flow at a login broker is deliberate rather than incidental.
+  pointing the flow at another OIDC provider is deliberate rather than incidental.
 - `aud` is read both as a string and as an array. As a bare `.(string)` an array
   yields "" and the audience check turns itself off silently.
 - A missing `id` claim is a failure. **Never fall back to `sub`** — it is a
@@ -184,9 +184,10 @@ Web UI login (`internal/web`) — rules that are load-bearing, not preferences:
 - The token HTTP client refuses redirects. There is no legitimate redirect on a
   token endpoint, and following one reads the id_token from wherever the last hop
   pointed.
-- Local development runs against [telegram-login-broker](../telegram-login-broker);
-  see `docs/development.md`. Start the binary locally with `TELEGRAM_LOCAL_MODE=true` and a
-  **separate dev bot**. An empty `WEBHOOK_URL` without local mode is a startup
+- Telegram OAuth redirects only to the registered domain, so the web login is
+  checked live only in production; locally it is covered by the `internal/web`
+  tests against a fake OIDC provider (see `docs/development.md`). Start the
+  binary locally with `TELEGRAM_LOCAL_MODE=true` and a **separate dev bot**. An empty `WEBHOOK_URL` without local mode is a startup
   error, and `Bot.SetWebhook` refuses an empty URL: Telegram reads it as
   deleteWebhook, which used to take down whichever bot's token was configured.
   Keep both guards.
